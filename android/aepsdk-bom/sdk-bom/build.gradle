@@ -42,6 +42,7 @@ dependencies {
     implementation 'com.adobe.marketing.mobile:edgeidentity:latest.release'
     implementation 'com.adobe.marketing.mobile:edgeconsent:latest.release'
     implementation 'com.adobe.marketing.mobile:edgebridge:latest.release'
+    implementation 'com.adobe.marketing.mobile:edgemedia:latest.release'
     implementation 'com.adobe.marketing.mobile:messaging:latest.release'
     implementation 'com.adobe.marketing.mobile:optimize:latest.release'
     implementation 'com.adobe.marketing.mobile:places:latest.release'

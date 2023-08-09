@@ -1,3 +1,7 @@
+This BOM ([Bill of Materials](https://central.sonatype.com/artifact/com.adobe.marketing.mobile/sdk-bom)) release includes changes to the following Android extensions.
+<details>
+  <summary>Expand</summary>
+
 | Extension artifact | BOM (2.1.0) | BOM (2.2.0) |
 |-----|-----|-----|
 | **com.adobe.marketing.mobile:core** | **2.3.0** | **2.3.1**|
@@ -20,3 +24,5 @@
 | com.adobe.marketing.mobile:signal | 2.0.1 | 2.0.1 |
 | com.adobe.marketing.mobile:target | 2.0.1 | 2.0.1 |
 | com.adobe.marketing.mobile:userprofile | 2.0.1 | 2.0.1 |
+
+</details>

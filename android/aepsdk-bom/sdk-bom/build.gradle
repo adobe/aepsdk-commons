@@ -110,6 +110,10 @@ task bom_release_notes() {
         def markdownTable = StringBuilder.newInstance()
         def oldBomVersion = rootProject.bomVersion.toString()
         def newBomVersion = nextBomVersion()
+        markdownTable <<= "This BOM ([Bill of Materials](https://central.sonatype.com/artifact/com.adobe.marketing.mobile/sdk-bom)) release includes changes to the following Android extensions. \n"
+        markdownTable <<= "<details> \n"
+        markdownTable <<= "  <summary>Expand</summary> \n"
+        markdownTable <<= "\n"
         markdownTable <<= "| Extension artifact | BOM (${oldBomVersion}) | BOM (${newBomVersion}) |\n"
         markdownTable <<= "|-----|-----|-----|\n"
         def changedExtension = []
@@ -134,6 +138,8 @@ task bom_release_notes() {
             println(newMap)
             println("----")
             println(oldMap)
+            markdownTable <<= "\n"
+            markdownTable <<= "</details> \n"
             new File("${projectDir}/bom-release-notes.md").text = markdownTable.toString()
         }else {
             println("No extension version changed, no need to update bom-release-notes.md")

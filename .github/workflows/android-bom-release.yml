@@ -61,7 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Update Rlease page
+      - name: Update Release page
         run: |
           gh release edit bom-${{ steps.read_property.outputs.bomVersion }} --repo adobe/aepsdk-commons --notes-file ./android/aepsdk-bom/sdk-bom/bom-release-notes.md
         env:

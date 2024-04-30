@@ -2,9 +2,9 @@ This BOM ([Bill of Materials](https://central.sonatype.com/artifact/com.adobe.ma
 <details>
   <summary>Expand</summary>
 
-| Extension artifact | BOM (2.9.5) | BOM (2.9.6) |
+| Extension artifact | BOM (2.9.6) | BOM (2.9.7) |
 |-----|-----|-----|
-| **com.adobe.marketing.mobile:campaignclassic** | **2.1.4** | **2.1.5**|
+| **com.adobe.marketing.mobile:campaignclassic** | **2.1.5** | **2.1.6**|
 | com.adobe.marketing.mobile:analytics | 2.0.3 | 2.0.3 |
 | com.adobe.marketing.mobile:assurance | 2.2.1 | 2.2.1 |
 | com.adobe.marketing.mobile:audience | 2.0.0 | 2.0.0 |

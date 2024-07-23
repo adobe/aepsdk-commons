@@ -29,6 +29,22 @@ on:
         description: 'Library name to be released (ex: AEPEdge)'
         required: true
         type: string
+      
+      # Makefile environment variables
+      scheme_name_xcframework:
+        description: 'Scheme name for XCFramework (ex: AEPEdgeXCF)'
+        required: true
+        type: string
+
+      test_app_ios_scheme:
+        description: 'iOS Test App Scheme (ex: TestAppiOS)'
+        required: true
+        type: string
+
+      test_app_tvos_scheme:
+        description: 'tvOS Test App Scheme (ex: TestApptvOS)'
+        required: true
+        type: string
 
 jobs:
   release:
@@ -72,6 +88,11 @@ jobs:
         
     - name: Build Artifacts
       if: ${{ inputs.run_full_release == 'yes' }}
+      env:
+        EXTENSION_NAME: ${{ inputs.library_name }}
+        SCHEME_NAME_XCFRAMEWORK: ${{ inputs.scheme_name_xcframework }}
+        TEST_APP_IOS_SCHEME: ${{ inputs.test_app_ios_scheme }}
+        TEST_APP_TVOS_SCHEME: ${{ inputs.test_app_tvos_scheme }}
       run: |
         make archive
         make zip

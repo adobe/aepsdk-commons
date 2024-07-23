@@ -1,0 +1,69 @@
+name: Update Versions (iOS)
+
+# Currently this workflow relies on one secret:
+# - GITHUB_TOKEN: Required for creating a release on GitHub
+# It can be passed using the `secrets: inherit` option in the caller workflow file.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'New version to use for the extension. Example: 1.5.2'
+        required: true
+        type: string
+        
+      branch:
+        description: 'Branch to be used when updating versions'
+        required: true
+        type: string
+
+      libraries:
+        description: 'Semicolon-separated string of libraries and their dependencies versions. Example: "Core:AEPRulesEngine 1.2.3, AEPServices 1.5.2; Identity:AEPCore 1.5.2"'
+        required: true
+        type: string
+
+jobs:
+  update-versions:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4.1.7
+      with:
+        repository: ${{ github.repository }}
+        ref: ${{ inputs.branch }}
+
+    - name: Checkout called workflow repository
+      uses: actions/checkout@v4.1.7
+      with:
+        repository: adobe/aepsdk-testutils-ios
+        ref: test-reusable-workflows
+        path: called-repo
+
+    - name: Update Libraries
+      run: |
+        IFS=';' read -ra LIBRARY_ENTRIES <<< "${{ inputs.libraries }}"
+        for entry in "${LIBRARY_ENTRIES[@]}"; do
+          IFS=':' read -ra PARTS <<< "$entry"
+          LIBRARY_NAME=${PARTS[0]}
+          DEPENDENCIES=${PARTS[1]}
+          
+          sh ./called-repo/Script/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
+        done
+
+    - name: Remove called repository
+      run: rm -rf ./called-repo
+
+    - name: Configure Git
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+
+    - name: Create Pull Request
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        branch_name="version-${{ inputs.version }}-update"
+        git checkout -b $branch_name
+        git add .
+        git commit -m "Updating version to ${{ inputs.version }}."
+        git push origin $branch_name
+        gh pr create --base ${{ inputs.branch }} --head $branch_name --title "Updating version to ${{ inputs.version }}" --body "Updating version to ${{ inputs.version }}"

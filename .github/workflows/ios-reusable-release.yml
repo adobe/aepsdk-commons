@@ -1,0 +1,97 @@
+name: Release (iOS)
+
+# Currently this workflow relies on two secrets:
+# - GITHUB_TOKEN: Required for creating a release on GitHub
+# - COCOAPODS_TRUNK_TOKEN: Required for pushing a pod to Cocoapods
+# These can be passed using the `secrets: inherit` option in the caller workflow file.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag/version (ex: 5.0.1)'
+        required: true
+        type: string
+
+      run_full_release:
+        description: 'Run full release process (`no` to skip)'
+        required: true
+        default: 'yes'
+        type: string
+
+      release_pod:
+        description: 'Release to Cocoapods'
+        required: true
+        default: 'yes'
+        type: string
+
+      library_name:
+        description: 'Library name to be released (ex: AEPEdge)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4.1.7
+      with:
+        ref: main
+    
+    - name: Set up Xcode Version
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+      with:
+        xcode-version: '15.0.1'
+
+    - name: Install Cocoapods
+      run: gem install cocoapods
+
+    - name: Install XcodeGen
+      run: brew install xcodegen
+
+    - name: Check Version in Podspec
+      run: |
+        set -eo pipefail
+        echo Target version: ${{ inputs.tag }}
+        make check-version VERSION=${{ inputs.tag }}
+
+    - name: SPM Integration Test
+      if: ${{ inputs.run_full_release == 'yes' }}
+      run: |
+        set -eo pipefail
+        echo SPM integration test starts:
+        make test-SPM-integration
+
+    - name: Podspec File Verification
+      if: ${{ inputs.run_full_release == 'yes' }}
+      run: |
+        set -eo pipefail
+        echo podspec file verification starts:
+        make test-podspec
+        
+    - name: Build Artifacts
+      if: ${{ inputs.run_full_release == 'yes' }}
+      run: |
+        make archive
+        make zip
+    
+    - name: Create GH Release and Upload Asset - ${{ inputs.library_name }}
+      if: ${{ inputs.run_full_release == 'yes' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create ${{ inputs.tag }} \
+          --verify-tag \
+          --generate-notes \
+          --title "v${{ inputs.tag }}" \
+          ./build/${{ inputs.library_name }}.xcframework.zip#${{ inputs.library_name }}-${{ inputs.tag }}.xcframework.zip
+
+    - name: Publish Pods - ${{ inputs.library_name }}
+      if: ${{ inputs.release_pod == 'yes' }}
+      run: |
+        set -eo pipefail
+        pod trunk push ${{ inputs.library_name }}.podspec --allow-warnings --synchronous
+        pod repo update
+      env:
+        COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}

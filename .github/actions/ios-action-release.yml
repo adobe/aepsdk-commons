@@ -41,6 +41,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Check out the repository
+      uses: actions/checkout@v4.1.7
+
     - name: Set up Xcode Version
       uses: maxim-lobanov/setup-xcode@v1.6.0
       with:

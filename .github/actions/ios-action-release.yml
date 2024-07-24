@@ -1,0 +1,112 @@
+name: 'Release iOS Library'
+description: 'Composite action to release an iOS library'
+inputs:
+  tag:
+    description: 'Tag/version (ex: 5.0.1)'
+    required: true
+    type: string
+
+  run_full_release:
+    description: 'Run full release process (`no` to skip)'
+    required: true
+    default: 'yes'
+    type: string
+
+  release_pod:
+    description: 'Release to Cocoapods'
+    required: true
+    default: 'yes'
+    type: string
+
+  library_name:
+    description: 'Library name to be released (ex: AEPEdge)'
+    required: true
+    type: string
+
+  scheme_name_xcframework:
+    description: 'Scheme name for XCFramework (ex: AEPEdgeXCF)'
+    required: true
+    type: string
+
+  test_app_ios_scheme:
+    description: 'iOS Test App Scheme (ex: TestAppiOS)'
+    required: true
+    type: string
+
+  test_app_tvos_scheme:
+    description: 'tvOS Test App Scheme (ex: TestApptvOS)'
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Xcode Version
+      uses: maxim-lobanov/setup-xcode@v1.6.0
+      with:
+        xcode-version: '15.0.1'
+
+    - name: Install Cocoapods
+      run: gem install cocoapods
+      shell: bash
+
+    - name: Install XcodeGen
+      run: brew install xcodegen
+      shell: bash
+
+    - name: Check Version in Podspec
+      run: |
+        set -eo pipefail
+        echo Target version: ${{ inputs.tag }}
+        make check-version VERSION=${{ inputs.tag }}
+      shell: bash
+
+    - name: SPM Integration Test
+      if: ${{ inputs.run_full_release == 'yes' }}
+      run: |
+        set -eo pipefail
+        echo SPM integration test starts:
+        make test-SPM-integration
+      shell: bash
+
+    - name: Podspec File Verification
+      if: ${{ inputs.run_full_release == 'yes' }}
+      run: |
+        set -eo pipefail
+        echo podspec file verification starts:
+        make test-podspec
+      shell: bash
+
+    - name: Build Artifacts
+      if: ${{ inputs.run_full_release == 'yes' }}
+      env:
+        EXTENSION_NAME: ${{ inputs.library_name }}
+        SCHEME_NAME_XCFRAMEWORK: ${{ inputs.scheme_name_xcframework }}
+        TEST_APP_IOS_SCHEME: ${{ inputs.test_app_ios_scheme }}
+        TEST_APP_TVOS_SCHEME: ${{ inputs.test_app_tvos_scheme }}
+      run: |
+        make archive
+        make zip
+      shell: bash
+
+    - name: Create GH Release and Upload Asset - ${{ inputs.library_name }}
+      if: ${{ inputs.run_full_release == 'yes' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create ${{ inputs.tag }} \
+          --verify-tag \
+          --generate-notes \
+          --title "v${{ inputs.tag }}" \
+          ./build/${{ inputs.library_name }}.xcframework.zip#${{ inputs.library_name }}-${{ inputs.tag }}.xcframework.zip
+      shell: bash
+
+    - name: Publish Pods - ${{ inputs.library_name }}
+      if: ${{ inputs.release_pod == 'yes' }}
+      env:
+        COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+      run: |
+        set -eo pipefail
+        pod trunk push ${{ inputs.library_name }}.podspec --allow-warnings --synchronous
+        pod repo update
+      shell: bash

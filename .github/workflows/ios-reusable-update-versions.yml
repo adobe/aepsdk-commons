@@ -34,11 +34,11 @@ jobs:
     - name: Checkout Scripts Directory from aepsdk-commons
       uses: actions/checkout@v4.1.7
       with:
-        repository: adobe/aepsdk-commons
+        repository: timkimadobe/aepsdk-commons
         ref: ios-reusable-workflows
         path: aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
-        token: ${{ secrets.GITHUB_TOKEN }}
+        # token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update Libraries
       run: |

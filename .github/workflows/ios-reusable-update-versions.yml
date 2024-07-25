@@ -31,12 +31,13 @@ jobs:
         repository: ${{ github.repository }}
         ref: ${{ inputs.branch }}
 
-    - name: Checkout called workflow repository
+    - name: Checkout Scripts Directory from aepsdk-commons
       uses: actions/checkout@v4.1.7
       with:
         repository: adobe/aepsdk-testutils-ios
         ref: test-reusable-workflows
-        path: called-repo
+        path: aepsdk-commons
+        sparse-checkout: 'Scripts' # Only checkout the Scripts directory
 
     - name: Update Libraries
       run: |
@@ -46,11 +47,11 @@ jobs:
           LIBRARY_NAME=${PARTS[0]}
           DEPENDENCIES=${PARTS[1]}
           
-          sh ./called-repo/Script/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
+          ./aepsdk-commons/Script/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
         done
 
     - name: Remove called repository
-      run: rm -rf ./called-repo
+      run: rm -rf ./aepsdk-commons
 
     - name: Configure Git
       run: |

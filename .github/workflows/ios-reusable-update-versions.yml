@@ -47,11 +47,6 @@ jobs:
 
     - name: Check Current Working Directory
       run: pwd
-      
-
-    - name: List Files in AEPEdge Directory
-      run: ls -R aepsdk-edge-ios/AEPEdge
-      
 
     - name: Update Libraries
       run: |

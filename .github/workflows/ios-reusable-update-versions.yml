@@ -37,7 +37,7 @@ jobs:
         repository: adobe/aepsdk-testutils-ios
         ref: test-reusable-workflows
         path: aepsdk-commons
-        sparse-checkout: 'Scripts' # Only checkout the Scripts directory
+        sparse-checkout: 'scripts' # Only checkout the scripts directory
 
     - name: Update Libraries
       run: |
@@ -47,7 +47,7 @@ jobs:
           LIBRARY_NAME=${PARTS[0]}
           DEPENDENCIES=${PARTS[1]}
           
-          ./aepsdk-commons/Script/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
+          ./aepsdk-commons/scripts/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
         done
 
     - name: Remove called repository

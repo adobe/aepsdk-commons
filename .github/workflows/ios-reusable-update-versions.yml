@@ -40,6 +40,19 @@ jobs:
         sparse-checkout: 'scripts' # Only checkout the scripts directory
         # token: ${{ secrets.GITHUB_TOKEN }}
 
+    # DEBUG
+    - name: List Files in Working Directory
+      run: ls -R
+      
+
+    - name: Check Current Working Directory
+      run: pwd
+      
+
+    - name: List Files in AEPEdge Directory
+      run: ls -R aepsdk-edge-ios/AEPEdge
+      
+
     - name: Update Libraries
       run: |
         IFS=';' read -ra LIBRARY_ENTRIES <<< "${{ inputs.libraries }}"
@@ -48,19 +61,18 @@ jobs:
           LIBRARY_NAME=${PARTS[0]}
           DEPENDENCIES=${PARTS[1]}
           
-          ./aepsdk-commons/scripts/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
+          sh ./aepsdk-commons/scripts/update-versions.sh -n "$LIBRARY_NAME" -v "${{ inputs.version }}" -d "$DEPENDENCIES"
         done
-      shell: bash
 
     - name: Remove called repository
       run: rm -rf ./aepsdk-commons
-      shell: bash
+      
 
     - name: Configure Git
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
-      shell: bash
+      
 
     - name: Create Pull Request
       env:
@@ -72,4 +84,4 @@ jobs:
         git commit -m "Updating version to ${{ inputs.version }}."
         git push origin $branch_name
         gh pr create --base ${{ inputs.branch }} --head $branch_name --title "Updating version to ${{ inputs.version }}" --body "Updating version to ${{ inputs.version }}"
-      shell: bash
+      

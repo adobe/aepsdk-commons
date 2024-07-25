@@ -38,7 +38,7 @@ jobs:
         ref: ios-reusable-workflows
         path: aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Update Libraries
       run: |

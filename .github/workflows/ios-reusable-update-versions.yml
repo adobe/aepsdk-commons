@@ -34,8 +34,8 @@ jobs:
     - name: Checkout Scripts Directory from aepsdk-commons
       uses: actions/checkout@v4.1.7
       with:
-        repository: adobe/aepsdk-testutils-ios
-        ref: test-reusable-workflows
+        repository: adobe/aepsdk-commons
+        ref: ios-reusable-workflows
         path: aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 

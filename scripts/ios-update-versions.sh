@@ -84,8 +84,7 @@ echo "Changing value of 's.version' to '$NEW_VERSION' in '$PODSPEC_FILE'"
 sed -i '' -E "/^ *s.version/{s/$VERSION_REGEX/$NEW_VERSION/;}" $PODSPEC_FILE
 
 # Replace dependencies in podspec and Package.swift
-# Check that $DEPENDENCIES is not the default value "none" or empty
-if [ "$DEPENDENCIES" != "none" ] && [ -n "$DEPENDENCIES" ]; then
+if [ "$DEPENDENCIES" != "none" ]; then
     IFS="," 
     dependenciesArray=($(echo "$DEPENDENCIES"))
 
@@ -94,6 +93,12 @@ if [ "$DEPENDENCIES" != "none" ] && [ -n "$DEPENDENCIES" ]; then
         dependencyArray=(${dependency// / })
         dependencyName=${dependencyArray[0]}
         dependencyVersion=${dependencyArray[1]}
+
+        # Check if dependencyVersion is an empty string and continue to the next iteration if true
+        if [ -z "$dependencyVersion" ]; then
+            echo "Skipping $dependencyName for $NAME due to empty version"
+            continue
+        fi
         
         # Podspec version update
         echo "Changing value of 's.dependency' for '$dependencyName' to '>= $dependencyVersion' in '$PODSPEC_FILE'"

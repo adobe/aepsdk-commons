@@ -119,7 +119,6 @@ fi
 # Early exit path for targets that do not have constants files with versions to update
 if [ "$NAME" == "Services" ] || [ "$NAME" == "TestUtils" ]; then
     echo "No constants to replace"
-fi
 # Special handling cases
 elif [ "$NAME" == "Core" ]; then
     # Core needs to update Event Hub and Configuration Constants

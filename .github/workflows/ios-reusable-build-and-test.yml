@@ -30,7 +30,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons
@@ -55,7 +55,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons
@@ -80,7 +80,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons
@@ -106,7 +106,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons
@@ -131,7 +131,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons
@@ -156,7 +156,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons
@@ -182,7 +182,7 @@ jobs:
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/actions/setup-action
+        uses: ./.github/aepsdk-commons/.github/actions/setup-action
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons

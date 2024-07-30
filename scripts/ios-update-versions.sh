@@ -11,21 +11,23 @@ ROOT_DIR=$(git rev-parse --show-toplevel)
 LINE="================================================================================"
 VERSION_REGEX="[0-9]+\.[0-9]+\.[0-9]+"
 DEPENDENCIES=none
-# Flag to determine if the extension is part of a multi-extension repo
-# Affects things like the path used for source files (nested directory structure) and SPM repo URL
+# Flag to determine if the extension is part of a multi-extension repository.
+# This affects paths used for source files (nested directory structure) and the SPM repository URL.
 IS_MULTI_EXTENSION_REPO=false
 
-# make a "dictionary" to help us find the correct spm repo per dependency (if necessary)
-# IMPORTANT - this will be used in a regex search so escape special chars
-# usage :
+# Create a "dictionary" to map an extension to its corresponding SPM repository URL.
+# IMPORTANT:
+# 1. This will be used in a regex search, so special characters must be escaped.
+# 2. If a dependent extension is not in this list, the script will skip updating its version in the SPM file.
+# Example usage:
 # getRepo AEPCore
-
-# Define the repo URL for target name - (var names = value)
+# Define the repository URL for each target name (variable names and their values).
 declare "repos_AEPCore=https:\/\/github\.com\/adobe\/aepsdk-core-ios\.git"
+declare "repos_AEPEdgeIdentity=https:\/\/github\.com\/adobe\/aepsdk-edgeidentity-ios\.git"
 declare "repos_AEPRulesEngine=https:\/\/github\.com\/adobe\/aepsdk-rulesengine-ios\.git"
 
-# Returns the URL associated with the provided extension name
-# See `declare` statements above for supported extension names
+# Returns the URL for the given extension name
+# Refer to the `declare` statements above for supported extensions.
 getRepo() {
     local extensionName=$1
     local url="repos_$extensionName"
@@ -37,10 +39,12 @@ help()
    echo ""
    echo "Usage: $0 -n EXTENSION_NAME -v NEW_VERSION -d \"PODSPEC_DEPENDENCY_1, PODSPEC_DEPENDENCY_2\""
    echo ""
-   echo -e "    -n\t- Name of the extension getting a version update. \n\t  Example: Edge, Analytics\n"
-   echo -e "    -v\t- New version to use for the extension. \n\t  Example: 3.0.2\n"
-   echo -e "    -d (optional)\t- Dependency(ies) that require updating in the extension's podspec and Package.swift file. \n\t  Example: -d \"AEPCore 3.7.3\" (update the dependency on AEPCore to version 3.7.3 or newer)\n"
-   
+   echo -e "    -n\t- Name of the extension to update. \n\t  Example: -n Edge or -n Analytics\n"
+   echo -e "    -v\t- New version number for the extension. \n\t  Example: -v 3.0.2\n"
+   echo -e "    -d (optional)\t- Dependencies to update in the extension's podspec and Package.swift file. \
+If a dependency version is empty (ex: \"AEPCore \"), it will be skipped. \
+\n\t  Example: -d \"AEPCore 3.7.3, AEPRulesEngine 1.2.0\" (update AEPCore to version 3.7.3 or newer and AEPRulesEngine to version 1.2.0 or newer)\n"
+
    # Exit with the provided status code if supplied, otherwise exit with 0
    exit ${1:-0}
 }

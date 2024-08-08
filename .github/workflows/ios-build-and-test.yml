@@ -12,6 +12,31 @@ on:
       github_ref:
         required: true
         type: string
+      # Flags for jobs to run
+      run_test_ios_unit:
+        required: false
+        type: boolean
+        default: true
+      run_test_ios_functional:
+        required: false
+        type: boolean
+        default: true
+      run_test_ios_integration:
+        required: false
+        type: boolean
+        default: true
+      run_test_tvos_unit:
+        required: false
+        type: boolean
+        default: true
+      run_test_tvos_functional:
+        required: false
+        type: boolean
+        default: true
+      run_build_xcframework_and_app:
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   validate-code:
@@ -24,8 +49,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
@@ -41,6 +66,7 @@ jobs:
   test-ios-unit:
     runs-on: macos-latest
     needs: validate-code
+    if: inputs.run_test_ios_unit
 
     steps:
       - name: Checkout Repository
@@ -49,8 +75,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
@@ -66,6 +92,7 @@ jobs:
   test-ios-functional:
     runs-on: macos-latest
     needs: validate-code
+    if: inputs.run_test_ios_functional
 
     steps:
       - name: Checkout Repository
@@ -74,8 +101,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
@@ -91,7 +118,7 @@ jobs:
   test-ios-integration:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.github_ref == 'refs/heads/main' || inputs.github_ref == 'refs/heads/staging'
+    if: inputs.run_test_ios_integration && (inputs.github_ref == 'refs/heads/main' || inputs.github_ref == 'refs/heads/staging')
 
     steps:
       - name: Checkout Repository
@@ -100,8 +127,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
@@ -117,6 +144,7 @@ jobs:
   test-tvos-unit:
     runs-on: macos-latest
     needs: validate-code
+    if: inputs.run_test_tvos_unit
 
     steps:
       - name: Checkout Repository
@@ -125,8 +153,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
@@ -142,6 +170,7 @@ jobs:
   test-tvos-functional:
     runs-on: macos-latest
     needs: validate-code
+    if: inputs.run_test_tvos_functional
 
     steps:
       - name: Checkout Repository
@@ -150,8 +179,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
@@ -167,7 +196,7 @@ jobs:
   build_xcframework_and_app:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.github_ref == 'refs/heads/main' || inputs.github_ref == 'refs/heads/staging'
+    if: inputs.run_build_xcframework_and_app && (inputs.github_ref == 'refs/heads/main' || inputs.github_ref == 'refs/heads/staging')
 
     steps:
       - name: Checkout Repository
@@ -176,8 +205,8 @@ jobs:
       - name: Checkout actions from aepsdk-commons
         uses: actions/checkout@v4.1.7
         with:
-          repository: adobe/aepsdk-commons
-          ref: main
+          repository: timkimadobe/aepsdk-commons
+          ref: ios-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 

@@ -13,7 +13,7 @@
 name: Update Versions (Android)
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       version: 
         description: 'New version to use for the Edge extension. Example: 3.0.0'

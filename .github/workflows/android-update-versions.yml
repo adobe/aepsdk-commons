@@ -55,8 +55,8 @@ jobs:
     - name: Checkout scripts Directory from aepsdk-commons
       uses: actions/checkout@v4.1.7
       with:
-        repository: timkimadobe/aepsdk-commons
-        ref: android-reusable-workflows
+        repository: adobe/aepsdk-commons
+        ref: main
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 

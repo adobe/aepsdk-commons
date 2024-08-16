@@ -42,6 +42,7 @@ update() {
     # Replace version in each provided path
     IFS="," read -r -a pathsArray <<< "$PATHS"
     for relative_path in "${pathsArray[@]}"; do
+        relative_path=$(echo "$relative_path" | xargs) # Strip leading and trailing whitespace
         path="$ROOT_DIR/${relative_path#/}" # Remove leading '/' in relative_path if it exists
         
         # Determine the correct regex and version name based on the file extension
@@ -90,7 +91,7 @@ verify() {
     # Loop through the paths provided via the -p flag
     IFS="," read -r -a pathsArray <<< "$PATHS"
     for relative_path in "${pathsArray[@]}"; do
-        # Build the full path relative to the ROOT_DIR
+        relative_path=$(echo "$relative_path" | xargs) # Strip leading and trailing whitespace
         path="$ROOT_DIR/${relative_path#/}" # Remove leading '/' in relative_path if it exists
         file_name=$(basename "$path")
 

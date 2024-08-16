@@ -4,13 +4,20 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'tag/version'
-        required: true        
-
-      action_tag:
-        description: 'Create tag? ("no" to skip)'
+        description: 'Tag/version (ex: 5.0.1)'
         required: true
-        default: 'yes'
+        type: string
+
+      create-github-release:
+        description: 'Create GitHub release with tag? (`false` to skip)'
+        required: true
+        type: boolean
+        default: true
+
+      constants-paths:
+        description: 'Comma separated string of relative paths to constants files. Example: "code/optimize/src/main/java/com/adobe/marketing/mobile/optimize/OptimizeConstants.java,code/optimize/src/androidTest/java/com/adobe/marketing/mobile/optimize/OptimizeTestConstants.java"'
+        required: false
+        type: string
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -37,32 +44,26 @@ jobs:
           ref: android-reusable-workflows
           path: .github/aepsdk-commons
           sparse-checkout: 'scripts' # Only checkout the scripts directory
-
-      - name: Update Libraries
-        run: |
-          bash .github/aepsdk-commons/scripts/android-versions.sh -v "${{ inputs.version }}" -d "${{ inputs.dependencies }}" -p "${{ inputs.constants-paths }}" -g "${{ inputs.gradle-properties-path }}" -u
       
       - name: Verify version        
         run: |
           set -eo pipefail
           echo Release version: ${{ github.event.inputs.tag }}
-          (./scripts/version.sh -v ${{ github.event.inputs.tag }})
+          (bash .github/aepsdk-commons/scripts/android-versions.sh -v "${{ github.event.inputs.tag }}" -p "${{ inputs.constants-paths }}")
 
       - name: Remove called repository
         run: rm -rf .github/aepsdk-commons
 
       - name: Create GH Release
-        id: create_release
-        uses: release-drafter/release-drafter@v5
-        if: ${{ github.event.inputs.action_tag == 'yes' }}
-        with:
-          name: v${{ github.event.inputs.tag }}
-          tag: v${{ github.event.inputs.tag }}
-          version: v${{ github.event.inputs.tag }}
-          publish: true
+        if: ${{ inputs.create-github-release }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-    
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v${{ github.event.inputs.tag }} \
+            --verify-tag \
+            --generate-notes \
+            --title "v${{ github.event.inputs.tag }}" 
+
       - name: Import GPG key
         env:
           GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}

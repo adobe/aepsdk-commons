@@ -9,10 +9,9 @@ on:
         type: string
 
       create-github-release:
-        description: 'Create GitHub release with tag? (`false` to skip)'
+        description: 'Create GitHub release with tag? ("false" to skip)'
         required: true
-        type: boolean
-        default: true
+        type: string
 
       constants-paths:
         description: 'Comma separated string of relative paths to constants files. Example: "code/optimize/src/main/java/com/adobe/marketing/mobile/optimize/OptimizeConstants.java,code/optimize/src/androidTest/java/com/adobe/marketing/mobile/optimize/OptimizeTestConstants.java"'
@@ -55,14 +54,14 @@ jobs:
         run: rm -rf .github/aepsdk-commons
 
       - name: Create GH Release
-        if: ${{ inputs.create-github-release }}
+        if: ${{ inputs.create-github-release == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create v${{ github.event.inputs.tag }} \
             --verify-tag \
             --generate-notes \
-            --title "v${{ github.event.inputs.tag }}" 
+            --title "v${{ github.event.inputs.tag }}"
 
       - name: Import GPG key
         env:

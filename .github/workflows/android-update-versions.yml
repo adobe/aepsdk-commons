@@ -27,17 +27,17 @@ on:
 
       dependencies:
         description: 'Comma separated string of dependencies and their versions. Example: "Core 1.2.3, Edge 1.5.2"'
-        required: true
+        required: false
         type: string
 
       constants-paths:
         description: 'Comma separated string of relative paths to constants files. Example: "code/optimize/src/main/java/com/adobe/marketing/mobile/optimize/OptimizeConstants.java,code/optimize/src/androidTest/java/com/adobe/marketing/mobile/optimize/OptimizeTestConstants.java"'
-        required: true
+        required: false
         type: string
 
       gradle-properties-path:
         description: 'Relative path to the gradle.properties file. Example: "code/gradle.properties"'
-        required: true
+        required: false
         type: string
         default: 'code/gradle.properties'
 

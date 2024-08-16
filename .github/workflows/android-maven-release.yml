@@ -1,21 +1,16 @@
-name: Release (Android)
+name: Publish Release (Android)
 
-on:
+on: 
   workflow_call:
     inputs:
-      extension:
-        description: 'Multi-extension to release (leave blank if not applicable, ex: "core", "lifecycle", etc)'
-        required: false
-      
       tag:
         description: 'tag/version'
         required: true        
-  
+
       action_tag:
         description: 'Create tag? ("no" to skip)'
         required: true
         default: 'yes'
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -34,42 +29,40 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+      
+      - name: Checkout scripts Directory from aepsdk-commons
+        uses: actions/checkout@v4.1.7
+        with:
+          repository: timkimadobe/aepsdk-commons
+          ref: android-reusable-workflows
+          path: .github/aepsdk-commons
+          sparse-checkout: 'scripts' # Only checkout the scripts directory
 
+      - name: Update Libraries
+        run: |
+          bash .github/aepsdk-commons/scripts/android-versions.sh -v "${{ inputs.version }}" -d "${{ inputs.dependencies }}" -p "${{ inputs.constants-paths }}" -g "${{ inputs.gradle-properties-path }}" -u
+      
       - name: Verify version        
         run: |
           set -eo pipefail
           echo Release version: ${{ github.event.inputs.tag }}
-          extension_flag=""
-          if [ -n "${{ github.event.inputs.extension }}" ]; then
-            extension_flag="-n ${{ github.event.inputs.extension }}"
-          fi
-          ./scripts/version.sh ${extension_flag} -v ${{ github.event.inputs.tag }}
+          (./scripts/version.sh -v ${{ github.event.inputs.tag }})
 
-      # - name: Create GH Release
-      #   id: create_release
-      #   uses: release-drafter/release-drafter@v5
-      #   if: ${{ github.event.inputs.action_tag == 'yes' }}
-      #   with:
-      #     name: ${{ 'v' + github.event.inputs.tag + (github.event.inputs.extension ? '-' + github.event.inputs.extension : '') }}
-      #     tag: ${{ 'v' + github.event.inputs.tag + (github.event.inputs.extension ? '-' + github.event.inputs.extension : '') }}
-      #     version: ${{ 'v' + github.event.inputs.tag + (github.event.inputs.extension ? '-' + github.event.inputs.extension : '') }}
-      #     publish: true
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: Remove called repository
+        run: rm -rf .github/aepsdk-commons
+
       - name: Create GH Release
         id: create_release
+        uses: release-drafter/release-drafter@v5
         if: ${{ github.event.inputs.action_tag == 'yes' }}
+        with:
+          name: v${{ github.event.inputs.tag }}
+          tag: v${{ github.event.inputs.tag }}
+          version: v${{ github.event.inputs.tag }}
+          publish: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          tag_name="v${{ github.event.inputs.tag }}${{ github.event.inputs.extension ? '-' + github.event.inputs.extension : '' }}"
-          gh release create "$tag_name" \
-            --verify-tag \
-            --generate-notes \
-            --title "$tag_name" \
-            --notes "Release notes for $tag_name"
-
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+    
       - name: Import GPG key
         env:
           GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
@@ -79,15 +72,9 @@ jobs:
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
       - name: Publish to Maven Central Repository
-        run: |
-          if [ -n "${{ github.event.inputs.extension }}" ]; then
-            make ${{ github.event.inputs.extension }}-publish-main
-          else
-            make ci-publish
-          fi
+        run: make ci-publish
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-

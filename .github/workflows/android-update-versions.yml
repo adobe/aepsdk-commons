@@ -62,7 +62,7 @@ jobs:
 
     - name: Update Libraries
       run: |
-        zsh .github/aepsdk-commons/scripts/android-versions.sh -v "${{ inputs.version }}" -d "${{ inputs.dependencies }}" -p "${{ inputs.constants-paths }}" -g "${{ inputs.gradle-properties-path }}" -u
+        bash .github/aepsdk-commons/scripts/android-versions.sh -v "${{ inputs.version }}" -d "${{ inputs.dependencies }}" -p "${{ inputs.constants-paths }}" -g "${{ inputs.gradle-properties-path }}" -u
 
     - name: Remove called repository
       run: rm -rf .github/aepsdk-commons

@@ -16,7 +16,7 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Tag/version (ex: 5.0.1)'
+        description: 'Existing tag (version) being released (ex: 5.0.1)'
         required: true
         type: string
 
@@ -36,7 +36,7 @@ on:
           - If the `@` symbol is omitted, the dependency applies to all relevant files.
 
           **Example:**
-          `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec, Edge 3.2.1@Package.swift"`
+          `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
 
         required: false
         type: string
@@ -50,7 +50,7 @@ on:
           **Syntax:** `path[:file_type]`
 
           **Example:**
-          `"src/Package.swift:swift_spm, src/Utils.swift, src/Test.swift:test"`
+          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
 
           This argument is required.
           

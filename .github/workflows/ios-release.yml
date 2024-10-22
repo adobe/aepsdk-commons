@@ -98,7 +98,7 @@ jobs:
         make zip
     
     - name: Create GH Release and Upload Asset - ${{ inputs.library_name }}
-      if: ${{ inputs.run_full_release == 'yes' }}
+      if: ${{ inputs.run_full_release }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |

@@ -9,21 +9,21 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Tag/version (ex: 5.0.1)'
+        description: 'Existing tag (version) being released (ex: 5.0.1)'
         required: true
         type: string
 
       run_full_release:
-        description: 'Run full release process (`no` to skip)'
+        description: 'Run full release process: SPM and podspec validation, build artifacts, GH release (`false` to only check podspec version)'
         required: true
-        default: 'yes'
-        type: string
+        default: true
+        type: boolean
 
       release_pod:
-        description: 'Release to Cocoapods'
+        description: 'Release to Cocoapods (`false` to skip)'
         required: true
-        default: 'yes'
-        type: string
+        default: true
+        type: boolean
 
       library_name:
         description: 'Library name to be released (ex: AEPEdge)'
@@ -73,21 +73,21 @@ jobs:
         make check-version VERSION=${{ inputs.tag }}
 
     - name: SPM Integration Test
-      if: ${{ inputs.run_full_release == 'yes' }}
+      if: ${{ inputs.run_full_release }}
       run: |
         set -eo pipefail
         echo SPM integration test starts:
         make test-SPM-integration
 
     - name: Podspec File Verification
-      if: ${{ inputs.run_full_release == 'yes' }}
+      if: ${{ inputs.run_full_release }}
       run: |
         set -eo pipefail
         echo podspec file verification starts:
         make test-podspec
         
     - name: Build Artifacts
-      if: ${{ inputs.run_full_release == 'yes' }}
+      if: ${{ inputs.run_full_release }}
       env:
         EXTENSION_NAME: ${{ inputs.library_name }}
         SCHEME_NAME_XCFRAMEWORK: ${{ inputs.scheme_name_xcframework }}
@@ -109,7 +109,7 @@ jobs:
           ./build/${{ inputs.library_name }}.xcframework.zip#${{ inputs.library_name }}-${{ inputs.tag }}.xcframework.zip
 
     - name: Publish Pods - ${{ inputs.library_name }}
-      if: ${{ inputs.release_pod == 'yes' }}
+      if: ${{ inputs.release_pod }}
       run: |
         set -eo pipefail
         pod trunk push ${{ inputs.library_name }}.podspec --allow-warnings --synchronous

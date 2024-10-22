@@ -2,8 +2,7 @@ name: Update or Verify Versions
 
 # Currently this workflow requires the following GitHub repo settings:
 # (Code and automation) Actions -> General: under Workflow permissions, allow: 
-# 1. Read and write permissions
-# 2. Allow GitHub Actions to create and approve pull requests
+# 1. Allow GitHub Actions to create and approve pull requests
 
 on:
   workflow_call:

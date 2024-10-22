@@ -84,6 +84,10 @@ jobs:
         echo Target version: ${{ inputs.tag }}
         make check-version VERSION=${{ inputs.tag }}
 
+    - name: Pod repo update
+      run: | 
+        pod repo update
+
     - name: SPM Integration Test
       if: ${{ inputs.run_full_release }}
       run: |
@@ -99,12 +103,12 @@ jobs:
         make test-podspec
         
     - name: Build Artifacts
-      if: ${{ inputs.run_full_release }}
-      env:
-        EXTENSION_NAME: ${{ inputs.library_name }}
-        SCHEME_NAME_XCFRAMEWORK: ${{ inputs.scheme_name_xcframework }}
-        TEST_APP_IOS_SCHEME: ${{ inputs.test_app_ios_scheme }}
-        TEST_APP_TVOS_SCHEME: ${{ inputs.test_app_tvos_scheme }}
+      if: ${{ inputs.run_full_release == 'yes' }}
+      # env:
+      #   EXTENSION_NAME: ${{ inputs.library_name }} # dont think these are needed since they are already in the makefile that is local to the repo
+      #   SCHEME_NAME_XCFRAMEWORK: ${{ inputs.scheme_name_xcframework }}
+      #   TEST_APP_IOS_SCHEME: ${{ inputs.test_app_ios_scheme }}
+      #   TEST_APP_TVOS_SCHEME: ${{ inputs.test_app_tvos_scheme }}
       run: |
         make archive
         make zip

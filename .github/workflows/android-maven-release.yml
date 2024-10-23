@@ -26,6 +26,12 @@ on:
         type: boolean
         default: true
 
+      github-release-title-suffix:
+        description: 'The suffix to append to the GitHub release title. (ex: core -> v3.2.1-core)'
+        required: false
+        type: string
+        default: ''
+
       version-verify-dependencies:
         description: |
           A comma-separated list of dependencies with their versions to verify. 
@@ -124,10 +130,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create v${{ github.event.inputs.tag }} \
+          # Initialize the title with the tag
+          TITLE="v${{ github.event.inputs.tag }}"
+
+          # Append suffix if provided (non-empty)
+          if [ -n "${{ inputs.github-release-title-suffix }}" ]; then
+            TITLE="${TITLE}-${{ inputs.github-release-title-suffix }}"
+          fi
+
+          # Create the GitHub release with the constructed title
+          gh release create "v${{ github.event.inputs.tag }}" \
             --verify-tag \
             --generate-notes \
-            --title "v${{ github.event.inputs.tag }}"
+            --title "${TITLE}"
 
       - name: Import GPG key
         env:

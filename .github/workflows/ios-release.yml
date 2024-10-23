@@ -21,24 +21,39 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Existing tag (version) being released (ex: 5.0.1)'
+        description: 'The existing tag (version) to be released (ex: 5.0.1).'
         required: true
         type: string
 
       full_release_extensions:
-        description: 'Run full release process: SPM and podspec validation, build artifacts, GH release (`false` to only check podspec version)'
+        description: |
+          A comma-separated list of extensions for which to run the full release process.
+
+          **Syntax:** `"Extension1, Extension2, Extension3"`
+
+          **Example:** `"AEPServices, AEPCore"`
         required: true
         default: ''
         type: string
 
       extension_dependencies:
-        description: 'For extension dependencies whose frameworks should be included in the release, but their version fetched from the pods'
+        description: |
+          A comma-separated list of extension dependencies to include in the release, fetching their versions from CocoaPods.
+
+          **Syntax:** `"Dependency1, Dependency2"`
+
+          **Example:** `"AEPRulesEngine"`
         required: false
         default: ''
         type: string
 
       pod_release_extensions:
-        description: 'Release to Cocoapods (`false` to skip)'
+        description: |
+          A comma-separated list of extensions to release to CocoaPods. Pods will be published in the order they are listed.
+
+          **Syntax:** `"Extension1, Extension2, Extension3"`
+
+          **Example:** `"AEPCore, AEPIdentity"`
         required: true
         default: ''
         type: string
@@ -127,7 +142,7 @@ jobs:
             DEP=$(echo "$DEP" | xargs)
             echo "Processing dependency: $DEP"
 
-            # Fetch version from podspec
+            # Fetch version from CocoaPods
             echo "Fetching version for dependency ${DEP}..."
             DEP_VERSION=$(pod spec cat "${DEP}" | jq -r '.version')
             echo "Fetched version for ${DEP}: ${DEP_VERSION}"

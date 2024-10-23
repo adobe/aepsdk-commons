@@ -114,9 +114,9 @@ jobs:
       if: ${{ inputs.full_release_extensions != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        FULL_RELEASE_EXTENSIONS: ${{ github.event.inputs.full_release_extensions }}
-        EXTENSION_DEPENDENCIES: ${{ github.event.inputs.extension_dependencies }}
-        TAG: ${{ github.event.inputs.tag }}
+        FULL_RELEASE_EXTENSIONS: ${{ inputs.full_release_extensions }}
+        EXTENSION_DEPENDENCIES: ${{ inputs.extension_dependencies }}
+        TAG: ${{ inputs.tag }}
       run: |
         set -eo pipefail
 
@@ -174,7 +174,7 @@ jobs:
     - name: Publish Pods
       if: ${{ inputs.pod_release_extensions != '' }}
       env:
-        POD_RELEASE_EXTENSIONS: ${{ github.event.inputs.pod_release_extensions }}
+        POD_RELEASE_EXTENSIONS: ${{ inputs.pod_release_extensions }}
         COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
       run: |
         set -eo pipefail

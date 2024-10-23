@@ -101,16 +101,13 @@ jobs:
         if: steps.cache-scripts.outputs.cache-hit != 'true'
         uses: actions/checkout@v4.1.7
         with:
-          # repository: adobe/aepsdk-commons
-          # ref: ${{ inputs.workflow_tag }}
-          # path: .github/aepsdk-commons
-          # sparse-checkout: 'scripts' # Only checkout the scripts directory
-          repository: timkimadobe/aepsdk-commons
+          repository: adobe/aepsdk-commons
           ref: ${{ inputs.workflow_tag }}
           path: .github/aepsdk-commons
           sparse-checkout: 'scripts' # Only checkout the scripts directory
 
       - uses: actions/cache/save@v4.1.1
+        if: steps.cache-scripts.outputs.cache-hit != 'true'
         with:
           path: .github/aepsdk-commons/scripts
           key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
@@ -146,14 +143,13 @@ jobs:
             --generate-notes \
             --title "${TITLE}"
 
-      # TEST: Skip step temporarily
-      # - name: Import GPG key
-      #   env:
-      #     GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
-      #     GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
-      #   run: |
-      #     echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
-      #     echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
+      - name: Import GPG key
+        env:
+          GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
+          GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
+        run: |
+          echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
+          echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
       - name: Publish to Maven Central Repository
         run: |

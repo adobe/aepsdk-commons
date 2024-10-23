@@ -87,6 +87,11 @@ on:
         required: false
         type: boolean
         default: false
+      
+      workflow_tag:
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0).'
+        type: string
+        required: true
 
 jobs:
   update-versions:
@@ -97,29 +102,19 @@ jobs:
         repository: ${{ github.repository }}
         ref: ${{ inputs.branch }}
     
-    - name: Extract Workflow Tag
-      id: extract_tag
-      run: |
-        # Extract the tag from github.workflow_ref
-        # Example format: owner/repo/.github/workflows/versions.yml@gha-ios-1.0.0
-        TAG="${GITHUB_WORKFLOW_REF#*@}"
-        echo "TAG=${TAG}" >> $GITHUB_OUTPUT
-      env:
-        GITHUB_WORKFLOW_REF: ${{ github.workflow_ref }}
-    
     - name: Restore cached scripts from aepsdk-commons
       id: cache-scripts
       uses: actions/cache@v4.1.1
       with:
         path: .github/aepsdk-commons/scripts
-        key: aepsdk-commons-${{ steps.extract_tag.outputs.TAG }} # Cache key format: <REPO_NAME>-<TAG>
+        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
       
     - name: Download scripts from aepsdk-commons
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
         repository: adobe/aepsdk-commons
-        ref: ${{ steps.extract_tag.outputs.TAG }}
+        ref: ${{ inputs.workflow_tag }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 

@@ -184,6 +184,7 @@ jobs:
         for LIB in "${LIBS[@]}"; do
           # Trim whitespace from the library name
           LIB=$(echo "$LIB" | xargs)
+          echo "Publishing podspec for ${LIB}..."
           # Publish the pod
           pod trunk push "${LIB}.podspec" --allow-warnings --synchronous
           pod repo update

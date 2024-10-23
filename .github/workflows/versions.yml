@@ -57,6 +57,7 @@ on:
 
           **Example:**
           `"src/Package.swift:swift_spm, src/Utils.swift, src/Test.swift:swift_test_version"`
+          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
 
           This argument is required.
         required: true

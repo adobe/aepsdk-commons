@@ -11,8 +11,18 @@
 #
 
 name: Publish Snapshot (Android)
+
 on:
   workflow_call:
+    inputs:
+      release-variant:
+        description: | 
+          The variant used to control the Maven publish command (ex: core -> make core-publish-snapshot). 
+          If not specified, uses the default command.
+        required: false
+        type: string
+        default: ''
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -26,7 +36,7 @@ jobs:
           java-version: 17
       
       - name: Cache Gradle packages
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4.1.1
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
@@ -41,7 +51,12 @@ jobs:
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
       
       - name: Publish to Maven Snapshot Repository
-        run: make ci-publish-staging
+        run: |
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            make "${{ inputs.release-variant }}-publish-snapshot"
+          else
+            make ci-publish-staging
+          fi
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

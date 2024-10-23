@@ -83,10 +83,30 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       
       - name: Restore cached scripts from aepsdk-commons
-        uses: ./.github/actions/cache-scripts
+        id: cache-scripts
+        uses: actions/cache@v4.1.1
         with:
-          workflow_tag: ${{ inputs.workflow_tag }}
-      
+          path: .github/aepsdk-commons/scripts
+          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+
+      - name: Download scripts from aepsdk-commons
+        if: steps.cache-scripts.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4.1.7
+        with:
+          # repository: adobe/aepsdk-commons
+          # ref: ${{ inputs.workflow_tag }}
+          # path: .github/aepsdk-commons
+          # sparse-checkout: 'scripts' # Only checkout the scripts directory
+          repository: timkimadobe/aepsdk-commons
+          ref: ${{ inputs.workflow_tag }}
+          path: .github/aepsdk-commons
+          sparse-checkout: 'scripts' # Only checkout the scripts directory
+
+      - uses: actions/cache/save@v4.1.1
+        with:
+          path: .github/aepsdk-commons/scripts
+          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+        
       - name: Verify Versions
         run: |
           set -eo pipefail

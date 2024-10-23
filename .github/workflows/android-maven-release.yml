@@ -23,9 +23,10 @@ on:
       create-github-release:
         description: 'Create GitHub release with tag? ("false" to skip)'
         required: true
-        type: string
+        type: boolean
+        default: true
 
-      version_verify_dependencies:
+      version-verify-dependencies:
         description: |
           A comma-separated list of dependencies with their versions to verify. 
           Each dependency can optionally specify the files where it applies using the `@` symbol.
@@ -42,7 +43,7 @@ on:
         type: string
         default: ''
 
-      version_verify_paths:
+      version-verify-paths:
         description: |
           A comma-separated list of absolute or relative file paths to verify. 
           Each path can optionally specify a pattern type using the syntax:
@@ -92,14 +93,14 @@ jobs:
           echo Release version: ${{ github.event.inputs.tag }}
           python3 ./.github/aepsdk-commons/scripts/versions.py \
             -v "${{ github.event.inputs.tag }}" \
-            -p "${{ inputs.version_verify_paths }}" \
-            -d "${{ inputs.version_verify_dependencies }}"
+            -p "${{ inputs.version-verify-paths }}" \
+            -d "${{ inputs.version-verify-dependencies }}"
 
       - name: Remove scripts from aepsdk-commons
         run: rm -rf .github/aepsdk-commons
 
       - name: Create GH Release
-        if: ${{ inputs.create-github-release == 'true' }}
+        if: ${{ inputs.create-github-release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

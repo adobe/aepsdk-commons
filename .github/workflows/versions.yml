@@ -89,7 +89,7 @@ on:
         default: false
       
       workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0).'
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0, gha-android-1.0.0).'
         type: string
         required: true
 
@@ -113,11 +113,7 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
-        # repository: adobe/aepsdk-commons
-        # ref: ${{ inputs.workflow_tag }}
-        # path: .github/aepsdk-commons
-        # sparse-checkout: 'scripts' # Only checkout the scripts directory
-        repository: timkimadobe/aepsdk-commons
+        repository: adobe/aepsdk-commons
         ref: ${{ inputs.workflow_tag }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory

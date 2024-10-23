@@ -26,8 +26,10 @@ on:
         type: boolean
         default: true
 
-      github-release-title-suffix:
-        description: 'The suffix to append to the GitHub release title. (ex: core -> v3.2.1-core)'
+      release-variant:
+        description: | 
+          The variant used to control the GitHub release title suffix and Maven publish command (ex: core -> v3.2.1-core & make core-publish-main). 
+          If not specified, uses the default values for both.
         required: false
         type: string
         default: ''
@@ -134,8 +136,8 @@ jobs:
           TITLE="v${{ github.event.inputs.tag }}"
 
           # Append suffix if provided (non-empty)
-          if [ -n "${{ inputs.github-release-title-suffix }}" ]; then
-            TITLE="${TITLE}-${{ inputs.github-release-title-suffix }}"
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            TITLE="${TITLE}-${{ inputs.release-variant }}"
           fi
 
           # Create the GitHub release with the constructed title
@@ -144,16 +146,22 @@ jobs:
             --generate-notes \
             --title "${TITLE}"
 
-      - name: Import GPG key
-        env:
-          GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
-          GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
-        run: |
-          echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
-          echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
+      # TEST: Skip step temporarily
+      # - name: Import GPG key
+      #   env:
+      #     GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
+      #     GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
+      #   run: |
+      #     echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
+      #     echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
       - name: Publish to Maven Central Repository
-        run: make ci-publish
+        run: |
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            make "${{ inputs.release-variant }}-publish-main"
+          else
+            make ci-publish
+          fi
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

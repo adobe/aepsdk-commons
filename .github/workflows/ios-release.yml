@@ -25,7 +25,6 @@ on:
         required: true
         type: string
 
-      # current idea for all of these inputs: comma separated extension names: AEPServices, AEPCore, AEPRulesEngine
       full_release_extensions:
         description: 'Run full release process: SPM and podspec validation, build artifacts, GH release (`false` to only check podspec version)'
         required: true
@@ -64,8 +63,6 @@ jobs:
     - name: Install XcodeGen
       run: brew install xcodegen
 
-      # this is NOT conditional when you run the release script.... and it uses a makefile rule which means it is already 
-      # agnostic to whatever setup the repo has - it's up to the repo maintainer to define their makefile rule for make check-verison
     - name: Check Version in Podspec 
       run: |
         set -eo pipefail
@@ -96,19 +93,6 @@ jobs:
       run: |
         make archive
         make zip
-    
-    # INSERT dependency version fetching step here
-
-    # - name: Create GH Release and Upload Asset - ${{ inputs.library_name }}
-    #   if: ${{ inputs.full_release_extensions }}
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   run: |
-    #     gh release create ${{ inputs.tag }} \
-    #       --verify-tag \
-    #       --generate-notes \
-    #       --title "v${{ inputs.tag }}" \
-    #       ./build/${{ inputs.library_name }}.xcframework.zip#${{ inputs.library_name }}-${{ inputs.tag }}.xcframework.zip
 
     - name: Create GH Release and Upload Assets
       if: ${{ inputs.full_release_extensions != '' }}
@@ -160,17 +144,6 @@ jobs:
           --title "v$TAG" \
           $FILE_ARGS
 
-    # - name: Publish Pods - ${{ inputs.library_name }}
-    #   if: ${{ inputs.pod_release_extensions }}
-    #   run: |
-    #     set -eo pipefail
-    #     pod trunk push ${{ inputs.library_name }}.podspec --allow-warnings --synchronous
-    #     pod repo update
-    #   env:
-    #     COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
-
-        # need to try running this with args, without the pod trunk and token requirements just to see if the
-        # args are being populated correctly
     - name: Publish Pods
       if: ${{ inputs.pod_release_extensions != '' }}
       env:
@@ -178,13 +151,17 @@ jobs:
         COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
       run: |
         set -eo pipefail
+
         # Split the input string into an array using comma as delimiter
         IFS=',' read -ra LIBS <<< "${POD_RELEASE_EXTENSIONS}"
+
         # Loop over each library name
         for LIB in "${LIBS[@]}"; do
           # Trim whitespace from the library name
           LIB=$(echo "$LIB" | xargs)
+
           echo "Publishing podspec for ${LIB}..."
+
           # Publish the pod
           pod trunk push "${LIB}.podspec" --allow-warnings --synchronous
           pod repo update

@@ -102,14 +102,14 @@ jobs:
       uses: actions/cache@v4.1.1
       with:
         path: .github/aepsdk-commons/scripts
-        key: aepsdk-commons-versioning-1.0.0 # Cache key format: <REPO_NAME>-<TAG>
+        key: aepsdk-commons-${{ github.action_ref }} # Cache key format: <REPO_NAME>-<TAG>
       
     - name: Download scripts from aepsdk-commons
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
         repository: adobe/aepsdk-commons
-        ref: versioning-1.0.0
+        ref: ${{ github.action_ref }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 

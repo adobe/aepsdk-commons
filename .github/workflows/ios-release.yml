@@ -1,3 +1,15 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
 name: Release (iOS)
 
 # Currently this workflow relies on two secrets:
@@ -9,41 +21,41 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Tag/version (ex: 5.0.1)'
+        description: 'The existing tag (version) to be released (ex: 5.0.1).'
         required: true
         type: string
 
-      run_full_release:
-        description: 'Run full release process (`no` to skip)'
+      full_release_extensions:
+        description: |
+          A comma-separated list of extensions for which to run the full release process.
+
+          **Syntax:** `"Extension1, Extension2, Extension3"`
+
+          **Example:** `"AEPServices, AEPCore"`
         required: true
-        default: 'yes'
+        default: ''
         type: string
 
-      release_pod:
-        description: 'Release to Cocoapods'
-        required: true
-        default: 'yes'
+      extension_dependencies:
+        description: |
+          A comma-separated list of extension dependencies to include in the release, fetching their versions from CocoaPods.
+
+          **Syntax:** `"Dependency1, Dependency2"`
+
+          **Example:** `"AEPRulesEngine"`
+        required: false
+        default: ''
         type: string
 
-      library_name:
-        description: 'Library name to be released (ex: AEPEdge)'
-        required: true
-        type: string
-      
-      # Makefile environment variables
-      scheme_name_xcframework:
-        description: 'Scheme name for XCFramework (ex: AEPEdgeXCF)'
-        required: true
-        type: string
+      pod_release_extensions:
+        description: |
+          A comma-separated list of extensions to release to CocoaPods. Pods will be published in the order they are listed.
 
-      test_app_ios_scheme:
-        description: 'iOS Test App Scheme (ex: TestAppiOS)'
-        required: true
-        type: string
+          **Syntax:** `"Extension1, Extension2, Extension3"`
 
-      test_app_tvos_scheme:
-        description: 'tvOS Test App Scheme (ex: TestApptvOS)'
+          **Example:** `"AEPCore, AEPIdentity"`
         required: true
+        default: ''
         type: string
 
 jobs:
@@ -66,53 +78,107 @@ jobs:
     - name: Install XcodeGen
       run: brew install xcodegen
 
-    - name: Check Version in Podspec
+    - name: Check Version in Podspec 
       run: |
         set -eo pipefail
         echo Target version: ${{ inputs.tag }}
         make check-version VERSION=${{ inputs.tag }}
 
+    - name: Pod repo update
+      if: ${{ inputs.full_release_extensions != '' }}
+      run: | 
+        pod repo update
+
     - name: SPM Integration Test
-      if: ${{ inputs.run_full_release == 'yes' }}
+      if: ${{ inputs.full_release_extensions != '' }}
       run: |
         set -eo pipefail
         echo SPM integration test starts:
         make test-SPM-integration
 
     - name: Podspec File Verification
-      if: ${{ inputs.run_full_release == 'yes' }}
+      if: ${{ inputs.full_release_extensions != '' }}
       run: |
         set -eo pipefail
         echo podspec file verification starts:
         make test-podspec
         
     - name: Build Artifacts
-      if: ${{ inputs.run_full_release == 'yes' }}
-      env:
-        EXTENSION_NAME: ${{ inputs.library_name }}
-        SCHEME_NAME_XCFRAMEWORK: ${{ inputs.scheme_name_xcframework }}
-        TEST_APP_IOS_SCHEME: ${{ inputs.test_app_ios_scheme }}
-        TEST_APP_TVOS_SCHEME: ${{ inputs.test_app_tvos_scheme }}
+      if: ${{ inputs.full_release_extensions != '' }}
       run: |
         make archive
         make zip
-    
-    - name: Create GH Release and Upload Asset - ${{ inputs.library_name }}
-      if: ${{ inputs.run_full_release == 'yes' }}
+
+    - name: Create GH Release and Upload Assets
+      if: ${{ inputs.full_release_extensions != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        gh release create ${{ inputs.tag }} \
-          --verify-tag \
-          --generate-notes \
-          --title "v${{ inputs.tag }}" \
-          ./build/${{ inputs.library_name }}.xcframework.zip#${{ inputs.library_name }}-${{ inputs.tag }}.xcframework.zip
-
-    - name: Publish Pods - ${{ inputs.library_name }}
-      if: ${{ inputs.release_pod == 'yes' }}
+        FULL_RELEASE_EXTENSIONS: ${{ inputs.full_release_extensions }}
+        EXTENSION_DEPENDENCIES: ${{ inputs.extension_dependencies }}
+        TAG: ${{ inputs.tag }}
       run: |
         set -eo pipefail
-        pod trunk push ${{ inputs.library_name }}.podspec --allow-warnings --synchronous
-        pod repo update
+
+        # Initialize an empty string to collect the file arguments
+        FILE_ARGS=""
+        
+        # Process FULL_RELEASE_EXTENSIONS
+        # Split the input string into an array using comma as delimiter
+        IFS=',' read -ra LIBS <<< "${FULL_RELEASE_EXTENSIONS}"
+        for LIB in "${LIBS[@]}"; do
+          # Trim whitespace from the library name
+          LIB=$(echo "$LIB" | xargs)
+          # Append the file argument to FILE_ARGS
+          FILE_ARGS="$FILE_ARGS ./build/${LIB}.xcframework.zip#${LIB}-${TAG}.xcframework.zip"
+        done
+
+        # Process EXTENSION_DEPENDENCIES
+        if [ -n "${EXTENSION_DEPENDENCIES}" ]; then
+          # Split the input string into an array using comma as delimiter
+          IFS=',' read -ra DEPS <<< "${EXTENSION_DEPENDENCIES}"
+          # Loop over each dependency
+          for DEP in "${DEPS[@]}"; do
+            # Trim whitespace from the dependency name
+            DEP=$(echo "$DEP" | xargs)
+            echo "Processing dependency: $DEP"
+
+            # Fetch version from CocoaPods
+            echo "Fetching version for dependency ${DEP}..."
+            DEP_VERSION=$(pod spec cat "${DEP}" | jq -r '.version')
+            echo "Fetched version for ${DEP}: ${DEP_VERSION}"
+
+            # Append the file argument to FILE_ARGS
+            FILE_ARGS="$FILE_ARGS ./build/${DEP}.xcframework.zip#${DEP}-${DEP_VERSION}.xcframework.zip"
+          done
+        fi
+
+        # Now execute the gh release create command with all file arguments
+        gh release create "$TAG" \
+          --verify-tag \
+          --generate-notes \
+          --title "v$TAG" \
+          $FILE_ARGS
+
+    - name: Publish Pods
+      if: ${{ inputs.pod_release_extensions != '' }}
       env:
+        POD_RELEASE_EXTENSIONS: ${{ inputs.pod_release_extensions }}
         COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+      run: |
+        set -eo pipefail
+
+        # Split the input string into an array using comma as delimiter
+        IFS=',' read -ra LIBS <<< "${POD_RELEASE_EXTENSIONS}"
+
+        # Loop over each library name
+        for LIB in "${LIBS[@]}"; do
+          # Trim whitespace from the library name
+          LIB=$(echo "$LIB" | xargs)
+
+          echo "Publishing podspec for ${LIB}..."
+
+          # Publish the pod
+          pod trunk push "${LIB}.podspec" --allow-warnings --synchronous
+          pod repo update
+        done
+      

@@ -1,0 +1,148 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Update or Verify Versions
+
+# This workflow requires the following GitHub repository settings:
+# 1. Navigate to: Settings -> Code and automation -> Actions -> General.
+# 2. Under "Workflow permissions," select:
+#    - "Allow GitHub Actions to create and approve pull requests."
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'New version to use for the extension. Example: 1.5.2'
+        required: true
+        type: string
+
+      branch:
+        description: 'The target branch where the version update will be applied and the pull request will be merged into.'
+        required: true
+        type: string
+
+      dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions. 
+          Each dependency can optionally specify the file paths where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file_path1[,file_path2,...]]`
+
+          - If the `@` syntax is used, the dependency will only apply to the specified files.
+          - When specifying custom files, you must provide either an absolute or relative path to each file.
+          - If the `@` symbol is omitted, the dependency applies to all relevant files.
+
+          **Example:**
+          iOS: `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec, Edge 3.2.1@Package.swift"`
+          Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
+        required: false
+        type: string
+        default: ''
+
+      paths:
+        description: |
+          A comma-separated list of absolute or relative file paths to update or verify. 
+          Each path can optionally specify a pattern type using the syntax:
+          
+          **Syntax:** `path[:pattern_type]`
+
+          **Example:**
+          `"src/Package.swift:swift_spm, src/Utils.swift, src/Test.swift:swift_test_version"`
+          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
+
+          This argument is required.
+        required: true
+        type: string
+
+      update:
+        description: |
+          If provided, the script will update the versions in the specified files. 
+          If omitted, the script will verify the existing versions instead.
+
+          **Example:**
+          iOS: 
+          ```
+          --update \ # Remove this flag if you want to verify the versions instead
+          -v 6.7.8 \
+          -p "Package.swift:swift_spm, AEPCore/Tests/MobileCoreTests.swift:swift_test_version, AEPCore/Sources/eventhub/EventHubConstants.swift:swift_version_number, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore.podspec, AEPCore.xcodeproj/project.pbxproj" \
+          -d "AEPRulesEngine 7.8.9, AEPServices 8.9.10@AEPCore.podspec"
+          ```
+
+          Android:
+          ```
+          --update \ # Remove this flag if you want to verify the versions instead
+          -v 6.7.8 \
+          -p "code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties" \
+          -d "AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"
+          ```
+        required: false
+        type: boolean
+        default: false
+      
+      workflow_tag:
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0, gha-android-1.0.0).'
+        type: string
+        required: true
+
+jobs:
+  update-versions:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4.1.7
+      with:
+        repository: ${{ github.repository }}
+        ref: ${{ inputs.branch }}
+
+    - name: Restore cached scripts from aepsdk-commons
+      id: cache-scripts
+      uses: actions/cache@v4.1.1
+      with:
+        path: .github/aepsdk-commons/scripts
+        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+      
+    - name: Download scripts from aepsdk-commons
+      if: steps.cache-scripts.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4.1.7
+      with:
+        repository: adobe/aepsdk-commons
+        ref: ${{ inputs.workflow_tag }}
+        path: .github/aepsdk-commons
+        sparse-checkout: 'scripts' # Only checkout the scripts directory
+
+    - name: Update or Verify Versions
+      run: |
+        UPDATE_FLAG=""
+        if [ "${{ inputs.update }}" = "true" ]; then
+          UPDATE_FLAG="--update"
+        fi
+        python3 ./.github/aepsdk-commons/scripts/versions.py \
+          $UPDATE_FLAG \
+          -v "${{ inputs.version }}" \
+          -p "${{ inputs.paths }}" \
+          -d "${{ inputs.dependencies }}"
+
+    - name: Configure Git
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+
+    - name: Create Pull Request
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        branch_name="version-${{ inputs.version }}-update"
+        git checkout -b $branch_name
+        git add . ':!./.github/aepsdk-commons/' # Avoid adding the aepsdk-commons directory
+        git commit -m "Updating version to ${{ inputs.version }}."
+        git push origin $branch_name
+        gh pr create --base ${{ inputs.branch }} --head $branch_name --title "Updating version to ${{ inputs.version }}" --body "Updating version to ${{ inputs.version }}"
+      

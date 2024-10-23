@@ -16,7 +16,7 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Tag/version (ex: 5.0.1)'
+        description: 'Existing tag (version) being released (ex: 5.0.1)'
         required: true
         type: string
 
@@ -25,9 +25,36 @@ on:
         required: true
         type: string
 
-      constants-paths:
-        description: 'Comma separated string of relative paths to constants files. Example: "code/optimize/src/main/java/com/adobe/marketing/mobile/optimize/OptimizeConstants.java,code/optimize/src/androidTest/java/com/adobe/marketing/mobile/optimize/OptimizeTestConstants.java"'
+      dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions to verify. 
+          Each dependency can optionally specify the files where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file1[,file2,...]]`
+
+          - If the `@` syntax is used, the dependency will only apply to the specified files.
+          - If the `@` symbol is omitted, the dependency applies to all relevant files.
+
+          **Example:**
+          `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
+
         required: false
+        type: string
+        default: ''
+
+      paths:
+        description: |
+          A comma-separated list of absolute or relative file paths to verify. 
+          Each path can optionally specify a pattern type using the syntax:
+          
+          **Syntax:** `path[:file_type]`
+
+          **Example:**
+          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
+
+          This argument is required.
+          
+        required: true
         type: string
 jobs:
   publish:
@@ -56,11 +83,14 @@ jobs:
           path: .github/aepsdk-commons
           sparse-checkout: 'scripts' # Only checkout the scripts directory
       
-      - name: Verify version        
+      - name: Verify Versions
         run: |
           set -eo pipefail
           echo Release version: ${{ github.event.inputs.tag }}
-          (bash .github/aepsdk-commons/scripts/android-versions.sh -v "${{ github.event.inputs.tag }}" -p "${{ inputs.constants-paths }}")
+          python3 ./.github/aepsdk-commons/scripts/versions.py \
+            -v "${{ github.event.inputs.tag }}" \
+            -p "${{ inputs.paths }}" \
+            -d "${{ inputs.dependencies }}"
 
       - name: Remove called repository
         run: rm -rf .github/aepsdk-commons

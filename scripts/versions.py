@@ -20,8 +20,40 @@ import sys
 
 from argparse import Namespace
 from dataclasses import dataclass
+from enum import Enum
 from string import Template
 from typing import Callable
+
+class AnnotationType(Enum):
+    ERROR = "error"
+    WARNING = "warning"
+    NOTICE = "notice"
+    DEBUG = "debug"
+
+def print_annotation(annotation_type: AnnotationType, title: str | None = None, message: str | None = None):
+    annotation = f"::{annotation_type.value} file=versions.py"
+    if title:
+        annotation += f",title={title}"
+    if message:
+        annotation += f"::{message}"
+    else:
+        annotation += "::"
+
+    print(annotation)
+
+def error_exit(title: str | None = None, message: str | None = None):
+    """
+    Prints an error message and exits the script with a status code of 1.
+
+    Parameters:
+        message (str): 
+            The error message to display before exiting the script.
+
+    Returns:
+        None
+    """
+    print_annotation(AnnotationType.ERROR, title, message)
+    sys.exit(1)
 
 DIVIDER_STRING = "=" * 80
 VERSION_REGEX = r"[0-9]+\.[0-9]+\.[0-9]+"
@@ -152,8 +184,7 @@ def get_root_dir():
         root_dir = subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).decode().strip()
         return root_dir
     except subprocess.CalledProcessError:
-        print("ERROR: Not a git repository or unable to determine root directory.")
-        sys.exit(1)
+        error_exit(title="Git repository not found", message="Not a git repository or unable to determine root directory.")
 
 def get_dependency_name_for_gradle_properties(dependency: Dependency) -> str:
     """
@@ -392,6 +423,21 @@ Value:
     - A list of RegexTemplate objects.
 """
 
+def validate_version(version: str) -> bool:
+    """
+    Validates the provided version string to ensure it follows the semantic versioning format. 
+
+    Parameters:
+        version (str): 
+            The version string to validate.
+
+    Returns:
+        bool: 
+            True if the version is valid, False otherwise.
+    """
+    version_regex = re.compile(VERSION_REGEX)
+    return version_regex.match(version) is not None
+
 def parse_arguments() -> Namespace:
     """
     Parses the command-line arguments for the script, providing options for version updates, dependencies, 
@@ -407,9 +453,9 @@ def parse_arguments() -> Namespace:
         
         -d, --dependencies (str, optional): 
             A comma-separated list of dependencies with their versions. Each dependency can 
-            optionally specify the file paths where it applies using the `@` symbol. 
+            optionally specify the semicolon-separated list of file paths where it applies using the `@` symbol.
             - Syntax: 
-                `<name> <version>[@file_path1[,file_path2,...]]`
+                `<name> <version>[@file_path1[;file_path2;...]]`
             - If the `@` syntax is used, the dependency will only be applied to the specified files.
             - When specifying custom files, you must provide either an absolute or relative path to each file.
             - If the `@` symbol is omitted, the dependency applies to all relevant files.
@@ -525,8 +571,7 @@ def parse_paths(paths: str, version: str) -> list[FilePatternGroup]:
 
         # Verify that the path points to a valid file; skip it if not
         if not os.path.isfile(file_path):
-            print(f"File '{file_path}' does not exist or is not a file. Skipping...")
-            continue
+            error_exit(title="File not found", message=f"File '{file_path}' does not exist or is not a file.")
         
         # Determine the appropriate regex patterns for the file based on type or extension
         if file_type:
@@ -584,15 +629,20 @@ def parse_dependencies(dependencies_str: str) -> list[Dependency]:
         dep_parts = dependency.strip().split('@')
         base_parts = dep_parts[0].split()
         if len(base_parts) != 2:
-            print(f"Invalid dependency format: '{dependency}'. Skipping...")
+            print(f"Dependency '{dependency}' did not specify a version. Skipping...")
             continue
 
         dependency_name, dependency_version = base_parts
-        files = dep_parts[1].split(',') if len(dep_parts) > 1 else None
+
+        # Validate each dependency version has semantic verison format
+        if not validate_version(dependency_version):
+            error_exit(title="Invalid version", message=f"Version '{dependency_version}' for dependency '{dependency_name}' is not valid. Use semantic versioning 'x.y.z'.")
+
+        custom_paths = dep_parts[1].split(';') if len(dep_parts) > 1 else None
         absolute_file_paths = None
-        if files: 
+        if custom_paths: 
             absolute_file_paths = []
-            for file in files:
+            for file in custom_paths:
                 absolute_file_paths.append(convert_to_absolute_path(file))
 
         # Standardize dependency name
@@ -705,7 +755,7 @@ def process_file_version(version: str, file_pattern_group: FilePatternGroup, dep
             if match:
                 if is_update_mode:
                     # Use a named capture group to avoid incorrectly merging the group and version.
-                    # ex without named capture group: capture group \\1 and version 6.7.8 -> \\16.7.8 (interpreted as capture group 16)
+                    # Example without named capture group: (capture group) \\1 and (version) 6.7.8 -> \\16.7.8 (interpreted as capture group 16)
                     replaced_line = pattern.sub(f"\\g<1>{pattern_version}", line)
                     print(f"Updated '{label}' to '{pattern_version}' in '{file_name}'")
                 else:
@@ -747,14 +797,19 @@ def process(args: Namespace):
 
     Raises:
         SystemExit: 
-            If version validation fails during verify mode, the function exits the script 
-            with status code 1.
+            - If version validation fails due to an invalid version format, the script exits 
+              with status code 1.
+            - If version validation fails during verify mode (mismatched versions), the script 
+              exits with status code 1.
     """
     version = args.version
     paths = args.paths
     is_update_mode = args.update
 
     print(f"{'Updating' if is_update_mode else 'Verifying'} version {'to' if is_update_mode else 'is'} {version}")
+
+    if not validate_version(version):
+        error_exit(title="Invalid version", message=f"Version '{version}' is not valid. Use semantic versioning 'x.y.z'.")
 
     validation_passed = True
 
@@ -767,8 +822,7 @@ def process(args: Namespace):
         if validation_passed:
             print("All versions are correct!")
         else:
-            print("Version validation failed.")
-            sys.exit(1)
+            error_exit(title="Version mismatch", message="One or more versions do not match the expected value.")
 # endregion
 
 def main():

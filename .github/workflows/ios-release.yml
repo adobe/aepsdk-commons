@@ -25,7 +25,7 @@ on:
         required: true
         type: string
 
-      full_release_extensions:
+      full-release-extensions:
         description: |
           A comma-separated list of extensions for which to run the full release process.
 
@@ -36,7 +36,7 @@ on:
         default: ''
         type: string
 
-      extension_dependencies:
+      extension-dependencies:
         description: |
           A comma-separated list of extension dependencies to include in the release, fetching their versions from CocoaPods.
 
@@ -47,7 +47,7 @@ on:
         default: ''
         type: string
 
-      pod_release_extensions:
+      pod-release-extensions:
         description: |
           A comma-separated list of extensions to release to CocoaPods. Pods will be published in the order they are listed.
 
@@ -85,36 +85,36 @@ jobs:
         make check-version VERSION=${{ inputs.tag }}
 
     - name: Pod repo update
-      if: ${{ inputs.full_release_extensions != '' }}
+      if: ${{ inputs.full-release-extensions != '' }}
       run: | 
         pod repo update
 
     - name: SPM Integration Test
-      if: ${{ inputs.full_release_extensions != '' }}
+      if: ${{ inputs.full-release-extensions != '' }}
       run: |
         set -eo pipefail
         echo SPM integration test starts:
         make test-SPM-integration
 
     - name: Podspec File Verification
-      if: ${{ inputs.full_release_extensions != '' }}
+      if: ${{ inputs.full-release-extensions != '' }}
       run: |
         set -eo pipefail
         echo podspec file verification starts:
         make test-podspec
         
     - name: Build Artifacts
-      if: ${{ inputs.full_release_extensions != '' }}
+      if: ${{ inputs.full-release-extensions != '' }}
       run: |
         make archive
         make zip
 
     - name: Create GH Release and Upload Assets
-      if: ${{ inputs.full_release_extensions != '' }}
+      if: ${{ inputs.full-release-extensions != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        FULL_RELEASE_EXTENSIONS: ${{ inputs.full_release_extensions }}
-        EXTENSION_DEPENDENCIES: ${{ inputs.extension_dependencies }}
+        FULL_RELEASE_EXTENSIONS: ${{ inputs.full-release-extensions }}
+        EXTENSION_DEPENDENCIES: ${{ inputs.extension-dependencies }}
         TAG: ${{ inputs.tag }}
       run: |
         set -eo pipefail
@@ -160,9 +160,9 @@ jobs:
           $FILE_ARGS
 
     - name: Publish Pods
-      if: ${{ inputs.pod_release_extensions != '' }}
+      if: ${{ inputs.pod-release-extensions != '' }}
       env:
-        POD_RELEASE_EXTENSIONS: ${{ inputs.pod_release_extensions }}
+        POD_RELEASE_EXTENSIONS: ${{ inputs.pod-release-extensions }}
         COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
       run: |
         set -eo pipefail

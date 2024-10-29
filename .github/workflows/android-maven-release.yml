@@ -25,7 +25,7 @@ on:
     inputs:
       tag:
         description: >
-          The tag (version) to be released (ex: 1.2.3).
+          The tag (version) to be released (ex: 1.2.3). The workflow will automatically prepend the "v" prefix, resulting in a tag like "v1.2.3".
         type: string
         required: true
 

@@ -12,9 +12,9 @@
 
 name: Release (iOS)
 
-# Currently this workflow relies on two secrets:
-# - GITHUB_TOKEN: Required for creating a release on GitHub
-# - COCOAPODS_TRUNK_TOKEN: Required for pushing a pod to Cocoapods
+# This workflow relies on the following secrets:
+# - GITHUB_TOKEN: Required for creating a release on GitHub.
+# - COCOAPODS_TRUNK_TOKEN: Required for publishing a pod to Cocoapods.
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 on:
@@ -22,14 +22,14 @@ on:
     inputs:
       tag:
         description: >
-          The tag (version) to be released (ex: 1.2.3).  
-          If the provided tag does not already exist, it will be created.
+          The tag (version) to be released (ex: 1.2.3).
         type: string
         required: true
 
       create-github-release:
         description: >
           Creates a single GitHub release and uploads artifacts for the specified extensions.  
+          If the provided `tag` does not exist, it will be created.  
           This does **not** publish the pods to CocoaPods (use `pod-publish-extensions` for that).  
 
           **Format:** A comma-separated list of extensions.  

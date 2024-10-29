@@ -70,7 +70,7 @@ on:
           - When specifying custom files, you must provide either an absolute or relative path to each file.
 
           **Example:**
-          `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
+          `"Core 7.8.9, EdgeIdentity 8.9.10@code/gradle.properties"`
         type: string
         required: false
         default: ''

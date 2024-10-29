@@ -12,11 +12,18 @@
 
 name: Publish Snapshot (Android)
 
+# This workflow relies on the following secrets:
+# - GPG_SECRET_KEYS
+# - GPG_OWNERTRUST
+# - SONATYPE_USERNAME
+# - SONATYPE_PASSWORD
+# These can be passed using the `secrets: inherit` option in the caller workflow file.
+
 on:
   workflow_call:
     inputs:
       release-variant:
-        description: | 
+        description: > 
           The variant used to control the Maven publish command (ex: core -> make core-publish-snapshot). 
           If not specified, uses the default command.
         required: false

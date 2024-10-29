@@ -12,47 +12,40 @@
 
 name: Publish Release (Android)
 
+# This workflow relies on the following secrets:
+# - GITHUB_TOKEN: Required for creating a release on GitHub
+# - GPG_SECRET_KEYS
+# - GPG_OWNERTRUST
+# - SONATYPE_USERNAME
+# - SONATYPE_PASSWORD
+# These can be passed using the `secrets: inherit` option in the caller workflow file.
+
 on: 
   workflow_call:
     inputs:
       tag:
-        description: 'The existing tag (version) to be released (ex: 5.0.1).'
-        required: true
+        description: >
+          The tag (version) to be released (ex: 1.2.3).
         type: string
+        required: true
 
       create-github-release:
-        description: 'Create GitHub release with tag? ("false" to skip)'
-        required: true
+        description: >
+          Boolean flag that determines whether to create a GitHub release. If the specified `tag` does not exist, it will be created.
         type: boolean
+        required: true
         default: true
 
       release-variant:
-        description: | 
+        description: > 
           The variant used to control the GitHub release title suffix and Maven publish command (ex: core -> v3.2.1-core & make core-publish-main). 
           If not specified, uses the default values for both.
-        required: false
         type: string
-        default: ''
-
-      version-verify-dependencies:
-        description: |
-          A comma-separated list of dependencies with their versions to verify. 
-          Each dependency can optionally specify the files where it applies using the `@` symbol.
-          
-          **Syntax:** `<name> <version>[@file1[,file2,...]]`
-
-          - If the `@` syntax is used, the dependency will only apply to the specified files.
-          - If the `@` symbol is omitted, the dependency applies to all relevant files.
-
-          **Example:**
-          `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
-
         required: false
-        type: string
         default: ''
 
       version-verify-paths:
-        description: |
+        description: >
           A comma-separated list of absolute or relative file paths to verify. 
           Each path can optionally specify a pattern type using the syntax:
           
@@ -62,12 +55,28 @@ on:
           `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
 
           This argument is required.
-          
-        required: true
         type: string
+        required: true
+
+      version-verify-dependencies:
+        description: >
+          A comma-separated list of dependencies with their versions. Each dependency can 
+          optionally specify the semicolon-separated list of file paths where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
+
+          - If the `@` syntax is used, the dependency will only apply to the specified files.
+          - If the `@` symbol is omitted, the dependency applies to all relevant files.
+          - When specifying custom files, you must provide either an absolute or relative path to each file.
+
+          **Example:**
+          `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
+        type: string
+        required: false
+        default: ''
 
       workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0, gha-android-1.0.0).'
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-android-1.0.0).'
         type: string
         required: true
 

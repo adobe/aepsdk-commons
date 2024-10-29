@@ -121,7 +121,7 @@ jobs:
           path: .github/aepsdk-commons/scripts
           key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
         
-      - name: Verify Versions
+      - name: Verify versions
         run: |
           set -eo pipefail
           echo Release version: ${{ github.event.inputs.tag }}
@@ -133,7 +133,7 @@ jobs:
       - name: Remove scripts from aepsdk-commons
         run: rm -rf .github/aepsdk-commons
 
-      - name: Create GH Release
+      - name: Create GitHub release
         if: ${{ inputs.create-github-release }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -148,7 +148,6 @@ jobs:
 
           # Create the GitHub release with the constructed title
           gh release create "v${{ github.event.inputs.tag }}" \
-            --verify-tag \
             --generate-notes \
             --title "${TITLE}"
 

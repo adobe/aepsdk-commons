@@ -90,7 +90,7 @@ jobs:
         echo Target version: ${{ inputs.tag }}
         make check-version VERSION=${{ inputs.tag }}
 
-    - name: Pod repo update
+    - name: Pod Repo Update
       if: ${{ inputs.create-github-release != '' }}
       run: | 
         pod repo update
@@ -115,7 +115,7 @@ jobs:
         make archive
         make zip
 
-    - name: Create GH Release and Upload Assets
+    - name: Create GitHub Release and Upload Assets
       if: ${{ inputs.create-github-release != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

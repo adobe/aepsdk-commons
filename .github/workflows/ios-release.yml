@@ -84,38 +84,38 @@ jobs:
     - name: Install XcodeGen
       run: brew install xcodegen
 
-    - name: Check Version in Podspec 
+    - name: Check version in Podspec 
       run: |
         set -eo pipefail
         echo Target version: ${{ inputs.tag }}
         make check-version VERSION=${{ inputs.tag }}
 
-    - name: Pod Repo Update
+    - name: Pod repo update
       if: ${{ inputs.create-github-release != '' }}
       run: | 
         pod repo update
 
-    - name: SPM Integration Test
+    - name: SPM integration test
       if: ${{ inputs.create-github-release != '' }}
       run: |
         set -eo pipefail
         echo SPM integration test starts:
         make test-SPM-integration
 
-    - name: Podspec File Verification
+    - name: Podspec file verification
       if: ${{ inputs.create-github-release != '' }}
       run: |
         set -eo pipefail
         echo podspec file verification starts:
         make test-podspec
         
-    - name: Build Artifacts
+    - name: Build artifacts
       if: ${{ inputs.create-github-release != '' }}
       run: |
         make archive
         make zip
 
-    - name: Create GitHub Release and Upload Assets
+    - name: Create GitHub release and upload assets
       if: ${{ inputs.create-github-release != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -164,7 +164,7 @@ jobs:
           --title "v$TAG" \
           $FILE_ARGS
 
-    - name: Publish Pods
+    - name: Publish pods
       if: ${{ inputs.pod-publish-extensions != '' }}
       env:
         POD_PUBLISH_EXTENSIONS: ${{ inputs.pod-publish-extensions }}

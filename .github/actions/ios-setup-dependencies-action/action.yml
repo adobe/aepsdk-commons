@@ -37,7 +37,7 @@ runs:
       run: make ci-pod-install
       shell: bash
 
-    - name: Save CocoaPods Cache
+    - name: Save CocoaPods cache
       uses: actions/cache/save@v4.1.2
       with:
         path: |

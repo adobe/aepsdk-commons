@@ -21,36 +21,39 @@ on:
   workflow_call:
     inputs:
       version:
-        description: 'New version to use for the extension. Example: 1.5.2'
+        description: 'The version to update or validate for the extension (ex: 1.2.3).'
         required: true
         type: string
 
       branch:
-        description: 'The target branch where the version update will be applied and the pull request will be merged into.'
+        description: |
+          The target branch used for both version validation and updates. 
+          For the update action, this is also the branch into which the pull request will be merged.
         required: true
         type: string
 
       dependencies:
         description: |
           A comma-separated list of dependencies with their versions. 
-          Each dependency can optionally specify the file paths where it applies using the `@` symbol.
+          Each dependency can optionally specify a semicolon-separated list of the file paths where it applies using the `@` symbol.
           
-          **Syntax:** `<name> <version>[@file_path1[,file_path2,...]]`
+          **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
 
           - If the `@` syntax is used, the dependency will only apply to the specified files.
-          - When specifying custom files, you must provide either an absolute or relative path to each file.
           - If the `@` symbol is omitted, the dependency applies to all relevant files.
+          - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+          - If a dependency is missing a version, it will be skipped.
 
           **Example:**
           iOS: `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec, Edge 3.2.1@Package.swift"`
-          Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"`
+          Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties;code/example.kt"`
         required: false
         type: string
         default: ''
 
       paths:
         description: |
-          A comma-separated list of absolute or relative file paths to update or verify. 
+          A comma-separated list of absolute and/or relative file paths to update or verify. 
           Each path can optionally specify a pattern type using the syntax:
           
           **Syntax:** `path[:pattern_type]`
@@ -118,7 +121,13 @@ jobs:
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 
-    - name: Update or Verify Versions
+    - uses: actions/cache/save@v4.1.1
+      if: steps.cache-scripts.outputs.cache-hit != 'true'
+      with:
+        path: .github/aepsdk-commons/scripts
+        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+
+    - name: Update or verify versions
       run: |
         UPDATE_FLAG=""
         if [ "${{ inputs.update }}" = "true" ]; then
@@ -130,18 +139,23 @@ jobs:
           -p "${{ inputs.paths }}" \
           -d "${{ inputs.dependencies }}"
 
-    - name: Configure Git
+    - name: Remove scripts from aepsdk-commons
+      run: rm -rf .github/aepsdk-commons
+
+    - name: Configure GitHub Actions bot user
+      if: ${{ inputs.update }}
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
 
-    - name: Create Pull Request
+    - name: Create pull request
+      if: ${{ inputs.update }}
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         branch_name="version-${{ inputs.version }}-update"
         git checkout -b $branch_name
-        git add . ':!./.github/aepsdk-commons/' # Avoid adding the aepsdk-commons directory
+        git add .
         git commit -m "Updating version to ${{ inputs.version }}."
         git push origin $branch_name
         gh pr create --base ${{ inputs.branch }} --head $branch_name --title "Updating version to ${{ inputs.version }}" --body "Updating version to ${{ inputs.version }}"

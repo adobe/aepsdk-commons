@@ -116,7 +116,11 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
-        repository: adobe/aepsdk-commons
+        # repository: adobe/aepsdk-commons
+        # ref: ${{ inputs.workflow_tag }}
+        # path: .github/aepsdk-commons
+        # sparse-checkout: 'scripts' # Only checkout the scripts directory
+        repository: timkimadobe/aepsdk-commons
         ref: ${{ inputs.workflow_tag }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
@@ -129,12 +133,8 @@ jobs:
 
     - name: Update or validate versions
       run: |
-        UPDATE_FLAG=""
-        if [ "${{ inputs.update }}" = "true" ]; then
-          UPDATE_FLAG="--update"
-        fi
         python3 ./.github/aepsdk-commons/scripts/versions.py \
-          $UPDATE_FLAG \
+          ${{ inputs.update && '--update' || '' }} \
           -v "${{ inputs.version }}" \
           -p "${{ inputs.paths }}" \
           -d "${{ inputs.dependencies }}"

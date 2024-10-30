@@ -24,29 +24,29 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: >
+        description: |
           The tag (version) to be released (ex: 1.2.3). The workflow will automatically prepend the "v" prefix, resulting in a tag like "v1.2.3".
         type: string
         required: true
 
       create-github-release:
-        description: >
+        description: |
           Boolean flag that determines whether to create a GitHub release. If the specified `tag` does not exist, it will be created.
         type: boolean
         required: true
         default: true
 
       release-variant:
-        description: > 
+        description: | 
           The variant used to control the GitHub release title suffix and Maven publish command (ex: core -> v3.2.1-core & make core-publish-main). 
           If not specified, uses the default values for both.
         type: string
         required: false
         default: ''
 
-      version-verify-paths:
-        description: >
-          A comma-separated list of absolute or relative file paths to verify. 
+      version-validation-paths:
+        description: |
+          A comma-separated list of absolute and/or relative file paths to validate. 
           Each path can optionally specify a pattern type using the syntax:
           
           **Syntax:** `path[:file_type]`
@@ -58,25 +58,26 @@ on:
         type: string
         required: true
 
-      version-verify-dependencies:
-        description: >
-          A comma-separated list of dependencies with their versions. Each dependency can 
-          optionally specify the semicolon-separated list of file paths where it applies using the `@` symbol.
+      version-validation-dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions. 
+          Each dependency can optionally specify a semicolon-separated list of the file paths where it applies using the `@` symbol.
           
           **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
 
           - If the `@` syntax is used, the dependency will only apply to the specified files.
           - If the `@` symbol is omitted, the dependency applies to all relevant files.
-          - When specifying custom files, you must provide either an absolute or relative path to each file.
+          - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+          - If a dependency is missing a version, it will be skipped.
 
           **Example:**
-          `"Core 7.8.9, EdgeIdentity 8.9.10@code/gradle.properties"`
+          `"Core 7.8.9, EdgeIdentity 8.9.10@code/gradle.properties;code/Constants.kt"`
         type: string
         required: false
         default: ''
 
       workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-android-1.0.0).'
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-android-1.2.3).'
         type: string
         required: true
 
@@ -101,7 +102,7 @@ jobs:
       
       - name: Restore cached scripts from aepsdk-commons
         id: cache-scripts
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4.1.2
         with:
           path: .github/aepsdk-commons/scripts
           key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
@@ -115,20 +116,20 @@ jobs:
           path: .github/aepsdk-commons
           sparse-checkout: 'scripts' # Only checkout the scripts directory
 
-      - uses: actions/cache/save@v4.1.1
+      - uses: actions/cache/save@v4.1.2
         if: steps.cache-scripts.outputs.cache-hit != 'true'
         with:
           path: .github/aepsdk-commons/scripts
           key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
         
-      - name: Verify versions
+      - name: Validate versions
         run: |
           set -eo pipefail
           echo Release version: ${{ github.event.inputs.tag }}
           python3 ./.github/aepsdk-commons/scripts/versions.py \
             -v "${{ github.event.inputs.tag }}" \
-            -p "${{ inputs.version-verify-paths }}" \
-            -d "${{ inputs.version-verify-dependencies }}"
+            -p "${{ inputs.version-validation-paths }}" \
+            -d "${{ inputs.version-validation-dependencies }}"
 
       - name: Remove scripts from aepsdk-commons
         run: rm -rf .github/aepsdk-commons

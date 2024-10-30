@@ -23,7 +23,7 @@ on:
   workflow_call:
     inputs:
       release-variant:
-        description: > 
+        description: | 
           The variant used to control the Maven publish command (ex: core -> make core-publish-snapshot). 
           If not specified, uses the default command.
         required: false

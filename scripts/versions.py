@@ -448,7 +448,7 @@ def parse_arguments() -> Namespace:
 
     Command-line Arguments:
         -v, --version (str): 
-            The version to update or verify for the extension. 
+            The version to update or validate for the extension. 
             Example: 3.0.2. This argument is required.
         
         -d, --dependencies (str, optional): 
@@ -465,7 +465,7 @@ def parse_arguments() -> Namespace:
                 Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties;code/Constants.kt"`
 
         -p, --paths (str): 
-            A comma-separated list of absolute or relative file paths to update or verify. 
+            A comma-separated list of absolute or relative file paths to update or validate. 
             Each path can optionally specify a pattern type using the syntax:
                 `path[:pattern_type]`
             - Example: 
@@ -475,17 +475,17 @@ def parse_arguments() -> Namespace:
 
         -u, --update (flag): 
             If provided, the script will update the versions in the specified files. 
-            If omitted, the script will verify the existing versions instead.
+            If omitted, the script will validate the existing versions instead.
 
     Example Usage:
         iOS: 
-        --update \ # Remove this flag if you want to verify the versions instead
+        --update \ # Remove this flag if you want to validate the versions instead
         -v 6.7.8 \
         -p "Package.swift:swift_spm, AEPCore/Tests/MobileCoreTests.swift:swift_test_version, AEPCore/Sources/eventhub/EventHubConstants.swift:swift_version_number, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore.podspec, AEPCore.xcodeproj/project.pbxproj" \
         -d "AEPRulesEngine 7.8.9, AEPServices 8.9.10@AEPCore.podspec"
 
         Android:
-        --update \ # Remove this flag if you want to verify the versions instead
+        --update \ # Remove this flag if you want to validate the versions instead
         -v 6.7.8 \
         -p "code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties" \
         -d "AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"
@@ -501,13 +501,13 @@ def parse_arguments() -> Namespace:
             - The `AEPServices` dependency will only be applied to the `AEPCore.podspec` file.
     """
     parser = argparse.ArgumentParser(
-        description='Update or verify versions in project files.'
+        description='Update or validate versions in project files.'
     )
 
     parser.add_argument(
         '-v', '--version', 
         required=True, 
-        help='Version to update or verify for the extension. Example: 3.0.2'
+        help='Version to update or validate for the extension. Example: 3.0.2'
     )
     parser.add_argument(
         '-d', '--dependencies', 
@@ -675,16 +675,16 @@ def parse_dependencies(dependencies_str: str) -> list[Dependency]:
 # All of the regex patterns are evaluated for each line and if a match is found, the version is updated
 def process_file_version(version: str, file_pattern_group: FilePatternGroup, dependencies: list[Dependency] | None, is_update_mode: bool) -> bool | None:
     """
-    Processes a single file to either update or verify the version and dependencies.
+    Processes a single file to either update or validate the version and dependencies.
 
     In update mode, the function replaces matching version strings with the new version. 
-    In verify mode, it checks whether the existing versions in the file match the expected version. 
+    In validate mode, it checks whether the existing versions in the file match the expected version. 
     Additionally, if the file supports dependencies, relevant patterns for the dependencies are applied 
     based on the file type.
 
     Parameters:
         version (str): 
-            The version to apply or verify. Example: "6.7.8".
+            The version to apply or validate. Example: "6.7.8".
         file_pattern_group (FilePatternGroup): 
             An object representing the file path, pattern type (if any), and the regex patterns 
             associated with the file.
@@ -696,7 +696,7 @@ def process_file_version(version: str, file_pattern_group: FilePatternGroup, dep
 
     Returns:
         bool | None: 
-            - In **verify mode**, returns True if all versions match the expected value, otherwise False.
+            - In **validate mode**, returns True if all versions match the expected value, otherwise False.
             - In **update mode**, returns None after updating the file content.
 
     Raises:
@@ -713,7 +713,7 @@ def process_file_version(version: str, file_pattern_group: FilePatternGroup, dep
     # Combine extension version patterns and dependency patterns
     applicable_patterns = file_pattern_group.patterns
 
-    print(f"---- {'Updating' if is_update_mode else 'Verifying'} versions in '{file_name}' ----")
+    print(f"---- {'Updating' if is_update_mode else 'Validating'} versions in '{file_name}' ----")
     print(f"  * File path: {path}")
     
     # Filter dependencies for the current file
@@ -750,7 +750,7 @@ def process_file_version(version: str, file_pattern_group: FilePatternGroup, dep
 
     matched_patterns = []  # List to keep track of patterns that have matched
 
-    # Apply the update or verify logic to each line
+    # Apply the update or validate logic to each line
     new_content = []
     for line in content:
         replaced_line = line
@@ -771,13 +771,13 @@ def process_file_version(version: str, file_pattern_group: FilePatternGroup, dep
                     print(f"Updated '{label}' to '{pattern_version}' in '{file_name}'")
                 else:
                     current_version = match.group(2)
-                    # Verify the version
+                    # Validate the version
                     if current_version == pattern_version:
                         print(f"PASS '{label}' with pattern `{regex_pattern}` matches '{pattern_version}' in '{file_name}'")
                         matched_patterns.append(applicable_pattern)
         new_content.append(replaced_line)
 
-    # In verify mode, check if all required patterns have matched
+    # In validate mode, check if all required patterns have matched
     if is_update_mode:
         # Write the updated content back to the file
         with open(path, 'w') as file:
@@ -792,10 +792,10 @@ def process_file_version(version: str, file_pattern_group: FilePatternGroup, dep
 def process(args: Namespace):
     """
     Processes the version update or validation of the extension and its dependencies 
-    in the specified files. This function determines the mode (update or verify) based on 
+    in the specified files. This function determines the mode (update or validate) based on 
     the provided arguments:
         - In update mode, the version will be replaced with the new version specified. 
-        - In verify mode, the function checks whether all versions match the expected version 
+        - In validate mode, the function checks whether all versions match the expected version 
           and prints the result.
 
     Parameters:
@@ -810,14 +810,14 @@ def process(args: Namespace):
         SystemExit: 
             - If version validation fails due to an invalid version format, the script exits 
               with status code 1.
-            - If version validation fails during verify mode (mismatched versions), the script 
+            - If version validation fails during validate mode (mismatched versions), the script 
               exits with status code 1.
     """
     version = args.version
     paths = args.paths
     is_update_mode = args.update
 
-    print(f"{'Updating' if is_update_mode else 'Verifying'} version {'to' if is_update_mode else 'is'} {version}")
+    print(f"{'Updating' if is_update_mode else 'Validating'} version {'to' if is_update_mode else 'is'} {version}")
 
     if not validate_version(version):
         error_exit(title="Invalid version", message=f"Version '{version}' is not valid. Use semantic versioning 'x.y.z'.")

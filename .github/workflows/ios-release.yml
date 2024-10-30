@@ -21,13 +21,13 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: >
+        description: |
           The tag (version) to be released (ex: 1.2.3).
         type: string
         required: true
 
       create-github-release:
-        description: >
+        description: |
           Creates a single GitHub release and uploads artifacts for the specified extensions.  
           If the provided `tag` does not exist, it will be created.  
           This does **not** publish the pods to CocoaPods (use `pod-publish-extensions` for that).  
@@ -40,7 +40,7 @@ on:
         default: ''
 
       release-dependency-frameworks:
-        description: >
+        description: |
           **(Core-only parameter)**  
           A comma-separated list of extension frameworks to include as artifacts in the GitHub release.  
           The versions will be fetched from CocoaPods.  
@@ -53,7 +53,7 @@ on:
         default: ''
 
       pod-publish-extensions:
-        description: >
+        description: |
           Publishes the specified extensions to CocoaPods.  
           Pods will be published in the order they are listed.  
 
@@ -63,6 +63,43 @@ on:
         type: string
         required: true
         default: ''
+      
+      version-validation-paths:
+        description: |
+          A comma-separated list of absolute and/or relative file paths to validate. 
+          Each path can optionally specify a pattern type using the syntax:
+          
+          **Syntax:** `path[:file_type]`
+
+          **Example:**
+          `"Package.swift:swift_spm, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore/Tests/MobileCoreTests.swift:swift_test_version"`
+
+          This argument is required.
+        type: string
+        required: true
+
+      version-validation-dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions. 
+          Each dependency can optionally specify a semicolon-separated list of the file paths where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
+
+          - If the `@` syntax is used, the dependency will only apply to the specified files.
+          - If the `@` symbol is omitted, the dependency applies to all relevant files.
+          - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+          - If a dependency is missing a version, it will be skipped.
+
+          **Example:**
+          `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec;AEPIdentity.podspec"`
+        type: string
+        required: false
+        default: ''
+
+      workflow_tag:
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.2.3).'
+        type: string
+        required: true
 
 jobs:
   release:
@@ -84,11 +121,75 @@ jobs:
     - name: Install XcodeGen
       run: brew install xcodegen
 
-    - name: Check version in Podspec 
-      run: |
-        set -eo pipefail
-        echo Target version: ${{ inputs.tag }}
-        make check-version VERSION=${{ inputs.tag }}
+    # - name: Check version in Podspec 
+    #   run: |
+    #     set -eo pipefail
+    #     echo Target version: ${{ inputs.tag }}
+    #     make check-version VERSION=${{ inputs.tag }}
+
+    # - name: Restore cached scripts from aepsdk-commons
+    #   id: cache-scripts
+    #   uses: actions/cache@v4.1.2
+    #   with:
+    #     path: .github/aepsdk-commons/scripts
+    #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+
+    # - name: Download scripts from aepsdk-commons
+    #   if: steps.cache-scripts.outputs.cache-hit != 'true'
+    #   uses: actions/checkout@v4.1.7
+    #   with:
+    #     repository: adobe/aepsdk-commons
+    #     ref: ${{ inputs.workflow_tag }}
+    #     path: .github/aepsdk-commons
+    #     sparse-checkout: 'scripts' # Only checkout the scripts directory
+
+    # - uses: actions/cache/save@v4.1.2
+    #   if: steps.cache-scripts.outputs.cache-hit != 'true'
+    #   with:
+    #     path: .github/aepsdk-commons/scripts
+    #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+      
+    # - name: Verify versions
+    #   run: |
+    #     set -eo pipefail
+    #     echo Release version: ${{ github.event.inputs.tag }}
+    #     python3 ./.github/aepsdk-commons/scripts/versions.py \
+    #       -v "${{ github.event.inputs.tag }}" \
+    #       -p "${{ inputs.version-validation-paths }}" \
+    #       -d "${{ inputs.version-validation-dependencies }}"
+    
+    # - name: Remove scripts from aepsdk-commons
+    #   run: rm -rf .github/aepsdk-commons
+
+    # TEST: using the workflow as defined in commons directly - but programmatically setting tag not possible
+    # - name: Verify versions
+    #   uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-1.0.0
+    #   with:
+    #     version: ${{ inputs.tag }}
+    #     paths: ${{ inputs.version-validation-paths }}
+    #     dependencies: ${{ inputs.version-validation-dependencies }}
+    #     update: false
+
+    # TEST: using workflow dispatch to programmatically set tag
+    - uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        debug: true
+        script: |
+          const workflow = await github.actions.createWorkflowDispatch({
+              owner: "adobe",
+              repo: "aepsdk-commons",
+              workflow_id: "versions.yml",
+              ref: "${{ inputs.workflow_tag }}",
+              inputs: {
+                version: "${{ inputs.tag }}",
+                branch: "main",
+                paths: "${{ inputs.version-validation-paths }}",
+                dependencies: "${{ inputs.version-validation-dependencies }}",
+                workflow_tag: "${{ inputs.workflow_tag }}"
+              }
+          });
+          console.log(workflow);
 
     - name: Pod repo update
       if: ${{ inputs.create-github-release != '' }}

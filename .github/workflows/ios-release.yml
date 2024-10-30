@@ -176,7 +176,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         debug: true
         script: |
-          const workflow = await github.actions.createWorkflowDispatch({
+          const workflow = await github.rest.actions.createWorkflowDispatch({
               owner: "adobe",
               repo: "aepsdk-commons",
               workflow_id: "versions.yml",

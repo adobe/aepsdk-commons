@@ -457,10 +457,12 @@ def parse_arguments() -> Namespace:
             - Syntax: 
                 `<name> <version>[@file_path1[;file_path2;...]]`
             - If the `@` syntax is used, the dependency will only be applied to the specified files.
-            - When specifying custom files, you must provide either an absolute or relative path to each file.
             - If the `@` symbol is omitted, the dependency applies to all relevant files.
+            - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+            - If a dependency is missing a version, it will be skipped.
             Example: 
-                `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec, Edge 3.2.1@Package.swift"`
+                iOS: `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec, Edge 3.2.1@Package.swift"`
+                Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties;code/example.kt"`
 
         -p, --paths (str): 
             A comma-separated list of absolute or relative file paths to update or verify. 
@@ -468,6 +470,7 @@ def parse_arguments() -> Namespace:
                 `path[:pattern_type]`
             - Example: 
                 `"src/Package.swift:swift_spm, src/Utils.swift, src/Test.swift:swift_test_version"`
+                `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
             This argument is required.
 
         -u, --update (flag): 
@@ -475,9 +478,17 @@ def parse_arguments() -> Namespace:
             If omitted, the script will verify the existing versions instead.
 
     Example Usage:
-        --update -v 6.7.8 \
+        iOS: 
+        --update \ # Remove this flag if you want to verify the versions instead
+        -v 6.7.8 \
         -p "Package.swift:swift_spm, AEPCore/Tests/MobileCoreTests.swift:swift_test_version, AEPCore/Sources/eventhub/EventHubConstants.swift:swift_version_number, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore.podspec, AEPCore.xcodeproj/project.pbxproj" \
         -d "AEPRulesEngine 7.8.9, AEPServices 8.9.10@AEPCore.podspec"
+
+        Android:
+        --update \ # Remove this flag if you want to verify the versions instead
+        -v 6.7.8 \
+        -p "code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties" \
+        -d "AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"
         
         Example Explanation:
             - `Package.swift` will use the `swift_spm` regex patterns.

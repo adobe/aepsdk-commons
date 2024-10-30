@@ -127,69 +127,43 @@ jobs:
     #     echo Target version: ${{ inputs.tag }}
     #     make check-version VERSION=${{ inputs.tag }}
 
-    # - name: Restore cached scripts from aepsdk-commons
-    #   id: cache-scripts
-    #   uses: actions/cache@v4.1.2
-    #   with:
-    #     path: .github/aepsdk-commons/scripts
-    #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-
-    # - name: Download scripts from aepsdk-commons
-    #   if: steps.cache-scripts.outputs.cache-hit != 'true'
-    #   uses: actions/checkout@v4.1.7
-    #   with:
-    #     repository: adobe/aepsdk-commons
-    #     ref: ${{ inputs.workflow_tag }}
-    #     path: .github/aepsdk-commons
-    #     sparse-checkout: 'scripts' # Only checkout the scripts directory
-
-    # - uses: actions/cache/save@v4.1.2
-    #   if: steps.cache-scripts.outputs.cache-hit != 'true'
-    #   with:
-    #     path: .github/aepsdk-commons/scripts
-    #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-      
-    # - name: Verify versions
-    #   run: |
-    #     set -eo pipefail
-    #     echo Release version: ${{ github.event.inputs.tag }}
-    #     python3 ./.github/aepsdk-commons/scripts/versions.py \
-    #       -v "${{ github.event.inputs.tag }}" \
-    #       -p "${{ inputs.version-validation-paths }}" \
-    #       -d "${{ inputs.version-validation-dependencies }}"
-    
-    # - name: Remove scripts from aepsdk-commons
-    #   run: rm -rf .github/aepsdk-commons
-
-    # TEST: using the workflow as defined in commons directly - but programmatically setting tag not possible
-    # - name: Verify versions
-    #   uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-1.0.0
-    #   with:
-    #     version: ${{ inputs.tag }}
-    #     paths: ${{ inputs.version-validation-paths }}
-    #     dependencies: ${{ inputs.version-validation-dependencies }}
-    #     update: false
-
-    # TEST: using workflow dispatch to programmatically set tag
-    - uses: actions/github-script@v7
+    - name: Restore cached scripts from aepsdk-commons
+      id: cache-scripts
+      uses: actions/cache@v4.1.2
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        debug: true
-        script: |
-          const workflow = await github.rest.actions.createWorkflowDispatch({
-              owner: "adobe",
-              repo: "aepsdk-commons",
-              workflow_id: "versions.yml",
-              ref: "${{ inputs.workflow_tag }}",
-              inputs: {
-                version: "${{ inputs.tag }}",
-                branch: "main",
-                paths: "${{ inputs.version-validation-paths }}",
-                dependencies: "${{ inputs.version-validation-dependencies }}",
-                workflow_tag: "${{ inputs.workflow_tag }}"
-              }
-          });
-          console.log(workflow);
+        path: .github/aepsdk-commons/scripts
+        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+
+    - name: Download scripts from aepsdk-commons
+      if: steps.cache-scripts.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4.1.7
+      with:
+        # repository: adobe/aepsdk-commons
+        # ref: ${{ inputs.workflow_tag }}
+        # path: .github/aepsdk-commons
+        # sparse-checkout: 'scripts' # Only checkout the scripts directory
+        repository: timkimadobe/aepsdk-commons
+        ref: ${{ inputs.workflow_tag }}
+        path: .github/aepsdk-commons
+        sparse-checkout: 'scripts' # Only checkout the scripts directory
+
+    - uses: actions/cache/save@v4.1.2
+      if: steps.cache-scripts.outputs.cache-hit != 'true'
+      with:
+        path: .github/aepsdk-commons/scripts
+        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+      
+    - name: Verify versions
+      run: |
+        set -eo pipefail
+        echo Release version: ${{ github.event.inputs.tag }}
+        python3 ./.github/aepsdk-commons/scripts/versions.py \
+          -v "${{ github.event.inputs.tag }}" \
+          -p "${{ inputs.version-validation-paths }}" \
+          -d "${{ inputs.version-validation-dependencies }}"
+    
+    - name: Remove scripts from aepsdk-commons
+      run: rm -rf .github/aepsdk-commons
 
     - name: Pod repo update
       if: ${{ inputs.create-github-release != '' }}

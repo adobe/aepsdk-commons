@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Update or Verify Versions
+name: Update or Validate Versions
 
 # This workflow requires the following GitHub repository settings:
 # 1. Navigate to: Settings -> Code and automation -> Actions -> General.
@@ -29,6 +29,21 @@ on:
         description: |
           The target branch used for both version validation and updates. 
           For the update action, this is also the branch into which the pull request will be merged.
+        required: true
+        type: string
+
+      paths:
+        description: |
+          A comma-separated list of absolute and/or relative file paths to update or validate. 
+          Each path can optionally specify a pattern type using the syntax:
+          
+          **Syntax:** `path[:pattern_type]`
+
+          **Example:**
+          `"Package.swift:swift_spm, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore/Tests/MobileCoreTests.swift:swift_test_version"`
+          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
+
+          This argument is required.
         required: true
         type: string
 
@@ -51,30 +66,15 @@ on:
         type: string
         default: ''
 
-      paths:
-        description: |
-          A comma-separated list of absolute and/or relative file paths to update or verify. 
-          Each path can optionally specify a pattern type using the syntax:
-          
-          **Syntax:** `path[:pattern_type]`
-
-          **Example:**
-          `"Package.swift:swift_spm, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore/Tests/MobileCoreTests.swift:swift_test_version"`
-          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
-
-          This argument is required.
-        required: true
-        type: string
-
       update:
         description: |
           If provided, the script will update the versions in the specified files. 
-          If omitted, the script will verify the existing versions instead.
+          If omitted, the script will validate the existing versions instead.
 
           **Example:**
           iOS: 
           ```
-          --update \ # Remove this flag if you want to verify the versions instead
+          --update \ # Remove this flag if you want to validate the versions instead
           -v 6.7.8 \
           -p "Package.swift:swift_spm, AEPCore/Tests/MobileCoreTests.swift:swift_test_version, AEPCore/Sources/eventhub/EventHubConstants.swift:swift_version_number, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore.podspec, AEPCore.xcodeproj/project.pbxproj" \
           -d "AEPRulesEngine 7.8.9, AEPServices 8.9.10@AEPCore.podspec"
@@ -82,7 +82,7 @@ on:
 
           Android:
           ```
-          --update \ # Remove this flag if you want to verify the versions instead
+          --update \ # Remove this flag if you want to validate the versions instead
           -v 6.7.8 \
           -p "code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties" \
           -d "AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"
@@ -107,7 +107,7 @@ jobs:
 
     - name: Restore cached scripts from aepsdk-commons
       id: cache-scripts
-      uses: actions/cache@v4.1.1
+      uses: actions/cache@v4.1.2
       with:
         path: .github/aepsdk-commons/scripts
         key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
@@ -121,13 +121,13 @@ jobs:
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 
-    - uses: actions/cache/save@v4.1.1
+    - uses: actions/cache/save@v4.1.2
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       with:
         path: .github/aepsdk-commons/scripts
         key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
 
-    - name: Update or verify versions
+    - name: Update or validate versions
       run: |
         UPDATE_FLAG=""
         if [ "${{ inputs.update }}" = "true" ]; then

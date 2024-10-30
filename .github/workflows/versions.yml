@@ -22,15 +22,15 @@ on:
     inputs:
       version:
         description: 'The version to update or validate for the extension (ex: 1.2.3).'
-        required: true
         type: string
+        required: true
 
       branch:
         description: |
           The target branch used for both version validation and updates. 
           For the update action, this is also the branch into which the pull request will be merged.
-        required: true
         type: string
+        required: true
 
       paths:
         description: |
@@ -44,8 +44,8 @@ on:
           `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
 
           This argument is required.
-        required: true
         type: string
+        required: true
 
       dependencies:
         description: |
@@ -62,33 +62,16 @@ on:
           **Example:**
           iOS: `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec;AEPIdentity.podspec"`
           Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties;code/Constants.kt"`
-        required: false
         type: string
+        required: false
         default: ''
 
       update:
         description: |
-          If provided, the script will update the versions in the specified files. 
-          If omitted, the script will validate the existing versions instead.
-
-          **Example:**
-          iOS: 
-          ```
-          --update \ # Remove this flag if you want to validate the versions instead
-          -v 6.7.8 \
-          -p "Package.swift:swift_spm, AEPCore/Tests/MobileCoreTests.swift:swift_test_version, AEPCore/Sources/eventhub/EventHubConstants.swift:swift_version_number, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore.podspec, AEPCore.xcodeproj/project.pbxproj" \
-          -d "AEPRulesEngine 7.8.9, AEPServices 8.9.10@AEPCore.podspec"
-          ```
-
-          Android:
-          ```
-          --update \ # Remove this flag if you want to validate the versions instead
-          -v 6.7.8 \
-          -p "code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties" \
-          -d "AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties"
-          ```
-        required: false
+          If `true`, the workflow will update the versions in the specified files. 
+          If `false`, the workflow will validate the existing versions instead.
         type: boolean
+        required: false
         default: false
       
       workflow_tag:
@@ -116,11 +99,7 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
-        # repository: adobe/aepsdk-commons
-        # ref: ${{ inputs.workflow_tag }}
-        # path: .github/aepsdk-commons
-        # sparse-checkout: 'scripts' # Only checkout the scripts directory
-        repository: timkimadobe/aepsdk-commons
+        repository: adobe/aepsdk-commons
         ref: ${{ inputs.workflow_tag }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory

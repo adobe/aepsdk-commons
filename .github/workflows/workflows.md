@@ -37,7 +37,7 @@ When connecting a manually triggered workflow to a reusable workflow and passing
 
 ### Secrets handling in reusable workflows
 
-Currently, the reusable workflows use various implicitly required secrets which are passed to job steps in their `env:`. Callers of the reusable workflows should provide the necessary secrets using `secrets: inherit`.
+Reusable workflows rely on various implicitly required secrets, which are passed to job steps through the `env:` field. Callers must provide the required secrets by using `secrets: inherit`.
 
 ### Implementing logical operations
 

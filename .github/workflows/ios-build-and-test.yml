@@ -51,30 +51,31 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      - name: Restore cached actions from aepsdk-commons
-        id: cache-commons
-        uses: actions/cache@v4.1.1
-        with:
-          path: .github/aepsdk-commons/.github/actions
-          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+      # - name: Restore cached actions from aepsdk-commons
+      #   id: cache-commons
+      #   uses: actions/cache@v4.1.1
+      #   with:
+      #     path: .github/aepsdk-commons/.github/actions
+      #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
 
-      - name: Download actions from aepsdk-commons
-        if: steps.cache-commons.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: adobe/aepsdk-commons
-          ref: ${{ inputs.workflow_tag }}
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
+      # - name: Download actions from aepsdk-commons
+      #   if: steps.cache-commons.outputs.cache-hit != 'true'
+      #   uses: actions/checkout@v4.2.2
+      #   with:
+      #     repository: adobe/aepsdk-commons
+      #     ref: ${{ inputs.workflow_tag }}
+      #     path: .github/aepsdk-commons
+      #     sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
 
-      - uses: actions/cache/save@v4.1.1
-        if: steps.cache-commons.outputs.cache-hit != 'true'
-        with:
-          path: .github/aepsdk-commons/.github/actions
-          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+      # - uses: actions/cache/save@v4.1.1
+      #   if: steps.cache-commons.outputs.cache-hit != 'true'
+      #   with:
+      #     path: .github/aepsdk-commons/.github/actions
+      #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
 
-      - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
+      - name: Set up dependencies
+        # uses: ./.github/aepsdk-commons/.github/actions/setup-action
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Remove files from aepsdk-commons
         run: rm -rf ./github/aepsdk-commons

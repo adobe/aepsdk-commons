@@ -38,21 +38,40 @@ on:
         type: boolean
         default: true
 
+      workflow_tag:
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0).'
+        type: string
+        required: true
+
 jobs:
   validate-code:
     runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
 
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+      - name: Restore cached actions from aepsdk-commons
+        id: cache-commons
+        uses: actions/cache@v4.1.1
+        with:
+          path: .github/aepsdk-commons/.github/actions
+          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+
+      - name: Download actions from aepsdk-commons
+        if: steps.cache-commons.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
-          ref: main
+          ref: ${{ inputs.workflow_tag }}
           path: .github/aepsdk-commons
           sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
+
+      - uses: actions/cache/save@v4.1.1
+        if: steps.cache-commons.outputs.cache-hit != 'true'
+        with:
+          path: .github/aepsdk-commons/.github/actions
+          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
 
       - name: Setup Dependencies
         uses: ./.github/aepsdk-commons/.github/actions/setup-action
@@ -70,10 +89,17 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
 
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+      - name: Restore cached scripts from aepsdk-commons
+        id: cache-scripts
+        uses: actions/cache@v4.1.1
+        with:
+          path: .github/aepsdk-commons/scripts
+          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+
+      - name: Download actions from aepsdk-commons
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
           ref: main
@@ -96,10 +122,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       
       - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
           ref: main
@@ -122,10 +148,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       
       - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
           ref: main
@@ -148,10 +174,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       
       - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
           ref: main
@@ -174,10 +200,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       
       - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
           ref: main
@@ -200,10 +226,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       
       - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
         with:
           repository: adobe/aepsdk-commons
           ref: main

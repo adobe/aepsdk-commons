@@ -461,15 +461,15 @@ def parse_arguments() -> Namespace:
             - When specifying custom file paths, you must provide either an absolute or relative path to each file.
             - If a dependency is missing a version, it will be skipped.
             Example: 
-                iOS: `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec, Edge 3.2.1@Package.swift"`
-                Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties;code/example.kt"`
+                iOS: `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec;AEPIdentity.podspec"`
+                Android: `"AEPCore 7.8.9, AEPEdgeIdentity 8.9.10@code/gradle.properties;code/Constants.kt"`
 
         -p, --paths (str): 
             A comma-separated list of absolute or relative file paths to update or verify. 
             Each path can optionally specify a pattern type using the syntax:
                 `path[:pattern_type]`
             - Example: 
-                `"src/Package.swift:swift_spm, src/Utils.swift, src/Test.swift:swift_test_version"`
+                `"Package.swift:swift_spm, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore/Tests/MobileCoreTests.swift:swift_test_version"`
                 `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
             This argument is required.
 

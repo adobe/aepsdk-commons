@@ -17,6 +17,9 @@ name: Update or Validate Versions
 # 2. Under "Workflow permissions," select:
 #    - "Allow GitHub Actions to create and approve pull requests."
 
+env:
+  WORKFLOW_TAG: gha-1.0.0
+
 on:
   workflow_call:
     inputs:
@@ -73,11 +76,6 @@ on:
         type: boolean
         required: false
         default: false
-      
-      workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.0.0, gha-android-1.0.0).'
-        type: string
-        required: true
 
 jobs:
   update-versions:
@@ -93,18 +91,18 @@ jobs:
       uses: actions/cache@v4.1.2
       with:
         path: .github/aepsdk-commons/scripts
-        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+        key: aepsdk-commons-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>
       
     - name: Download scripts from aepsdk-commons
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
         # repository: adobe/aepsdk-commons
-        # ref: ${{ inputs.workflow_tag }}
+        # ref: ${{ env.WORKFLOW_TAG }}
         # path: .github/aepsdk-commons
         # sparse-checkout: 'scripts' # Only checkout the scripts directory
         repository: timkimadobe/aepsdk-commons
-        ref: ${{ inputs.workflow_tag }}
+        ref: ${{ env.WORKFLOW_TAG }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
 
@@ -112,7 +110,7 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       with:
         path: .github/aepsdk-commons/scripts
-        key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
+        key: aepsdk-commons-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>
 
     - name: Update or validate versions
       run: |

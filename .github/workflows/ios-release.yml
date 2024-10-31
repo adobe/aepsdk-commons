@@ -97,21 +97,20 @@ on:
         default: ''
 
       workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-ios-1.2.3).'
+        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-1.2.3).'
         type: string
         required: true
 
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: timkimadobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-1.0.0
+    uses: timkimadobe/aepsdk-commons/.github/workflows/versions.yml@gha-1.0.0
     with:
       version: ${{ github.event.inputs.tag }}
       branch: ${{ github.ref_name }}
       paths: ${{ inputs.version-validation-paths }}
       dependencies: ${{ inputs.version-validation-dependencies }}
       update: false
-      workflow_tag: gha-ios-1.0.0
 
   release:
     runs-on: macos-latest

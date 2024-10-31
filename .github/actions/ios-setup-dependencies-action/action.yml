@@ -1,0 +1,47 @@
+name: Setup Dependencies (iOS)
+description: Checkout and install dependencies
+
+runs:
+  using: "composite"
+  steps:
+    - name: Restore Gemfile cache
+      uses: actions/cache@v4.1.2
+      with:
+        path: vendor/bundle
+        key: gems-${{ runner.os }}-${{ hashFiles('**/Gemfile.lock') }}
+
+    - name: Configure bundler path and verify Cocoapods version
+      run: |
+        bundle config set path 'vendor/bundle'
+        bundle check || bundle install
+      shell: bash
+
+    - name: Save Gemfile cache
+      uses: actions/cache/save@v4.1.2
+      with:
+        path: vendor/bundle
+        key: gems-${{ runner.os }}-${{ hashFiles('**/Gemfile.lock') }}
+
+    - name: Restore CocoaPods cache
+      uses: actions/cache@v4.1.2
+      with:
+        path: |
+          Pods
+          ~/.cocoapods
+        key: cocoapods-cache-v6-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          cocoapods-cache-v6-${{ runner.os }}-${{ github.ref }}
+          cocoapods-cache-v6
+
+    - name: Install CocoaPods
+      run: make ci-pod-install
+      shell: bash
+
+    - name: Save CocoaPods cache
+      uses: actions/cache/save@v4.1.2
+      with:
+        path: |
+          Pods
+          SampleApps/TestApp/Pods
+          ~/.cocoapods
+        key: cocoapods-cache-v6-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/Podfile.lock') }}

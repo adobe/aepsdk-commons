@@ -99,7 +99,11 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
-        repository: adobe/aepsdk-commons
+        # repository: adobe/aepsdk-commons
+        # ref: ${{ inputs.workflow_tag }}
+        # path: .github/aepsdk-commons
+        # sparse-checkout: 'scripts' # Only checkout the scripts directory
+        repository: timkimadobe/aepsdk-commons
         ref: ${{ inputs.workflow_tag }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory

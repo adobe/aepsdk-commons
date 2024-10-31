@@ -19,8 +19,8 @@ import org.gradle.api.JavaVersion
 object BuildConstants {
     object Versions {
         const val MIN_SDK_VERSION = 21
-        const val COMPILE_SDK_VERSION = 34
-        const val TARGET_SDK_VERSION = 34
+        const val COMPILE_SDK_VERSION = 35
+        const val TARGET_SDK_VERSION = 35
 
         const val VERSION_CODE = 1
         const val VERSION_NAME = "1"
@@ -33,8 +33,8 @@ object BuildConstants {
         const val KOTLIN_JVM_TARGET = "1.8"
 
 
-        const val AGP = "8.2.0"
-        const val KOTLIN = "1.8.20"
+        const val AGP = "8.6.0"
+        const val KOTLIN = "1.9.23"
         const val KOTLIN_COROUTINES = "1.6.0"
         const val KTLINT = "0.42.1"
         const val GOOGLE_JAVA_FORMAT = "1.15.0"
@@ -42,7 +42,7 @@ object BuildConstants {
         const val PRETTIER_JAVA_PLUGIN = "1.6.2"
         const val CHECKSTYLE_TOOLS = "8.36.1"
 
-        const val COMPOSE_COMPILER = "1.4.6"
+        const val COMPOSE_COMPILER = "1.5.13"
         const val COMPOSE = "1.4.3"
         const val COMPOSE_MATERIAL = "1.4.3"
         const val ANDROIDX_ACTIVITY_COMPOSE = "1.5.0"

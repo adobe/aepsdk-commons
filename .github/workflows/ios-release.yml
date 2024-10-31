@@ -96,11 +96,6 @@ on:
         required: false
         default: ''
 
-      workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-1.2.3).'
-        type: string
-        required: true
-
 jobs:
   validate-versions:
     name: Validate Versions

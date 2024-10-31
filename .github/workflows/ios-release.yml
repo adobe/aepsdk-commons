@@ -102,9 +102,20 @@ on:
         required: true
 
 jobs:
+  validate-versions:
+    name: Validate Versions
+    uses: timkimadobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-1.0.0
+    with:
+      version: ${{ github.event.inputs.tag }}
+      branch: ${{ github.ref_name }}
+      paths: ${{ inputs.version-validation-paths }}
+      dependencies: ${{ inputs.version-validation-dependencies }}
+      update: false
+      workflow_tag: gha-ios-1.0.0
+
   release:
     runs-on: macos-latest
-
+    needs: validate-versions
     steps:
     - uses: actions/checkout@v4.1.7
       with:
@@ -120,49 +131,6 @@ jobs:
 
     - name: Install XcodeGen
       run: brew install xcodegen
-
-    # - name: Restore cached scripts from aepsdk-commons
-    #   id: cache-scripts
-    #   uses: actions/cache@v4.1.2
-    #   with:
-    #     path: .github/aepsdk-commons/scripts
-    #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-
-    # - name: Download scripts from aepsdk-commons
-    #   if: steps.cache-scripts.outputs.cache-hit != 'true'
-    #   uses: actions/checkout@v4.1.7
-    #   with:
-    #     repository: adobe/aepsdk-commons
-    #     ref: ${{ inputs.workflow_tag }}
-    #     path: .github/aepsdk-commons
-    #     sparse-checkout: 'scripts' # Only checkout the scripts directory
-
-    # - uses: actions/cache/save@v4.1.2
-    #   if: steps.cache-scripts.outputs.cache-hit != 'true'
-    #   with:
-    #     path: .github/aepsdk-commons/scripts
-    #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-      
-    # - name: Verify versions
-    #   run: |
-    #     set -eo pipefail
-    #     echo Release version: ${{ github.event.inputs.tag }}
-    #     python3 ./.github/aepsdk-commons/scripts/versions.py \
-    #       -v "${{ github.event.inputs.tag }}" \
-    #       -p "${{ inputs.version-validation-paths }}" \
-    #       -d "${{ inputs.version-validation-dependencies }}"
-    
-    # - name: Remove scripts from aepsdk-commons
-    #   run: rm -rf .github/aepsdk-commons
-
-    - name: Validate versions
-      uses: timkimadobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-1.0.0
-      with:
-        version: ${{ github.event.inputs.tag }}
-        paths: ${{ inputs.version-validation-paths }}
-        dependencies: ${{ inputs.version-validation-dependencies }}
-        update: false
-        workflow_tag: gha-ios-1.0.0
 
     - name: Pod repo update
       if: ${{ inputs.create-github-release != '' }}

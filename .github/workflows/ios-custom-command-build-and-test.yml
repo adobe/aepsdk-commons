@@ -50,7 +50,7 @@ jobs:
   
   custom-command-no-validate:
     runs-on: macos-latest
-    if: ${{ !inputs.run-validate-code }}
+    if: ${{ inputs.run-validate-code == false }}
     strategy:
       matrix:
         device: ${{ fromJson(inputs.device-names) }}

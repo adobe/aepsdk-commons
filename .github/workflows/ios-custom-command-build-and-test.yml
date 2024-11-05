@@ -47,3 +47,21 @@ jobs:
 
       - name: Run ${{ inputs.command }}
         run: ${{ inputs.command }}
+  
+  custom-command-no-validate:
+    runs-on: macos-latest
+    if: ${{ !inputs.run-validate-code }}
+    strategy:
+      matrix:
+        device: ${{ fromJson(inputs.device-names) }}
+        os: ${{ fromJson(inputs.os-versions) }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Dependencies
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
+
+      - name: Run ${{ inputs.command }}
+        run: ${{ inputs.command }}

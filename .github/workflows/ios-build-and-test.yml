@@ -3,10 +3,10 @@ name: Build and Test (iOS)
 on:
   workflow_call:
     inputs:
-      device-name:
+      device-names:
         required: true
         type: string
-      os-version:
+      os-versions:
         required: true
         type: string
       # Flags for jobs to run
@@ -53,6 +53,10 @@ jobs:
     runs-on: macos-latest
     needs: validate-code
     if: inputs.run-test-ios-unit
+    strategy:
+      matrix:
+        device: ${{ fromJson(inputs.device-names) }}
+        os: ${{ fromJson(inputs.os-versions) }}
 
     steps:
       - name: Checkout Repository
@@ -62,7 +66,7 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
       - name: Run iOS Unit Tests
-        run: make unit-test-ios
+        run: make unit-test-ios IOS_DEVICE_NAME=${{ matrix.device }} IOS_VERSION=${{ matrix.os }}
 
   test-ios-functional:
     runs-on: macos-latest

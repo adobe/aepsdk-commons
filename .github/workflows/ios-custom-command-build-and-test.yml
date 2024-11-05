@@ -3,40 +3,29 @@ name: Custom Command Build and Test (iOS)
 on:
   workflow_call:
     inputs:
-      device_name:
-        required: true
+      device-names:
         type: string
-      os_version:
         required: true
+      os-versions:
         type: string
-      github_ref:
         required: true
-        type: string
       command:
-        required: true
         type: string
+        required: true
+      run-validate-code:
+        type: boolean
+        default: false
 
 jobs:
   validate-code:
     runs-on: macos-latest
-
+    if: ${{ inputs.run-validate-code }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
-
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Lint Source Code
         run: make lint
@@ -44,24 +33,17 @@ jobs:
   custom-command:
     runs-on: macos-latest
     needs: validate-code
+    strategy:
+      matrix:
+        device: ${{ fromJson(inputs.device-names) }}
+        os: ${{ fromJson(inputs.os-versions) }}
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4.1.7
-
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.1.7
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Run ${{ inputs.command }}
         run: ${{ inputs.command }}

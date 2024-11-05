@@ -66,7 +66,7 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
       - name: Run iOS Unit Tests
-        run: make unit-test-ios IOS_DEVICE_NAME=${{ matrix.device }} IOS_VERSION=${{ matrix.os }}
+        run: make unit-test-ios IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
 
   test-ios-functional:
     runs-on: macos-latest

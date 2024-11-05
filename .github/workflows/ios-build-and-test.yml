@@ -86,6 +86,7 @@ jobs:
   test-ios-integration:
     runs-on: macos-latest
     needs: validate-code
+    if: inputs.run-test-ios-integration
 
     steps:
       - name: Checkout Repository
@@ -130,6 +131,7 @@ jobs:
   build_xcframework_and_app:
     runs-on: macos-latest
     needs: validate-code
+    if: inputs.run-build-xcframework-and-app
 
     steps:
       - name: Checkout Repository

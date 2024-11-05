@@ -3,37 +3,34 @@ name: Build and Test (iOS)
 on:
   workflow_call:
     inputs:
-      device_name:
+      device-name:
         required: true
         type: string
-      os_version:
-        required: true
-        type: string
-      github_ref:
+      os-version:
         required: true
         type: string
       # Flags for jobs to run
-      run_test_ios_unit:
+      run-test-ios-unit:
         required: false
         type: boolean
         default: true
-      run_test_ios_functional:
+      run-test-ios-functional:
         required: false
         type: boolean
         default: true
-      run_test_ios_integration:
+      run-test-ios-integration:
         required: false
         type: boolean
         default: true
-      run_test_tvos_unit:
+      run-test-tvos-unit:
         required: false
         type: boolean
         default: true
-      run_test_tvos_functional:
+      run-test-tvos-functional:
         required: false
         type: boolean
         default: true
-      run_build_xcframework_and_app:
+      run-build-xcframework-and-app:
         required: false
         type: boolean
         default: true
@@ -46,33 +43,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      # - name: Restore cached actions from aepsdk-commons
-      #   id: cache-commons
-      #   uses: actions/cache@v4.1.1
-      #   with:
-      #     path: .github/aepsdk-commons/.github/actions
-      #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-
-      # - name: Download actions from aepsdk-commons
-      #   if: steps.cache-commons.outputs.cache-hit != 'true'
-      #   uses: actions/checkout@v4.2.2
-      #   with:
-      #     repository: adobe/aepsdk-commons
-      #     ref: ${{ inputs.workflow_tag }}
-      #     path: .github/aepsdk-commons
-      #     sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
-      # - uses: actions/cache/save@v4.1.1
-      #   if: steps.cache-commons.outputs.cache-hit != 'true'
-      #   with:
-      #     path: .github/aepsdk-commons/.github/actions
-      #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-
-      # - name: Set up dependencies
-      #   uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      # - name: Remove files from aepsdk-commons
-      #   run: rm -rf ./github/aepsdk-commons
       - name: Setup Dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
@@ -82,32 +52,11 @@ jobs:
   test-ios-unit:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.run_test_ios_unit
+    if: inputs.run-test-ios-unit
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
-
-      # - name: Restore cached scripts from aepsdk-commons
-      #   id: cache-scripts
-      #   uses: actions/cache@v4.1.1
-      #   with:
-      #     path: .github/aepsdk-commons/scripts
-      #     key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-
-      # - name: Download actions from aepsdk-commons
-      #   uses: actions/checkout@v4.2.2
-      #   with:
-      #     repository: adobe/aepsdk-commons
-      #     ref: main
-      #     path: .github/aepsdk-commons
-      #     sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
-      # - name: Setup Dependencies
-      #   uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      # - name: Remove files from aepsdk-commons
-      #   run: rm -rf ./github/aepsdk-commons
 
       - name: Setup Dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
@@ -118,25 +67,14 @@ jobs:
   test-ios-functional:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.run_test_ios_functional
+    if: inputs.run-test-ios-functional
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
       
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
       - name: Run iOS Functional Tests
         run: make functional-test-ios
@@ -144,25 +82,14 @@ jobs:
   test-ios-integration:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.run_test_ios_integration && (inputs.github_ref == 'refs/heads/main' || inputs.github_ref == 'refs/heads/staging')
+    if: inputs.run-test-ios-integration && (${{ github.ref }} == 'refs/heads/main' || ${{ github.ref }} == 'refs/heads/staging')
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
       
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
       - name: Run iOS Integration Tests
         run: make test-integration-upstream
@@ -170,25 +97,14 @@ jobs:
   test-tvos-unit:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.run_test_tvos_unit
+    if: inputs.run-test-tvos-unit
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
       
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
       
       - name: Run tvOS Unit Tests
         run: make unit-test-tvos
@@ -196,25 +112,14 @@ jobs:
   test-tvos-functional:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.run_test_tvos_functional
+    if: inputs.run-test-tvos-functional
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
       
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
       - name: Run tvOS Functional Tests
         run: make functional-test-tvos
@@ -222,25 +127,14 @@ jobs:
   build_xcframework_and_app:
     runs-on: macos-latest
     needs: validate-code
-    if: inputs.run_build_xcframework_and_app && (inputs.github_ref == 'refs/heads/main' || inputs.github_ref == 'refs/heads/staging')
+    if: inputs.run-build-xcframework-and-app && (${{ github.ref }} == 'refs/heads/main' || ${{ github.ref }} == 'refs/heads/staging')
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
       
-      - name: Checkout actions from aepsdk-commons
-        uses: actions/checkout@v4.2.2
-        with:
-          repository: adobe/aepsdk-commons
-          ref: main
-          path: .github/aepsdk-commons
-          sparse-checkout: '.github/actions' # Only checkout the GitHub actions directory
-
       - name: Setup Dependencies
-        uses: ./.github/aepsdk-commons/.github/actions/setup-action
-
-      - name: Remove files from aepsdk-commons
-        run: rm -rf ./github/aepsdk-commons
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-1.0.0
 
       - name: Build XCFramework
         run: make archive

@@ -9,44 +9,116 @@ on:
           Example: '["iPhone 15", "iPhone 15 Pro"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["iPhone 15"]'
+        default: ''
       ios-versions:
         description: |
           The iOS versions to use for testing. Must be formatted as a valid JSON array string.
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["18.0"]'
+        default: ''
       tvos-device-names:
         description: |
           The tvOS device names to use for testing. Must be formatted as a valid JSON array string.
           Example: '["Apple TV 4K (3rd generation)", "Apple TV"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["Apple TV"]'
+        default: ''
       tvos-versions:
         description: |
           The tvOS versions to use for testing. Must be formatted as a valid JSON array string.
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["18.0"]'
+        default: ''
       command:
         type: string
         required: true
 
 jobs:
+  define-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      ios-device-names: ${{ steps.define-matrix.outputs.ios-device-names }}
+      ios-versions: ${{ steps.define-matrix.outputs.ios-versions }}
+      tvos-device-names: ${{ steps.define-matrix.outputs.tvos-device-names }}
+      tvos-versions: ${{ steps.define-matrix.outputs.tvos-versions }}
+      is-default-ios-device: ${{ steps.define-matrix.outputs.is-default-ios-device }}
+      is-default-ios: ${{ steps.define-matrix.outputs.is-default-ios }}
+      is-default-tvos-device: ${{ steps.define-matrix.outputs.is-default-tvos-device }}
+      is-default-tvos: ${{ steps.define-matrix.outputs.is-default-tvos }}
+    steps:
+      - name: Define Matrix
+        id: define-matrix
+        shell: bash
+        run: |
+          # Set default values
+          default_ios_device_names='["iPhone 15"]'
+          default_ios_versions='["18.0"]'
+          default_tvos_device_names='["Apple TV"]'
+          default_tvos_versions='["18.0"]'
+
+          # Get inputs
+          ios_device_names='${{ inputs.ios-device-names }}'
+          ios_versions='${{ inputs.ios-versions }}'
+          tvos_device_names='${{ inputs.tvos-device-names }}'
+          tvos_versions='${{ inputs.tvos-versions }}'
+
+          # Check and set default values
+          if [ -z "$ios_device_names" ]; then
+            ios_device_names="$default_ios_device_names"
+            is_default_ios_device='true'
+          else
+            is_default_ios_device='false'
+          fi
+
+          if [ -z "$ios_versions" ]; then
+            ios_versions="$default_ios_versions"
+            is_default_ios='true'
+          else
+            is_default_ios='false'
+          fi
+
+          if [ -z "$tvos_device_names" ]; then
+            tvos_device_names="$default_tvos_device_names"
+            is_default_tvos_device='true'
+          else
+            is_default_tvos_device='false'
+          fi
+
+          if [ -z "$tvos_versions" ]; then
+            tvos_versions="$default_tvos_versions"
+            is_default_tvos='true'
+          else
+            is_default_tvos='false'
+          fi
+
+          # Set outputs
+          echo "ios-device-names=$ios_device_names" >> "$GITHUB_OUTPUT"
+          echo "ios-versions=$ios_versions" >> "$GITHUB_OUTPUT"
+          echo "tvos-device-names=$tvos_device_names" >> "$GITHUB_OUTPUT"
+          echo "tvos-versions=$tvos_versions" >> "$GITHUB_OUTPUT"
+
+          echo "is-default-ios-device=$is_default_ios_device" >> "$GITHUB_OUTPUT"
+          echo "is-default-ios=$is_default_ios" >> "$GITHUB_OUTPUT"
+          echo "is-default-tvos-device=$is_default_tvos_device" >> "$GITHUB_OUTPUT"
+          echo "is-default-tvos=$is_default_tvos" >> "$GITHUB_OUTPUT"
   run-custom-command:
-    name: ${{ matrix.ios-device }} ${{ matrix.ios }} ${{ matrix.tvos-device }} ${{ matrix.tvos }}
+    name: >
+      ${{ needs.define-matrix.outputs.is-default-ios-device != 'true' && matrix.ios-device || '' }}
+      ${{ needs.define-matrix.outputs.is-default-ios != 'true' && matrix.ios || '' }}
+      ${{ needs.define-matrix.outputs.is-default-tvos-device != 'true' && matrix.tvos-device || '' }}
+      ${{ needs.define-matrix.outputs.is-default-tvos != 'true' && matrix.tvos || '' }}
     runs-on: macos-latest
+    needs: define-matrix
     if: ${{ inputs.ios-device-names != '' }}
     strategy:
       max-parallel: 2
       matrix:
-        ios-device: ${{ fromJson(inputs.ios-device-names) }}
-        ios: ${{ fromJson(inputs.ios-versions) }}
-        tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
-        tvos: ${{ fromJson(inputs.tvos-versions) }}
+        ios-device: ${{ fromJson(needs.define-matrix.outputs.ios-device-names) }}
+        ios: ${{ fromJson(needs.define-matrix.outputs.ios-versions) }}
+        tvos-device: ${{ fromJson(needs.define-matrix.outputs.tvos-device-names) }}
+        tvos: ${{ fromJson(needs.define-matrix.outputs.tvos-versions) }}
 
     steps:
       - name: Checkout Repository

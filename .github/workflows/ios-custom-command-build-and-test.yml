@@ -9,28 +9,28 @@ on:
           Example: '["iPhone 15", "iPhone 15 Pro"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '[]'
+        default: '["iPhone 15"]'
       ios-versions:
         description: |
           The iOS versions to use for testing. Must be formatted as a valid JSON array string.
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '[]'
+        default: '["18.0"]'
       tvos-device-names:
         description: |
           The tvOS device names to use for testing. Must be formatted as a valid JSON array string.
           Example: '["Apple TV 4K (3rd generation)", "Apple TV"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '[]'
+        default: '["Apple TV"]'
       tvos-versions:
         description: |
           The tvOS versions to use for testing. Must be formatted as a valid JSON array string.
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '[]'
+        default: '["18.0"]'
       command:
         type: string
         required: true
@@ -43,15 +43,10 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        # ios-device: ${{ fromJson(inputs.ios-device-names) }}
-        # ios: ${{ fromJson(inputs.ios-versions) }}
-        # tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
-        # tvos: ${{ fromJson(inputs.tvos-versions) }}
-        include:
-          - ios-device: ${{ fromJson(inputs.ios-device-names) }}
-            ios: ${{ fromJson(inputs.ios-versions) }}
-            tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
-            tvos: ${{ fromJson(inputs.tvos-versions) }}
+        ios-device: ${{ fromJson(inputs.ios-device-names) }}
+        ios: ${{ fromJson(inputs.ios-versions) }}
+        tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
+        tvos: ${{ fromJson(inputs.tvos-versions) }}
 
     steps:
       - name: Checkout Repository

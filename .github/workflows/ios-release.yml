@@ -153,6 +153,7 @@ jobs:
 
     - name: Create GitHub release and upload assets
       if: ${{ inputs.create-github-release != '' }}
+      continue-on-error: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CREATE_GITHUB_RELEASE: ${{ inputs.create-github-release }}
@@ -205,6 +206,7 @@ jobs:
       env:
         POD_PUBLISH_EXTENSIONS: ${{ inputs.pod-publish-extensions }}
         COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        TAG: ${{ inputs.tag }}
       run: |
         set -eo pipefail
 

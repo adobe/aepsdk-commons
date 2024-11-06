@@ -108,6 +108,7 @@ jobs:
 
       - name: Create GitHub release
         if: ${{ inputs.create-github-release }}
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -128,7 +129,16 @@ jobs:
         env:
           GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
           GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
+          TAG: ${{ inputs.tag }}
         run: |
+          # Check if the tag exists using gh
+          if ! gh api repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG} > /dev/null 2>&1; then
+            echo "Error: Tag '${TAG}' does not exist."
+            exit 1
+          fi
+
+          echo "Tag '${TAG}' exists."
+
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 

@@ -212,7 +212,7 @@ jobs:
 
         # Check if the tag exists in the remote repository
         if [ -z "$(git ls-remote --tags origin refs/tags/$TAG)" ]; then
-            echo "Error: Tag '$TAG' does not exist in the remote repository."
+            echo "::error title=Missing tag for publishing Pods::Tag '$TAG' does not exist in the remote repository."
             exit 1
         else
             echo "Tag '$TAG' exists in the remote repository."

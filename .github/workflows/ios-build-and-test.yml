@@ -65,24 +65,24 @@ jobs:
       - name: Lint Source Code
         run: make lint
 
-  test-ios-unit:
-    runs-on: macos-latest
-    needs: validate-code
-    if: inputs.run-test-ios-unit
-    strategy:
-      matrix:
-        device: ${{ fromJson(inputs.ios-device-names) }}
-        os: ${{ fromJson(inputs.ios-versions) }}
+  # test-ios-unit:
+  #   runs-on: macos-latest
+  #   needs: validate-code
+  #   if: inputs.run-test-ios-unit
+  #   strategy:
+  #     matrix:
+  #       device: ${{ fromJson(inputs.ios-device-names) }}
+  #       os: ${{ fromJson(inputs.ios-versions) }}
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4.2.2
 
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
+  #     - name: Setup Dependencies
+  #       uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
-      - name: Run iOS Unit Tests
-        run: make unit-test-ios IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
+  #     - name: Run iOS Unit Tests
+  #       run: make unit-test-ios IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
   
   test-ios-unit2:
     needs: validate-code
@@ -110,7 +110,7 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Run iOS Functional Tests
-        run: make functional-test-ios
+        run: make functional-test-ios IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
 
   test-ios-integration:
     runs-on: macos-latest
@@ -129,7 +129,7 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Run iOS Integration Tests
-        run: make test-integration-upstream
+        run: make test-integration-upstream IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
 
   test-tvos-unit:
     runs-on: macos-latest
@@ -148,7 +148,7 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
       
       - name: Run tvOS Unit Tests
-        run: make unit-test-tvos
+        run: make unit-test-tvos TVOS_DEVICE_NAME="${{ matrix.device }}" TVOS_VERSION="${{ matrix.os }}"
 
   test-tvos-functional:
     runs-on: macos-latest
@@ -167,7 +167,7 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Run tvOS Functional Tests
-        run: make functional-test-tvos
+        run: make functional-test-tvos TVOS_DEVICE_NAME="${{ matrix.device }}" TVOS_VERSION="${{ matrix.os }}"
 
   build_xcframework_and_app:
     runs-on: macos-latest

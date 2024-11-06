@@ -3,40 +3,46 @@ name: Custom Command Build and Test (iOS)
 on:
   workflow_call:
     inputs:
-      device-names:
+      ios-device-names:
+        description: |
+          The iOS device names to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["iPhone 15", "iPhone 15 Pro"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        required: true
-      os-versions:
+        default: ''
+      ios-versions:
+        description: |
+          The iOS versions to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["18.0", "18.1"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        required: true
+        default: ''
+      tvos-device-names:
+        description: |
+          The tvOS device names to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["Apple TV 4K (3rd generation)", "Apple TV"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
+        type: string
+        default: ''
+      tvos-versions:
+        description: |
+          The tvOS versions to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["18.0", "18.1"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
+        type: string
+        default: ''
       command:
         type: string
         required: true
-      run-validate-code:
-        type: boolean
-        default: false
 
 jobs:
-  validate-code:
+  ios-custom-command:
     runs-on: macos-latest
-    if: ${{ inputs.run-validate-code }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-      - name: Lint Source Code
-        run: make lint
-
-  custom-command:
-    runs-on: macos-latest
-    needs: validate-code
+    if: ${{ inputs.ios-device-names != '' }}
     strategy:
       matrix:
-        device: ${{ fromJson(inputs.device-names) }}
-        os: ${{ fromJson(inputs.os-versions) }}
+        device: ${{ fromJson(inputs.ios-device-names) }}
+        os: ${{ fromJson(inputs.ios-versions) }}
 
     steps:
       - name: Checkout Repository
@@ -46,15 +52,15 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Run ${{ inputs.command }}
-        run: ${{ inputs.command }}
+        run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
   
-  custom-command-no-validate:
+  tvos-custom-command:
     runs-on: macos-latest
-    if: ${{ inputs.run-validate-code == false }}
+    if: ${{ inputs.tvos-device-names != '' }}
     strategy:
       matrix:
-        device: ${{ fromJson(inputs.device-names) }}
-        os: ${{ fromJson(inputs.os-versions) }}
+        device: ${{ fromJson(inputs.tvos-device-names) }}
+        os: ${{ fromJson(inputs.tvos-versions) }}
 
     steps:
       - name: Checkout Repository
@@ -64,4 +70,4 @@ jobs:
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       - name: Run ${{ inputs.command }}
-        run: ${{ inputs.command }}
+        run: ${{ inputs.command }} TVOS_DEVICE_NAME="${{ matrix.device }}" TVOS_VERSION="${{ matrix.os }}"

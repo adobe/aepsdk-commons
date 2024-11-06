@@ -5,6 +5,7 @@ on:
 
 jobs:
   validate-code:
+    name: Validate Code
     runs-on: macos-latest
 
     steps:

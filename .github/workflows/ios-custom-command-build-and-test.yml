@@ -127,9 +127,5 @@ jobs:
       - name: Setup Dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
-      - if: ${{ matrix.ios-device }}
-        name: Run ${{ inputs.command }}
+      - name: Run ${{ inputs.command }}
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
-
-      # - if: ${{ matrix.tvos-device }}
-      #   run: ${{ inputs.command }} TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"

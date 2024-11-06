@@ -36,14 +36,16 @@ on:
         required: true
 
 jobs:
-  ios-custom-command:
-    name: ${{ matrix.device }} ${{ matrix.os }}
+  run-custom-command:
+    name: ${{ matrix.ios-device }} ${{ matrix.ios }} ${{ matrix.tvos-device }} ${{ matrix.tvos }}
     runs-on: macos-latest
     if: ${{ inputs.ios-device-names != '' }}
     strategy:
       matrix:
-        device: ${{ fromJson(inputs.ios-device-names) }}
-        os: ${{ fromJson(inputs.ios-versions) }}
+        ios-device: ${{ fromJson(inputs.ios-device-names) }}
+        ios: ${{ fromJson(inputs.ios-versions) }}
+        tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
+        tvos: ${{ fromJson(inputs.tvos-versions) }}
 
     steps:
       - name: Checkout Repository
@@ -52,24 +54,9 @@ jobs:
       - name: Setup Dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
-      - name: Run ${{ inputs.command }}
-        run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
-  
-  tvos-custom-command:
-    name: ${{ matrix.device }} ${{ matrix.os }}
-    runs-on: macos-latest
-    if: ${{ inputs.tvos-device-names != '' }}
-    strategy:
-      matrix:
-        device: ${{ fromJson(inputs.tvos-device-names) }}
-        os: ${{ fromJson(inputs.tvos-versions) }}
+      - if: ${{ matrix.ios-device }}
+        name: Run ${{ inputs.command }}
+        run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}"
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-      - name: Run ${{ inputs.command }}
-        run: ${{ inputs.command }} TVOS_DEVICE_NAME="${{ matrix.device }}" TVOS_VERSION="${{ matrix.os }}"
+      - if: ${{ matrix.tvos-device }}
+        run: ${{ inputs.command }} TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"

@@ -53,38 +53,9 @@ on:
 
 jobs:
   validate-code:
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-      - name: Lint Source Code
-        run: make lint
-
-  # test-ios-unit:
-  #   runs-on: macos-latest
-  #   needs: validate-code
-  #   if: inputs.run-test-ios-unit
-  #   strategy:
-  #     matrix:
-  #       device: ${{ fromJson(inputs.ios-device-names) }}
-  #       os: ${{ fromJson(inputs.ios-versions) }}
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4.2.2
-
-  #     - name: Setup Dependencies
-  #       uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-  #     - name: Run iOS Unit Tests
-  #       run: make unit-test-ios IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
+    uses: timkimadobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@ios-circleci-to-github
   
-  test-ios-unit2:
+  test-ios-unit:
     needs: validate-code
     if: inputs.run-test-ios-unit
     uses: timkimadobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@ios-circleci-to-github
@@ -94,80 +65,40 @@ jobs:
       command: make unit-test-ios
 
   test-ios-functional:
-    runs-on: macos-latest
     needs: validate-code
     if: inputs.run-test-ios-functional
-    strategy:
-      matrix:
-        device: ${{ fromJson(inputs.ios-device-names) }}
-        os: ${{ fromJson(inputs.ios-versions) }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-      
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-      - name: Run iOS Functional Tests
-        run: make functional-test-ios IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
+    uses: timkimadobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@ios-circleci-to-github
+    with:
+      ios-device-names: ${{ inputs.ios-device-names }}
+      ios-versions: ${{ inputs.ios-versions }}
+      command: make functional-test-ios
 
   test-ios-integration:
-    runs-on: macos-latest
     needs: validate-code
     if: inputs.run-test-ios-integration
-    strategy:
-      matrix:
-        device: ${{ fromJson(inputs.ios-device-names) }}
-        os: ${{ fromJson(inputs.ios-versions) }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-      
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-      - name: Run iOS Integration Tests
-        run: make test-integration-upstream IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
+    uses: timkimadobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@ios-circleci-to-github
+    with:
+      ios-device-names: ${{ inputs.ios-device-names }}
+      ios-versions: ${{ inputs.ios-versions }}
+      command: make test-integration-upstream
 
   test-tvos-unit:
-    runs-on: macos-latest
     needs: validate-code
     if: inputs.run-test-tvos-unit
-    strategy:
-      matrix:
-        device: ${{ fromJson(inputs.tvos-device-names) }}
-        os: ${{ fromJson(inputs.tvos-versions) }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-      
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-      
-      - name: Run tvOS Unit Tests
-        run: make unit-test-tvos TVOS_DEVICE_NAME="${{ matrix.device }}" TVOS_VERSION="${{ matrix.os }}"
+    uses: timkimadobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@ios-circleci-to-github
+    with:
+      tvos-device-names: ${{ inputs.tvos-device-names }}
+      tvos-versions: ${{ inputs.tvos-versions }}
+      command: make unit-test-tvos
 
   test-tvos-functional:
-    runs-on: macos-latest
     needs: validate-code
     if: inputs.run-test-tvos-functional
-    strategy:
-      matrix:
-        device: ${{ fromJson(inputs.tvos-device-names) }}
-        os: ${{ fromJson(inputs.tvos-versions) }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
-      
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
-
-      - name: Run tvOS Functional Tests
-        run: make functional-test-tvos TVOS_DEVICE_NAME="${{ matrix.device }}" TVOS_VERSION="${{ matrix.os }}"
+    uses: timkimadobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@ios-circleci-to-github
+    with:
+      tvos-device-names: ${{ inputs.tvos-device-names }}
+      tvos-versions: ${{ inputs.tvos-versions }}
+      command: make functional-test-tvos
 
   build_xcframework_and_app:
     runs-on: macos-latest

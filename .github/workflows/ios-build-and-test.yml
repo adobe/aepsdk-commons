@@ -53,6 +53,7 @@ on:
 
 jobs:
   validate-code:
+    name: Validate Code
     uses: timkimadobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@ios-circleci-to-github
   
   test-ios-unit:

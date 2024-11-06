@@ -41,11 +41,17 @@ jobs:
     runs-on: macos-latest
     if: ${{ inputs.ios-device-names != '' }}
     strategy:
+      max-parallel: 2
       matrix:
-        ios-device: ${{ fromJson(inputs.ios-device-names) }}
-        ios: ${{ fromJson(inputs.ios-versions) }}
-        tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
-        tvos: ${{ fromJson(inputs.tvos-versions) }}
+        # ios-device: ${{ fromJson(inputs.ios-device-names) }}
+        # ios: ${{ fromJson(inputs.ios-versions) }}
+        # tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
+        # tvos: ${{ fromJson(inputs.tvos-versions) }}
+        include:
+          - ios-device: ${{ fromJson(inputs.ios-device-names) }}
+            ios: ${{ fromJson(inputs.ios-versions) }}
+            tvos-device: ${{ fromJson(inputs.tvos-device-names) }}
+            tvos: ${{ fromJson(inputs.tvos-versions) }}
 
     steps:
       - name: Checkout Repository

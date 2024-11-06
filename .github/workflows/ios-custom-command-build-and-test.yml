@@ -37,6 +37,7 @@ on:
 
 jobs:
   ios-custom-command:
+    name: ${{ inputs.command }} (iOS)
     runs-on: macos-latest
     if: ${{ inputs.ios-device-names != '' }}
     strategy:
@@ -55,6 +56,7 @@ jobs:
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.device }}" IOS_VERSION="${{ matrix.os }}"
   
   tvos-custom-command:
+    name: ${{ inputs.command }} (tvOS)
     runs-on: macos-latest
     if: ${{ inputs.tvos-device-names != '' }}
     strategy:

@@ -53,6 +53,10 @@ on:
       run-build-xcframework-and-app:
         type: boolean
         default: false
+      codecov-directory:
+        description: 'The directory where the coverage report is stored.'
+        type: string
+        default: ''
 
 jobs:
   validate-code:

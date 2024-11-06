@@ -210,13 +210,13 @@ jobs:
       run: |
         set -eo pipefail
 
-        # Check if the tag exists using gh
-        if ! gh api repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG} > /dev/null 2>&1; then
-          echo "Error: Tag '${TAG}' does not exist."
-          exit 1
+        # Check if the tag exists in the remote repository
+        if [ -z "$(git ls-remote --tags origin refs/tags/$TAG)" ]; then
+            echo "Error: Tag '$TAG' does not exist in the remote repository."
+            exit 1
+        else
+            echo "Tag '$TAG' exists in the remote repository."
         fi
-
-        echo "Tag '${TAG}' exists."
 
         # Split the input string into an array using comma as delimiter
         IFS=',' read -ra LIBS <<< "${POD_PUBLISH_EXTENSIONS}"

@@ -56,7 +56,7 @@ jobs:
 
       - if: ${{ matrix.ios-device }}
         name: Run ${{ inputs.command }}
-        run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}"
+        run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
 
-      - if: ${{ matrix.tvos-device }}
-        run: ${{ inputs.command }} TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
+      # - if: ${{ matrix.tvos-device }}
+      #   run: ${{ inputs.command }} TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"

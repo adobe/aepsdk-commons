@@ -135,3 +135,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           codecov_yml_path: ${{ github.workspace }}/codecov.yml
+          verbose: true

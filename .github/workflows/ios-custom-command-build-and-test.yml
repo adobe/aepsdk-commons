@@ -129,3 +129,6 @@ jobs:
 
       - name: Run ${{ inputs.command }}
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
+      
+      - name: Upload Code Coverage
+        uses: codecov/codecov-action@v4.6.0

@@ -37,6 +37,7 @@ on:
 
 jobs:
   define-matrix:
+    name: Define Matrix
     runs-on: ubuntu-latest
     outputs:
       ios-device-names: ${{ steps.define-matrix.outputs.ios-device-names }}
@@ -111,7 +112,6 @@ jobs:
       ${{ needs.define-matrix.outputs.is-default-tvos != 'true' && matrix.tvos || '' }}
     runs-on: macos-latest
     needs: define-matrix
-    if: ${{ inputs.ios-device-names != '' }}
     strategy:
       max-parallel: 2
       matrix:

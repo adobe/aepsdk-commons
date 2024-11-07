@@ -53,10 +53,6 @@ on:
       run-build-xcframework-and-app:
         type: boolean
         default: false
-      codecov-directory:
-        description: 'The directory where the coverage report is stored.'
-        type: string
-        default: ''
 
 jobs:
   validate-code:
@@ -72,8 +68,7 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make unit-test-ios
-      codecov-directory: ${{ inputs.codecov-directory }}
-      codecov-flag: unittest
+      codecov-flag: ios-unit-tests
     secrets: inherit
 
   test-ios-functional:
@@ -85,6 +80,8 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make functional-test-ios
+      codecov-flag: ios-functional-tests
+    secrets: inherit
 
   test-ios-integration:
     name: Integration Test (iOS)
@@ -95,6 +92,8 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make test-integration-upstream
+      codecov-flag: ios-integration-tests
+    secrets: inherit
 
   test-tvos-unit:
     name: Unit Test (tvOS)
@@ -105,6 +104,8 @@ jobs:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make unit-test-tvos
+      codecov-flag: tvos-unit-tests
+    secrets: inherit
 
   test-tvos-functional:
     name: Functional Test (tvOS)
@@ -115,6 +116,8 @@ jobs:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make functional-test-tvos
+      codecov-flag: tvos-functional-tests
+    secrets: inherit
   
   test-tvos-integration:
     name: Integration Test (tvOS)
@@ -125,6 +128,8 @@ jobs:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make integration-test-tvos
+      codecov-flag: tvos-integration-tests
+    secrets: inherit
 
   build_xcframework_and_app:
     name: Build XCFramework and Test App

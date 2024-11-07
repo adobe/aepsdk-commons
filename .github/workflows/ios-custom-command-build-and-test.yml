@@ -34,10 +34,6 @@ on:
       command:
         type: string
         required: true
-      codecov-directory:
-        description: 'The directory where the coverage report is stored.'
-        type: string
-        default: ''
       codecov-flag:
         description: 'The flag to pass to the codecov uploader.'
         type: string
@@ -137,19 +133,11 @@ jobs:
 
       - name: Run ${{ inputs.command }}
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
-      - name: Copy Test Results to DerivedData
-        run: |
-          ls -al /Users/runner/Library/Developer/Xcode/DerivedData
-          # ls -al build/reports/
-          # mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/
-          # cp -R build/reports/iosIntegrationUpstreamResults.xcresult /Users/runner/Library/Developer/Xcode/DerivedData/
 
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v4.6.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # codecov_yml_path: ./codecov.yml
-          # directory: ${{ inputs.codecov-directory }}
+          codecov_yml_path: ./codecov.yml
           flags: ${{ inputs.codecov-flag }}
-          # files: "*.xcresult"
           verbose: true

@@ -34,6 +34,10 @@ on:
       command:
         type: string
         required: true
+      enable-codecov:
+        description: 'Enable Codecov for test coverage.'
+        type: boolean
+        default: true
       codecov-flag:
         description: 'The flag to pass to the codecov uploader.'
         type: string
@@ -135,9 +139,9 @@ jobs:
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
 
       - name: Upload Code Coverage
+        if: ${{ inputs.enable-codecov }}
         uses: codecov/codecov-action@v4.6.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          codecov_yml_path: ./codecov.yml
           flags: ${{ inputs.codecov-flag }}
           verbose: true

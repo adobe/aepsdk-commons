@@ -53,6 +53,10 @@ on:
       run-build-xcframework-and-app:
         type: boolean
         default: false
+      enable-codecov:
+        description: 'Enable Codecov for test coverage.'
+        type: boolean
+        default: true
 
 jobs:
   validate-code:
@@ -68,6 +72,7 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make unit-test-ios
+      enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-unit-tests
     secrets: inherit
 
@@ -80,6 +85,7 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make functional-test-ios
+      enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-functional-tests
     secrets: inherit
 
@@ -92,6 +98,7 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make test-integration-upstream
+      enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-integration-tests
     secrets: inherit
 
@@ -104,6 +111,7 @@ jobs:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make unit-test-tvos
+      enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-unit-tests
     secrets: inherit
 
@@ -116,6 +124,7 @@ jobs:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make functional-test-tvos
+      enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-functional-tests
     secrets: inherit
   
@@ -128,6 +137,7 @@ jobs:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make integration-test-tvos
+      enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-integration-tests
     secrets: inherit
 

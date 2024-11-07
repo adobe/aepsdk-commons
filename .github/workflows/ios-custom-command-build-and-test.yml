@@ -132,8 +132,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
+      # - name: Setup Dependencies
+      #   uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
       # - name: Run ${{ inputs.command }}
       #   run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
@@ -145,4 +145,5 @@ jobs:
           codecov_yml_path: ./codecov.yml
           directory: ${{ inputs.codecov-directory }}
           flags: ${{ inputs.codecov-flag }}
+          files: "*.xcresult"
           verbose: true

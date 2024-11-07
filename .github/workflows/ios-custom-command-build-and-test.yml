@@ -139,8 +139,8 @@ jobs:
       #   run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
       - name: Copy Test Results to DerivedData
         run: |
-          mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/Logs/Test/
-          cp -R build/reports/iosIntegrationUpstreamResults.xcresult /Users/runner/Library/Developer/Xcode/DerivedData/Logs/Test/
+          mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/
+          cp -R build/reports/iosIntegrationUpstreamResults.xcresult /Users/runner/Library/Developer/Xcode/DerivedData/
 
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v4.6.0

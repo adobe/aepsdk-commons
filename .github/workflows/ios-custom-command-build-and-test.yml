@@ -121,7 +121,7 @@ jobs:
     runs-on: macos-latest
     needs: define-matrix
     strategy:
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         ios-device: ${{ fromJson(needs.define-matrix.outputs.ios-device-names) }}
         ios: ${{ fromJson(needs.define-matrix.outputs.ios-versions) }}
@@ -142,7 +142,7 @@ jobs:
         uses: codecov/codecov-action@v4.6.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          codecov_yml_path: codecov.yml
+          codecov_yml_path: ./codecov.yml
           directory: ${{ inputs.codecov-directory }}
           flags: ${{ inputs.codecov-flag }}
           verbose: true

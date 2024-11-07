@@ -132,17 +132,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      # - name: Setup Dependencies
-      #   uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
+      - name: Setup Dependencies
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@ios-circleci-to-github
 
-      # - name: Run ${{ inputs.command }}
-      #   run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
+      - name: Run ${{ inputs.command }}
+        run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
       - name: Copy Test Results to DerivedData
         run: |
           ls -al /Users/runner/Library/Developer/Xcode/DerivedData
-          ls -al build/reports/
-          mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/
-          cp -R build/reports/iosIntegrationUpstreamResults.xcresult /Users/runner/Library/Developer/Xcode/DerivedData/
+          # ls -al build/reports/
+          # mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/
+          # cp -R build/reports/iosIntegrationUpstreamResults.xcresult /Users/runner/Library/Developer/Xcode/DerivedData/
 
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v4.6.0

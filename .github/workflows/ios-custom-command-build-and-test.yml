@@ -139,6 +139,8 @@ jobs:
       #   run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
       - name: Copy Test Results to DerivedData
         run: |
+          ls -al /Users/runner/Library/Developer/Xcode/DerivedData
+          ls -al build/reports/
           mkdir -p /Users/runner/Library/Developer/Xcode/DerivedData/
           cp -R build/reports/iosIntegrationUpstreamResults.xcresult /Users/runner/Library/Developer/Xcode/DerivedData/
 

@@ -72,6 +72,8 @@ jobs:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make unit-test-ios
+      codecov-directory: ${{ inputs.codecov-directory }}
+      codecov-flag: unittest
     secrets: inherit
 
   test-ios-functional:

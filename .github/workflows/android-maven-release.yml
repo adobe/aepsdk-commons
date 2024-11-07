@@ -79,7 +79,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: timkimadobe/aepsdk-commons/.github/workflows/versions.yml@gha-1.0.0
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.0.0
     with:
       version: ${{ github.event.inputs.tag }}
       branch: ${{ github.ref_name }}
@@ -131,13 +131,13 @@ jobs:
           GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
           TAG: ${{ inputs.tag }}
         run: |
-          # Check if the tag exists using gh
-          if ! gh api repos/${GITHUB_REPOSITORY}/git/refs/tags/${TAG} > /dev/null 2>&1; then
-            echo "Error: Tag '${TAG}' does not exist."
-            exit 1
+          # Check if the tag exists in the remote repository
+          if [ -z "$(git ls-remote --tags origin refs/tags/$TAG)" ]; then
+              echo "::error title=Missing tag for publishing Pods::Tag '$TAG' does not exist in the remote repository."
+              exit 1
+          else
+              echo "Tag '$TAG' exists in the remote repository."
           fi
-
-          echo "Tag '${TAG}' exists."
 
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes

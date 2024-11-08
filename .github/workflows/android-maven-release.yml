@@ -132,11 +132,11 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: |
           # Check if the tag exists in the remote repository
-          if [ -z "$(git ls-remote --tags origin refs/tags/$TAG)" ]; then
-              echo "::error title=Missing tag for publishing Pods::Tag '$TAG' does not exist in the remote repository."
+          if [ -z "$(git ls-remote --tags origin refs/tags/v$TAG)" ]; then
+              echo "::error title=Missing tag for publishing Pods::Tag 'v$TAG' does not exist in the remote repository."
               exit 1
           else
-              echo "Tag '$TAG' exists in the remote repository."
+              echo "Tag 'v$TAG' exists in the remote repository."
           fi
 
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes

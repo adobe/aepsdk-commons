@@ -89,6 +89,8 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    env:
+      PREFIXED_TAG: v${{ inputs.tag }}
     needs: validate-versions
     steps:
       - uses: actions/checkout@v4.1.7
@@ -113,7 +115,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Initialize the title with the tag
-          TITLE="v${{ github.event.inputs.tag }}"
+          TITLE="${PREFIXED_TAG}"
 
           # Append suffix if provided (non-empty)
           if [ -n "${{ inputs.release-variant }}" ]; then
@@ -121,7 +123,7 @@ jobs:
           fi
 
           # Create the GitHub release with the constructed title
-          gh release create "v${{ github.event.inputs.tag }}" \
+          gh release create "${PREFIXED_TAG}" \
             --generate-notes \
             --title "${TITLE}"
 
@@ -129,14 +131,13 @@ jobs:
         env:
           GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
           GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
-          TAG: ${{ inputs.tag }}
         run: |
           # Check if the tag exists in the remote repository
-          if [ -z "$(git ls-remote --tags origin refs/tags/v$TAG)" ]; then
-              echo "::error title=Missing tag for publishing Pods::Tag 'v$TAG' does not exist in the remote repository."
+          if [ -z "$(git ls-remote --tags origin refs/tags/${PREFIXED_TAG})" ]; then
+              echo "::error title=Missing tag for publishing Pods::Tag '${PREFIXED_TAG}' does not exist in the remote repository."
               exit 1
           else
-              echo "Tag 'v$TAG' exists in the remote repository."
+              echo "Tag '${PREFIXED_TAG}' exists in the remote repository."
           fi
 
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes

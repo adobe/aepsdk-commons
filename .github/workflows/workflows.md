@@ -184,3 +184,37 @@ The Makefile in the caller repository must include the following rules:
 - When `run-build-xcframework-and-app` is `true`:
   - `make archive`
   - `make build-app`
+
+For device and OS matrix to work, the Makefile must support four new input properties:
+- `IOS_DEVICE_NAME`
+- `IOS_VERSION`
+- `TVOS_DEVICE_NAME`
+- `TVOS_VERSION`
+
+```makefile
+# At the top level of the Makefile:
+# Values with defaults
+IOS_DEVICE_NAME ?= iPhone 15
+# If OS version is not specified, uses the first device name match in the list of available simulators
+IOS_VERSION ?= 
+ifeq ($(strip $(IOS_VERSION)),)
+    IOS_DESTINATION = "platform=iOS Simulator,name=$(IOS_DEVICE_NAME)"
+else
+    IOS_DESTINATION = "platform=iOS Simulator,name=$(IOS_DEVICE_NAME),OS=$(IOS_VERSION)"
+endif
+
+TVOS_DEVICE_NAME ?= Apple TV
+# If OS version is not specified, uses the first device name match in the list of available simulators
+TVOS_VERSION ?=
+ifeq ($(strip $(TVOS_VERSION)),)
+	TVOS_DESTINATION = "platform=tvOS Simulator,name=$(TVOS_DEVICE_NAME)"
+else
+	TVOS_DESTINATION = "platform=tvOS Simulator,name=$(TVOS_DEVICE_NAME),OS=$(TVOS_VERSION)"
+endif
+
+...
+
+# Usage example - update the `-destination` flag to use the new computed property `IOS_DESTINATION`:
+xcodebuild test -workspace $(PROJECT_NAME).xcworkspace -scheme "UnitTests" -destination $(IOS_DESTINATION) -enableCodeCoverage YES ADB_SKIP_LINT=YES
+
+```

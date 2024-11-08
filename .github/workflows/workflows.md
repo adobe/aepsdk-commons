@@ -152,6 +152,9 @@ The Makefile in the caller repository must include the following rules:
   - `make archive`  
   - `make zip`  
 
+The GitHub release job will look for the `.xcframework.zip` files using the pattern:
+`./build/${DEP}.xcframework.zip#${DEP}-${DEP_VERSION}.xcframework.zip"`
+
 ## iOS build and test (ios-build-and-test.yml)
 
 ### Requirements

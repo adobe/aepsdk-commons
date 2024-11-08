@@ -7,6 +7,9 @@ This document covers how to use the workflows in Commons, and explains their req
     - [Workflow booleans](#workflow-booleans)
     - [Secrets handling in reusable workflows](#secrets-handling-in-reusable-workflows)
     - [Implementing logical operations](#implementing-logical-operations)
+- [General workflows](#general-workflows)
+  - [Versions – update or validate (versions.yml)](#versions--update-or-validate-versionsyml)
+- [Android workflows](#android-workflows)
   - [Android Maven release (android-maven-release.yml)](#android-maven-release-android-maven-releaseyml)
     - [Overview](#overview)
     - [Inputs](#inputs)
@@ -16,10 +19,14 @@ This document covers how to use the workflows in Commons, and explains their req
     - [Inputs](#inputs-1)
     - [Secrets required](#secrets-required-1)
     - [Makefile requirements](#makefile-requirements-1)
+- [iOS workflows](#ios-workflows)
   - [iOS release (ios-release.yml)](#ios-release-ios-releaseyml)
     - [Secrets required](#secrets-required-2)
     - [Makefile requirements](#makefile-requirements-2)
-  - [Versions – update or validate (versions.yml)](#versions--update-or-validate-versionsyml)
+  - [iOS build and test (ios-build-and-test.yml)](#ios-build-and-test-ios-build-and-testyml)
+    - [Requirements](#requirements)
+    - [Secrets required](#secrets-required-3)
+    - [Makefile requirements](#makefile-requirements-3)
 
 ## General caller workflow tips
 
@@ -44,6 +51,18 @@ Reusable workflows rely on various implicitly required secrets, which are passed
 GitHub Actions does not support true ternary operations within `${{ }}` expressions. However, logical operators such as `&&` and `||` can be used to achieve similar behavior. 
 
 Refer to the [GitHub documentation on evaluating expressions](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/evaluate-expressions-in-workflows-and-actions#example) for examples.
+
+# General workflows
+
+## Versions – update or validate (versions.yml)  
+
+The update action automatically creates a pull request (PR), which requires the following GitHub repository settings:  
+
+1. Navigate to **Settings** -> **Code and automation** -> **Actions** -> **General**  
+2. Under **Workflow permissions**, select:  
+   - **Allow GitHub Actions to create and approve pull requests**
+
+# Android workflows
 
 ## Android Maven release (android-maven-release.yml)
 
@@ -111,6 +130,8 @@ The Makefile in the caller repository must include the following rules:
     - `<VARIANT_NAME>` is provided as the workflow input: `release-variant`  
     - Example: `core-publish-snapshot`, `signal-publish-snapshot`  
 
+# iOS workflows
+
 ## iOS release (ios-release.yml)
 
 ### Secrets required  
@@ -123,15 +144,43 @@ Pass the required secrets using `secrets: inherit` from the caller workflow.
 The Makefile in the caller repository must include the following rules:
 
 - `make check-version VERSION=`  
-- `make test-SPM-integration`  
-- `make test-podspec`  
-- `make archive`  
-- `make zip`  
+- If `create-github-release` is `true`:
+  - `make test-SPM-integration`  
+    - Requires local `test-SPM.sh`
+  - `make test-podspec`  
+    - Requires local `test-podspec.sh`
+  - `make archive`  
+  - `make zip`  
 
-## Versions – update or validate (versions.yml)  
+## iOS build and test (ios-build-and-test.yml)
 
-The update action automatically creates a pull request (PR), which requires the following GitHub repository settings:  
+### Requirements
+In order for Xcode code coverage to be uploaded by Codecov, Makefile test rules run using this workflow **must not** override the default location using the `-resultBundlePath` flag (ex: `-resultBundlePath build/reports/iosUnitResults.xcresult`).
 
-1. Navigate to **Settings** -> **Code and automation** -> **Actions** -> **General**  
-2. Under **Workflow permissions**, select:  
-   - **Allow GitHub Actions to create and approve pull requests**
+The default base path that the Codecov action will look for test results on the GitHub Action runner is:
+`/Users/runner/Library/Developer/Xcode/DerivedData`
+
+### Secrets required
+Pass the required secrets using `secrets: inherit` from the caller workflow.
+
+- `CODECOV_TOKEN`: Used by Codecov to upload code coverage reports.  
+
+### Makefile requirements  
+The Makefile in the caller repository must include the following rules:
+
+- `make lint`
+- When `run-test-ios-unit` is `true`:
+  - `make unit-test-ios`  
+- When `run-test-ios-functional` is `true`:
+  - `make functional-test-ios`  
+- When `run-test-ios-integration` is `true`:
+  - `make test-integration-upstream`  
+- When `run-test-tvos-unit` is `true`:
+  - `make unit-test-tvos`
+- When `run-test-tvos-functional` is `true`:
+  - `make functional-test-tvos`
+- When `run-test-tvos-integration` is `true`:
+  - `make integration-test-tvos`
+- When `run-build-xcframework-and-app` is `true`:
+  - `make archive`
+  - `make build-app`

@@ -11,11 +11,11 @@
 
 package com.adobe.marketing.mobile.gradle
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-
 import com.hierynomus.gradle.license.tasks.LicenseFormat
 import nl.javadude.gradle.plugins.license.LicenseExtension
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import java.util.Calendar
@@ -29,9 +29,10 @@ class AEPLicensePlugin: Plugin<Project> {
             header = project.resources.text.fromString(BuildConstants.ADOBE_LICENSE_HEADER_RESOURCES).asFile()
             // This plugin does not understand kts extension
             mapping(mapOf("kts" to "SLASHSTAR_STYLE"))
-            extraProperties.set("year", Calendar.getInstance().get(Calendar.YEAR))
             skipExistingHeaders = true
         }
+
+        (license as? ExtensionAware)?.extraProperties?.set("year",Calendar.getInstance().get(Calendar.YEAR))
 
         // Add and maintain licence header to all project files of type XML, YAML, Properties, and Gradle
         project.tasks.register(BuildConstants.Tasks.LICENSE_FORMAT_PROJECT, LicenseFormat::class.java).configure {

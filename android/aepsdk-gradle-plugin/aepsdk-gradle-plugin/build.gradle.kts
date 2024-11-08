@@ -1,9 +1,8 @@
-
-val PLUGIN_VERSION = "3.0.1"
+val PLUGIN_VERSION = "3.1.0"
 
 object Plugins {
-    const val ANDROID_GRADLE_PLUGIN_VERSION = "8.2.0"
-    const val KOTLIN_GRADLE_PLUGIN_VERSION = "1.8.20"
+    const val ANDROID_GRADLE_PLUGIN_VERSION = "8.6.0"
+    const val KOTLIN_GRADLE_PLUGIN_VERSION = "1.9.23"
     const val SPOTLESS_GRADLE_PLUGIN_VERSION = "6.12.0"
     const val DOKKA_GRADLE_PLUGIN_VERSION = "1.9.10"
     const val LICENSE_GRADLE_PLUGIN_VERSION = "0.16.1"
@@ -46,6 +45,11 @@ gradlePlugin {
     }
 }
 
+val sourcesJar = tasks.register<Jar>("sourcesJar") {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
+
 publishing {
     publications {
         create<MavenPublication>("pluginJitpack") {
@@ -53,6 +57,7 @@ publishing {
             artifactId = "aepsdk-gradle-plugin"
             version = PLUGIN_VERSION
             from(components["java"])
+            artifact(sourcesJar)
         }
     }
 }

@@ -44,7 +44,7 @@ internal class JacocoPlugin : Plugin<Project> {
             executionData.setFrom(
                 project.fileTree(
                     mapOf(
-                        "dir" to "${project.buildDir}",
+                        "dir" to "${project.layout.buildDirectory.asFile.get()}",
                         "includes" to listOf(BuildConstants.Reporting.UNIT_TEST_EXECUTION_RESULTS_REGEX)
                     )
                 )
@@ -69,7 +69,7 @@ internal class JacocoPlugin : Plugin<Project> {
             executionData.setFrom(
                 project.fileTree(
                     mapOf(
-                        "dir" to "${project.buildDir}",
+                        "dir" to "${project.layout.buildDirectory.asFile.get()}",
                         "includes" to listOf(BuildConstants.Reporting.FUNCTIONAL_TEST_EXECUTION_RESULTS_REGEX)
                     )
                 )

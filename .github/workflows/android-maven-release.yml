@@ -1,0 +1,157 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Publish Release (Android)
+
+# This workflow relies on the following secrets:
+# - GITHUB_TOKEN: Required for creating a release on GitHub
+# - GPG_SECRET_KEYS
+# - GPG_OWNERTRUST
+# - SONATYPE_USERNAME
+# - SONATYPE_PASSWORD
+# These can be passed using the `secrets: inherit` option in the caller workflow file.
+
+on: 
+  workflow_call:
+    inputs:
+      tag:
+        description: |
+          The tag (version) to be released (ex: 1.2.3). The workflow will automatically prepend the "v" prefix, resulting in a tag like "v1.2.3".
+        type: string
+        required: true
+
+      create-github-release:
+        description: |
+          Boolean flag that determines whether to create a GitHub release. If the specified `tag` does not exist, it will be created.
+        type: boolean
+        required: true
+        default: true
+
+      release-variant:
+        description: | 
+          The variant used to control the GitHub release title suffix and Maven publish command (ex: core -> v3.2.1-core & make core-publish-main). 
+          If not specified, uses the default values for both.
+        type: string
+        required: false
+        default: ''
+
+      version-validation-paths:
+        description: |
+          A comma-separated list of absolute and/or relative file paths to validate. 
+          Each path can optionally specify a pattern type using the syntax:
+          
+          **Syntax:** `path[:file_type]`
+
+          **Example:**
+          `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
+
+          This argument is required.
+        type: string
+        required: true
+
+      version-validation-dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions. 
+          Each dependency can optionally specify a semicolon-separated list of the file paths where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
+
+          - If the `@` syntax is used, the dependency will only apply to the specified files.
+          - If the `@` symbol is omitted, the dependency applies to all relevant files.
+          - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+          - If a dependency is missing a version, it will be skipped.
+
+          **Example:**
+          `"Core 7.8.9, EdgeIdentity 8.9.10@code/gradle.properties;code/Constants.kt"`
+        type: string
+        required: false
+        default: ''
+
+jobs:
+  validate-versions:
+    name: Validate Versions
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.0.0
+    with:
+      version: ${{ github.event.inputs.tag }}
+      branch: ${{ github.ref_name }}
+      paths: ${{ inputs.version-validation-paths }}
+      dependencies: ${{ inputs.version-validation-dependencies }}
+      update: false
+
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      PREFIXED_TAG: v${{ inputs.tag }}
+    needs: validate-versions
+    steps:
+      - uses: actions/checkout@v4.1.7
+
+      - name: Set up Java
+        uses: actions/setup-java@v4.2.2
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4.0.2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Create GitHub release
+        if: ${{ inputs.create-github-release }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Initialize the title with the tag
+          TITLE="${PREFIXED_TAG}"
+
+          # Append suffix if provided (non-empty)
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            TITLE="${TITLE}-${{ inputs.release-variant }}"
+          fi
+
+          # Create the GitHub release with the constructed title
+          gh release create "${PREFIXED_TAG}" \
+            --generate-notes \
+            --title "${TITLE}"
+
+      - name: Import GPG key
+        env:
+          GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
+          GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
+        run: |
+          # Check if the tag exists in the remote repository
+          if [ -z "$(git ls-remote --tags origin refs/tags/${PREFIXED_TAG})" ]; then
+              echo "::error title=Missing tag for publishing Pods::Tag '${PREFIXED_TAG}' does not exist in the remote repository."
+              exit 1
+          else
+              echo "Tag '${PREFIXED_TAG}' exists in the remote repository."
+          fi
+
+          echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
+          echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
+
+      - name: Publish to Maven Central Repository
+        run: |
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            make "${{ inputs.release-variant }}-publish-main"
+          else
+            make ci-publish
+          fi
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}

@@ -1,0 +1,235 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Release (iOS)
+
+# This workflow relies on the following secrets:
+# - GITHUB_TOKEN: Required for creating a release on GitHub.
+# - COCOAPODS_TRUNK_TOKEN: Required for publishing a pod to Cocoapods.
+# These can be passed using the `secrets: inherit` option in the caller workflow file.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: |
+          The tag (version) to be released (ex: 1.2.3).
+        type: string
+        required: true
+
+      create-github-release:
+        description: |
+          Creates a single GitHub release and uploads artifacts for the specified extensions.  
+          If the provided `tag` does not exist, it will be created.  
+          This does **not** publish the pods to CocoaPods (use `pod-publish-extensions` for that).  
+
+          **Format:** A comma-separated list of extensions.  
+          **Syntax:** `"Extension1, Extension2, Extension3"`  
+          **Example:** `"AEPServices, AEPCore"`
+        type: string
+        required: true
+        default: ''
+
+      release-dependency-frameworks:
+        description: |
+          **(Core-only parameter)**  
+          A comma-separated list of extension frameworks to include as artifacts in the GitHub release.  
+          The versions will be fetched from CocoaPods.  
+
+          **Format:** A comma-separated list of extensions.  
+          **Syntax:** `"Dependency1, Dependency2"`  
+          **Example:** `"AEPRulesEngine"`
+        type: string
+        required: false
+        default: ''
+
+      pod-publish-extensions:
+        description: |
+          Publishes the specified extensions to CocoaPods.  
+          Pods will be published in the order they are listed.  
+
+          **Format:** A comma-separated list of extensions.  
+          **Syntax:** `"Extension1, Extension2, Extension3"`  
+          **Example:** `"AEPCore, AEPIdentity"`
+        type: string
+        required: true
+        default: ''
+      
+      version-validation-paths:
+        description: |
+          A comma-separated list of absolute and/or relative file paths to validate. 
+          Each path can optionally specify a pattern type using the syntax:
+          
+          **Syntax:** `path[:file_type]`
+
+          **Example:**
+          `"Package.swift:swift_spm, AEPCore/Sources/configuration/ConfigurationConstants.swift, AEPCore/Tests/MobileCoreTests.swift:swift_test_version"`
+
+          This argument is required.
+        type: string
+        required: true
+
+      version-validation-dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions. 
+          Each dependency can optionally specify a semicolon-separated list of the file paths where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
+
+          - If the `@` syntax is used, the dependency will only apply to the specified files.
+          - If the `@` symbol is omitted, the dependency applies to all relevant files.
+          - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+          - If a dependency is missing a version, it will be skipped.
+
+          **Example:**
+          `"AEPCore 3.1.1, AEPServices 8.9.10@AEPCore.podspec;AEPIdentity.podspec"`
+        type: string
+        required: false
+        default: ''
+
+jobs:
+  validate-versions:
+    name: Validate Versions
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.0.0
+    with:
+      version: ${{ github.event.inputs.tag }}
+      branch: ${{ github.ref_name }}
+      paths: ${{ inputs.version-validation-paths }}
+      dependencies: ${{ inputs.version-validation-dependencies }}
+      update: false
+
+  release:
+    runs-on: macos-latest
+    needs: validate-versions
+    steps:
+    - uses: actions/checkout@v4.1.7
+      with:
+        ref: main
+    
+    - name: Set up Xcode Version
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+      with:
+        xcode-version: '15.0.1'
+
+    - name: Install Cocoapods
+      run: gem install cocoapods
+
+    - name: Install XcodeGen
+      run: brew install xcodegen
+
+    - name: Pod repo update
+      if: ${{ inputs.create-github-release != '' }}
+      run: | 
+        pod repo update
+
+    - name: SPM integration test
+      if: ${{ inputs.create-github-release != '' }}
+      run: |
+        set -eo pipefail
+        echo SPM integration test starts:
+        make test-SPM-integration
+
+    - name: Podspec file verification
+      if: ${{ inputs.create-github-release != '' }}
+      run: |
+        set -eo pipefail
+        echo podspec file verification starts:
+        make test-podspec
+        
+    - name: Build artifacts
+      if: ${{ inputs.create-github-release != '' }}
+      run: |
+        make archive
+        make zip
+
+    - name: Create GitHub release and upload assets
+      if: ${{ inputs.create-github-release != '' }}
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CREATE_GITHUB_RELEASE: ${{ inputs.create-github-release }}
+        RELEASE_DEPENDENCY_FRAMEWORKS: ${{ inputs.release-dependency-frameworks }}
+        TAG: ${{ inputs.tag }}
+      run: |
+        set -eo pipefail
+
+        # Initialize an empty string to collect the file arguments
+        FILE_ARGS=""
+        
+        # Process CREATE_GITHUB_RELEASE
+        # Split the input string into an array using comma as delimiter
+        IFS=',' read -ra LIBS <<< "${CREATE_GITHUB_RELEASE}"
+        for LIB in "${LIBS[@]}"; do
+          # Trim whitespace from the library name
+          LIB=$(echo "$LIB" | xargs)
+          # Append the file argument to FILE_ARGS
+          FILE_ARGS="$FILE_ARGS ./build/${LIB}.xcframework.zip#${LIB}-${TAG}.xcframework.zip"
+        done
+
+        # Process RELEASE_DEPENDENCY_FRAMEWORKS
+        if [ -n "${RELEASE_DEPENDENCY_FRAMEWORKS}" ]; then
+          # Split the input string into an array using comma as delimiter
+          IFS=',' read -ra DEPS <<< "${RELEASE_DEPENDENCY_FRAMEWORKS}"
+          # Loop over each dependency
+          for DEP in "${DEPS[@]}"; do
+            # Trim whitespace from the dependency name
+            DEP=$(echo "$DEP" | xargs)
+            echo "Processing dependency: $DEP"
+
+            # Fetch version from CocoaPods
+            echo "Fetching version for dependency ${DEP}..."
+            DEP_VERSION=$(pod spec cat "${DEP}" | jq -r '.version')
+            echo "Fetched version for ${DEP}: ${DEP_VERSION}"
+
+            # Append the file argument to FILE_ARGS
+            FILE_ARGS="$FILE_ARGS ./build/${DEP}.xcframework.zip#${DEP}-${DEP_VERSION}.xcframework.zip"
+          done
+        fi
+
+        # Create GitHub release with all file arguments
+        gh release create "$TAG" \
+          --generate-notes \
+          --title "v$TAG" \
+          $FILE_ARGS
+
+    - name: Publish pods
+      if: ${{ inputs.pod-publish-extensions != '' }}
+      env:
+        POD_PUBLISH_EXTENSIONS: ${{ inputs.pod-publish-extensions }}
+        COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        TAG: ${{ inputs.tag }}
+      run: |
+        set -eo pipefail
+
+        # Check if the tag exists in the remote repository
+        if [ -z "$(git ls-remote --tags origin refs/tags/$TAG)" ]; then
+            echo "::error title=Missing tag for publishing Pods::Tag '$TAG' does not exist in the remote repository."
+            exit 1
+        else
+            echo "Tag '$TAG' exists in the remote repository."
+        fi
+
+        # Split the input string into an array using comma as delimiter
+        IFS=',' read -ra LIBS <<< "${POD_PUBLISH_EXTENSIONS}"
+
+        # Loop over each library name
+        for LIB in "${LIBS[@]}"; do
+          # Trim whitespace from the library name
+          LIB=$(echo "$LIB" | xargs)
+
+          echo "Publishing podspec for ${LIB}..."
+
+          # Publish the pod
+          pod trunk push "${LIB}.podspec" --allow-warnings --synchronous
+          pod repo update
+        done
+      

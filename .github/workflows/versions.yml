@@ -24,8 +24,7 @@ name: Update or Validate Versions
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 env:
-  # WORKFLOW_TAG: gha-ios-5.0.0
-  WORKFLOW_TAG: versions-update
+  WORKFLOW_TAG: gha-ios-5.0.0
 
 on:
   workflow_call:
@@ -107,11 +106,7 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.1.7
       with:
-        # repository: adobe/aepsdk-commons
-        # ref: ${{ env.WORKFLOW_TAG }}
-        # path: .github/aepsdk-commons
-        # sparse-checkout: 'scripts' # Only checkout the scripts directory
-        repository: timkimadobe/aepsdk-commons
+        repository: adobe/aepsdk-commons
         ref: ${{ env.WORKFLOW_TAG }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory

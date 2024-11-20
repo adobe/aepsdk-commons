@@ -24,8 +24,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@android-circleci-to-gha
+      # - name: Setup Dependencies
+      #   uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@android-circleci-to-gha
       
       - name: Check Format
         run: make checkformat

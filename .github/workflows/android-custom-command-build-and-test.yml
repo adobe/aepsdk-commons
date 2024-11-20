@@ -76,9 +76,13 @@ jobs:
 
     steps:
       - name: Setup Dependencies
+        id: setup-dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@android-circleci-to-gha
         with:
           android-api-level: ${{ matrix.api-level }}
+
+      - name: Set JAVA_HOME
+        run: echo "JAVA_HOME=${{ steps.setup-dependencies.outputs.java-home }}" >> $GITHUB_ENV
 
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2

@@ -18,6 +18,8 @@ inputs:
     description: 'The Android API level to use for testing.'
     type: string
     default: ''
+outputs:
+  java-home: ${{ steps.set-java-home.outputs.java-home }}
 
 runs:
   using: "composite"
@@ -27,6 +29,9 @@ runs:
       with:
         distribution: 'zulu'
         java-version: 17
+    - name: Set JAVA_HOME output
+      id: set-java-home
+      run: echo "java-home=${JAVA_HOME}" >> $GITHUB_OUTPUT
     # This is to help reduce Android emulator boot up flakiness issues:
     # See: https://github.com/ReactiveCircus/android-emulator-runner/issues/324#issuecomment-2009351180
     - name: Delete unnecessary tools 🔧

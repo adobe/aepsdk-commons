@@ -77,6 +77,8 @@ jobs:
     steps:
       - name: Setup Dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@android-circleci-to-gha
+        with:
+          android-api-level: ${{ matrix.api-level }}
 
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2

@@ -18,9 +18,9 @@ inputs:
     description: 'The Android API level to use for testing.'
     type: string
     default: ''
-outputs:
-  java-home: 
-    value: ${{ steps.set-java-home.outputs.java-home }}
+# outputs:
+#   java-home: 
+#     value: ${{ steps.set-java-home.outputs.java-home }}
 
 runs:
   using: "composite"

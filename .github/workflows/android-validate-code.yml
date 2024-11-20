@@ -34,8 +34,8 @@ jobs:
         id: setup-dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@android-circleci-to-gha
       
-      - name: Set JAVA_HOME
-        run: echo "JAVA_HOME=${{ steps.setup-dependencies.outputs.java-home }}" >> $GITHUB_ENV
+      # - name: Set JAVA_HOME
+      #   run: echo "JAVA_HOME=${{ steps.setup-dependencies.outputs.java-home }}" >> $GITHUB_ENV
 
       - name: Check Format
         run: make checkformat

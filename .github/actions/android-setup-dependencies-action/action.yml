@@ -19,7 +19,7 @@ inputs:
     type: string
     default: ''
 outputs:
-  java-home: ${{ steps.set-java-home.outputs.java-home }}
+  java-home: ${{ steps.set_java_home.outputs.java-home }}
 
 runs:
   using: "composite"
@@ -30,7 +30,7 @@ runs:
         distribution: 'zulu'
         java-version: 17
     - name: Set JAVA_HOME output
-      id: set-java-home
+      id: set_java_home
       run: echo "java-home=${JAVA_HOME}" >> $GITHUB_OUTPUT
       shell: bash
     # This is to help reduce Android emulator boot up flakiness issues:

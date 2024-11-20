@@ -18,9 +18,6 @@ inputs:
     description: 'The Android API level to use for testing.'
     type: string
     default: ''
-# outputs:
-#   java-home: 
-#     value: ${{ steps.set-java-home.outputs.java-home }}
 
 runs:
   using: "composite"
@@ -30,17 +27,13 @@ runs:
       with:
         distribution: 'zulu'
         java-version: 17
-    # - name: Set JAVA_HOME output
-    #   id: set-java-home
-    #   run: echo "java-home=${JAVA_HOME}" >> $GITHUB_OUTPUT
-    #   shell: bash
     # This is to help reduce Android emulator boot up flakiness issues:
     # See: https://github.com/ReactiveCircus/android-emulator-runner/issues/324#issuecomment-2009351180
     - name: Delete unnecessary tools 🔧
       uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
       with:
         android: false # Don't remove Android tools
-        tool-cache: false # Don't remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
+        tool-cache: false # Don't remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY" (as this seems to remove the Java tooling set up in the previous step)
         dotnet: true # rm -rf /usr/share/dotnet
         haskell: true # rm -rf /opt/ghc...
         swap-storage: true # rm -f /mnt/swapfile (4GiB)

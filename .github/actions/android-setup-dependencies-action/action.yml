@@ -41,6 +41,7 @@ runs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         ls /dev/kvm
+      shell: bash
 
     - name: Gradle cache
       uses: gradle/actions/setup-gradle@v4.1.0

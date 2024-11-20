@@ -1,0 +1,109 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Custom Command Build and Test (Android)
+
+on:
+  workflow_call:
+    inputs:
+      android-api-levels:
+        description: |
+          The Android API levels to use for testing. Must be formatted as a valid JSON array string.
+          Example: '[29, 30]'
+            - Notice the use of single quotes to wrap the JSON array string, and number format for values.
+        type: string
+        default: ''
+      command:
+        type: string
+        required: true
+      enable-codecov:
+        description: 'Enable Codecov for test coverage.'
+        type: boolean
+        default: true
+      codecov-flag:
+        description: 'The flag to pass to the codecov uploader.'
+        type: string
+        default: ''
+
+jobs:
+  define-matrix:
+    name: Define Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      android-api-levels: ${{ steps.define-matrix.outputs.android-api-levels }}
+      is-default-android-api-levels: ${{ steps.define-matrix.outputs.is-default-android-api-levels }}
+    steps:
+      - name: Define Matrix
+        id: define-matrix
+        shell: bash
+        run: |
+          # Set default values
+          default_android_api_levels='[29]'
+
+          # Get inputs
+          android_api_levels='${{ inputs.android-api-levels }}'
+
+          # Check and set default values
+          if [ -z "$android_api_levels" ]; then
+            android_api_levels="$default_android_api_levels"
+            is_default_android_api_levels='true'
+          else
+            is_default_android_api_levels='false'
+          fi
+
+          # Set outputs
+          echo "android-api-levels=$android_api_levels" >> "$GITHUB_OUTPUT"
+
+          echo "is-default-android-api-levels=$is_default_android_api_levels" >> "$GITHUB_OUTPUT"
+  run-custom-command:
+    name: >
+      ${{ needs.define-matrix.outputs.is-default-android-api-levels != 'true' && matrix.api-level || '' }}
+    runs-on: ubuntu-latest
+    needs: define-matrix
+    strategy:
+      max-parallel: 1
+      matrix:
+        api-level: ${{ fromJson(needs.define-matrix.outputs.android-api-levels) }}
+
+    steps:
+      - name: Setup Dependencies
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.0.0
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
+      - name: Run tests
+        uses: reactivecircus/android-emulator-runner@f0d1ed2dcad93c7479e8b2f2226c83af54494915 # v2.32.0
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          disk-size: 6000M
+          heap-size: 600M
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-metrics -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            mkdir -p logs                              # Ensure the 'logs' directory exists
+            adb logcat -c                              # Clear logs
+            touch logs/emulator.log                    # Create log file
+            chmod 777 logs/emulator.log                # Allow writing to log file
+            adb logcat >> logs/emulator.log &          # Pipe all logcat messages into log file as a background process
+            ${{ inputs.command }}
+
+      - name: Upload Code Coverage
+        if: ${{ inputs.enable-codecov }}
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: ${{ inputs.codecov-flag }}
+          verbose: true

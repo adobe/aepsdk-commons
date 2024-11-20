@@ -36,16 +36,16 @@ runs:
     #   shell: bash
     # This is to help reduce Android emulator boot up flakiness issues:
     # See: https://github.com/ReactiveCircus/android-emulator-runner/issues/324#issuecomment-2009351180
-    - name: Delete unnecessary tools 🔧
-      uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
-      with:
-        android: false # Don't remove Android tools
-        tool-cache: true # Remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
-        dotnet: true # rm -rf /usr/share/dotnet
-        haskell: true # rm -rf /opt/ghc...
-        swap-storage: true # rm -f /mnt/swapfile (4GiB)
-        docker-images: false # Takes 16s, enable if needed in the future
-        large-packages: false # includes google-cloud-sdk and it's slow
+    # - name: Delete unnecessary tools 🔧
+    #   uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+    #   with:
+    #     android: false # Don't remove Android tools
+    #     tool-cache: true # Remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
+    #     dotnet: true # rm -rf /usr/share/dotnet
+    #     haskell: true # rm -rf /opt/ghc...
+    #     swap-storage: true # rm -f /mnt/swapfile (4GiB)
+    #     docker-images: false # Takes 16s, enable if needed in the future
+    #     large-packages: false # includes google-cloud-sdk and it's slow
     # The Android emulator requires Kernel-based Virtual Machine (KVM) access to run efficiently. 
     # This step ensures that the KVM is accessible with the proper permissions across all users.
     - name: Enable KVM group permissions

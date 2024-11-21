@@ -87,9 +87,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      - name: Set Timestamp
-        id: timestamp
-        run: echo "FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")" >> $GITHUB_ENV
+      - name: Set Log File Name
+        run: |
+          FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          COMMAND_NAME=$(echo "${{ inputs.command }}" | awk '{print $1}' | sed 's/[^a-zA-Z0-9_-]//g')  # Extract the first word of the command
+          echo "LOG_FILE_NAME=${COMMAND_NAME}-api-${{ matrix.api-level }}-${FILE_TIMESTAMP}.log" >> $GITHUB_ENV
 
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
       - name: Run tests
@@ -105,17 +107,17 @@ jobs:
           script: |
             mkdir -p logs                              # Ensure the 'logs' directory exists
             adb logcat -c                              # Clear logs
-            touch logs/emulator-${{ env.FILE_TIMESTAMP }}.log                    # Create log file
-            chmod 777 logs/emulator-${{ env.FILE_TIMESTAMP }}.log                # Allow writing to log file
-            adb logcat >> logs/emulator-${{ env.FILE_TIMESTAMP }}.log &          # Pipe all logcat messages into log file as a background process
+            touch logs/emulator.log                    # Create log file
+            chmod 777 logs/emulator.log                # Allow writing to log file
+            adb logcat >> logs/emulator.log &          # Pipe all logcat messages into log file as a background process
             ${{ inputs.command }}
       
       - name: Upload Logcat Logs
         if: always()
         uses: actions/upload-artifact@v4.4.0
         with:
-          name: logcat-logs-${{ env.FILE_TIMESTAMP }}
-          path: logs/emulator-${{ env.FILE_TIMESTAMP }}.log
+          name: logcat-${{ env.LOG_FILE_NAME }}
+          path: logs/emulator.log
 
       - name: Upload Code Coverage
         if: ${{ inputs.enable-codecov }}

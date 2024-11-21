@@ -105,6 +105,13 @@ jobs:
             chmod 777 logs/emulator.log                # Allow writing to log file
             adb logcat >> logs/emulator.log &          # Pipe all logcat messages into log file as a background process
             ${{ inputs.command }}
+      
+      - name: Upload Logcat Logs
+        if: always()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: logcat-logs
+          path: logs/emulator.log
 
       - name: Upload Code Coverage
         if: ${{ inputs.enable-codecov }}

@@ -89,7 +89,7 @@ jobs:
 
       - name: Set ISO Timestamp
         id: timestamp
-        run: echo "ISO_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
+        run: echo "ISO_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")" >> $GITHUB_ENV
 
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
       - name: Run tests

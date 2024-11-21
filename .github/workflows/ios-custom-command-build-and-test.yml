@@ -57,7 +57,7 @@ on:
 
 jobs:
   define-matrix:
-    name: Define Matrix
+    name: Setup Configuration
     runs-on: ubuntu-latest
     outputs:
       ios-device-names: ${{ steps.define-matrix.outputs.ios-device-names }}
@@ -126,6 +126,7 @@ jobs:
           echo "is-default-tvos=$is_default_tvos" >> "$GITHUB_OUTPUT"
   run-custom-command:
     name: >
+      Test using 
       ${{ needs.define-matrix.outputs.is-default-ios-device != 'true' && matrix.ios-device || '' }}
       ${{ needs.define-matrix.outputs.is-default-ios != 'true' && matrix.ios || '' }}
       ${{ needs.define-matrix.outputs.is-default-tvos-device != 'true' && matrix.tvos-device || '' }}

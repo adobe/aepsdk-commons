@@ -87,6 +87,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
+      - name: Set ISO Timestamp
+        id: timestamp
+        run: echo "ISO_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
+
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
       - name: Run tests
         uses: reactivecircus/android-emulator-runner@f0d1ed2dcad93c7479e8b2f2226c83af54494915 # v2.32.0
@@ -101,17 +105,17 @@ jobs:
           script: |
             mkdir -p logs                              # Ensure the 'logs' directory exists
             adb logcat -c                              # Clear logs
-            touch logs/emulator.log                    # Create log file
-            chmod 777 logs/emulator.log                # Allow writing to log file
-            adb logcat >> logs/emulator.log &          # Pipe all logcat messages into log file as a background process
+            touch logs/emulator-${{ env.ISO_TIMESTAMP }}.log                    # Create log file
+            chmod 777 logs/emulator-${{ env.ISO_TIMESTAMP }}.log                # Allow writing to log file
+            adb logcat >> logs/emulator-${{ env.ISO_TIMESTAMP }}.log &          # Pipe all logcat messages into log file as a background process
             ${{ inputs.command }}
       
       - name: Upload Logcat Logs
         if: always()
         uses: actions/upload-artifact@v4.4.0
         with:
-          name: logcat-logs
-          path: logs/emulator.log
+          name: logcat-logs-${{ env.ISO_TIMESTAMP }}
+          path: logs/emulator-${{ env.ISO_TIMESTAMP }}.log
 
       - name: Upload Code Coverage
         if: ${{ inputs.enable-codecov }}

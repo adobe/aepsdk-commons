@@ -36,7 +36,7 @@ on:
 
 jobs:
   define-matrix:
-    name: Setup config
+    name: Setup Configuration
     runs-on: ubuntu-latest
     outputs:
       android-api-levels: ${{ steps.define-matrix.outputs.android-api-levels }}

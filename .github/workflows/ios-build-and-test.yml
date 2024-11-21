@@ -109,7 +109,7 @@ jobs:
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
-      command: make test-integration-upstream
+      command: make integration-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-integration-tests
     secrets: inherit

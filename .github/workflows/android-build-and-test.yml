@@ -76,7 +76,7 @@ jobs:
     uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@android-circleci-to-gha
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
-      command: make upstream-integration-test
+      command: make integration-test-coverage
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: android-integration-tests
     secrets: inherit

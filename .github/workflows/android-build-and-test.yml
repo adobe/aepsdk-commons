@@ -38,18 +38,18 @@ on:
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
-        default: true
+        default: false
 
 jobs:
   validate-code:
     name: Validate Code
-    uses: timkimadobe/aepsdk-commons/.github/workflows/android-validate-code.yml@android-circleci-to-gha
+    uses: adobe/aepsdk-commons/.github/workflows/android-validate-code.yml@gha-android-3.0.0
   
   test-unit:
-    name: Unit Test (Android)
+    name: Unit Test
     needs: validate-code
     if: inputs.run-test-unit
-    uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@android-circleci-to-gha
+    uses: adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.0.0
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
       command: make unit-test-coverage
@@ -58,10 +58,10 @@ jobs:
     secrets: inherit
 
   test-functional:
-    name: Functional Test (Android)
+    name: Functional Test
     needs: validate-code
     if: inputs.run-test-functional
-    uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@android-circleci-to-gha
+    uses: adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.0.0
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
       command: make functional-test-coverage
@@ -70,10 +70,10 @@ jobs:
     secrets: inherit
 
   test-integration:
-    name: Integration Test (Android)
+    name: Integration Test
     needs: validate-code
     if: inputs.run-test-integration
-    uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@android-circleci-to-gha
+    uses: adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.0.0
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
       command: make integration-test-coverage
@@ -92,7 +92,7 @@ jobs:
         uses: actions/checkout@v4.2.2
       
       - name: Setup Dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@android-circleci-to-gha
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.0.0
 
       - name: Assemble App
         run: make assemble-app

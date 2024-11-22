@@ -68,7 +68,7 @@ on:
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
-        default: true
+        default: false
 
 jobs:
   validate-code:

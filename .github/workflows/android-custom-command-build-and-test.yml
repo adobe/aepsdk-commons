@@ -90,7 +90,7 @@ jobs:
       - name: Set Log File Name
         run: |
           FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
-          COMMAND_NAME=$(echo "${{ inputs.command }}" | awk '{print $1}' | sed 's/[^a-zA-Z0-9_-]//g')  # Extract the first word of the command
+          COMMAND_NAME=$(echo "${{ inputs.command }}" | awk '{print $2}' | sed 's/[^a-zA-Z0-9_-]//g')  # Extract the second word of the command and filter out invalid filename chars
           echo "LOG_FILE_NAME=${COMMAND_NAME}-api-${{ matrix.api-level }}-${FILE_TIMESTAMP}.log" >> $GITHUB_ENV
 
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354

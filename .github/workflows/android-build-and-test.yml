@@ -49,11 +49,11 @@ on:
 jobs:
   validate-code:
     name: Validate Code
-    uses: adobe/aepsdk-commons/.github/workflows/android-validate-code.yml@gha-android-3.1.0
+    uses: timkimadobe/aepsdk-commons/.github/workflows/android-validate-code.yml@gha-android-3.1.0
   
   javadoc:
     name: Javadoc
-    uses: adobe/aepsdk-commons/.github/workflows/android-javadoc.yml@gha-android-3.1.0
+    uses: timkimadobe/aepsdk-commons/.github/workflows/android-javadoc.yml@gha-android-3.1.0
     with:
       javadoc-build-path: ${{ inputs.javadoc-build-path }}
     
@@ -61,7 +61,7 @@ jobs:
     name: Unit Test
     needs: validate-code
     if: inputs.run-test-unit
-    uses: adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.1.0
+    uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.1.0
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
       command: make unit-test-coverage
@@ -73,7 +73,7 @@ jobs:
     name: Functional Test
     needs: validate-code
     if: inputs.run-test-functional
-    uses: adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.1.0
+    uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.1.0
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
       command: make functional-test-coverage
@@ -85,7 +85,7 @@ jobs:
     name: Integration Test
     needs: validate-code
     if: inputs.run-test-integration
-    uses: adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.1.0
+    uses: timkimadobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml@gha-android-3.1.0
     with:
       android-api-levels: ${{ inputs.android-api-levels }}
       command: make integration-test-coverage
@@ -104,7 +104,7 @@ jobs:
         uses: actions/checkout@v4.2.2
       
       - name: Setup Dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.1.0
+        uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.1.0
 
       - name: Assemble App
         run: make assemble-app

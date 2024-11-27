@@ -53,6 +53,7 @@ jobs:
   
   javadoc:
     name: Javadoc
+    needs: validate-code
     uses: timkimadobe/aepsdk-commons/.github/workflows/android-javadoc.yml@gha-android-3.1.0
     with:
       javadoc-build-path: ${{ inputs.javadoc-build-path }}

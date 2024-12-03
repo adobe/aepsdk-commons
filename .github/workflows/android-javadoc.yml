@@ -41,15 +41,24 @@ jobs:
       - name: Set Javadoc File Name
         run: |
           FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          
           # Extract moduleVersion from gradle.properties
           MODULE_VERSION=$(grep '^moduleVersion=' ./code/gradle.properties | cut -d'=' -f2)
+          
           # Get branch name
           BRANCH_NAME=${GITHUB_REF_NAME}
+          
           # Get repository name
           REPO_NAME=$(basename "$GITHUB_REPOSITORY")
-          # Construct the file name
-          JAVADOC_FILE_NAME="javadoc-${REPO_NAME}-${BRANCH_NAME}-${MODULE_VERSION}-${FILE_TIMESTAMP}Z"
-          echo "JAVADOC_FILE_NAME=${JAVADOC_FILE_NAME}" >> $GITHUB_ENV
+          
+          # Construct the raw file name
+          RAW_JAVADOC_FILE_NAME="javadoc-${REPO_NAME}-${BRANCH_NAME}-${MODULE_VERSION}-${FILE_TIMESTAMP}Z"
+          
+          # Sanitize the file name by removing invalid characters
+          SANITIZED_JAVADOC_FILE_NAME=$(echo "$RAW_JAVADOC_FILE_NAME" | sed 's/[^a-zA-Z0-9_-]//g')
+          
+          # Export the sanitized file name as an environment variable
+          echo "JAVADOC_FILE_NAME=${SANITIZED_JAVADOC_FILE_NAME}" >> $GITHUB_ENV
 
       - name: Upload Javadoc
         uses: actions/upload-artifact@v4.4.0

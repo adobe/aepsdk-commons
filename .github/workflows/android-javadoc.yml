@@ -23,7 +23,7 @@ on:
 jobs:
   javadoc:
     name: Javadoc
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     # Skip the job if the input is an empty string
     if: ${{ inputs.javadoc-build-path != '' }}
 

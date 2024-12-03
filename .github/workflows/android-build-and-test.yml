@@ -96,7 +96,7 @@ jobs:
 
   build-app:
     name: Build Test App
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: validate-code
     if: inputs.run-build-app
 

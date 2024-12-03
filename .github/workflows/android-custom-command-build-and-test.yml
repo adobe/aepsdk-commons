@@ -37,7 +37,7 @@ on:
 jobs:
   define-matrix:
     name: Setup Configuration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       android-api-levels: ${{ steps.define-matrix.outputs.android-api-levels }}
       is-default-android-api-levels: ${{ steps.define-matrix.outputs.is-default-android-api-levels }}
@@ -67,7 +67,7 @@ jobs:
   run-custom-command:
     name: >
       Test using Android API ${{ needs.define-matrix.outputs.is-default-android-api-levels != 'true' && matrix.api-level || '' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: define-matrix
     strategy:
       max-parallel: 1

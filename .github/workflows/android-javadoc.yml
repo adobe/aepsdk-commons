@@ -46,7 +46,7 @@ jobs:
           MODULE_VERSION=$(grep '^moduleVersion=' ./code/gradle.properties | cut -d'=' -f2)
           
           # Get branch name
-          BRANCH_NAME=${GITHUB_REF_NAME}
+          BRANCH_NAME=${GITHUB_HEAD_REF}
           
           # Get repository name
           REPO_NAME=$(basename "$GITHUB_REPOSITORY")

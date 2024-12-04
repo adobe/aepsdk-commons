@@ -52,10 +52,10 @@ jobs:
           REPO_NAME=$(basename "$GITHUB_REPOSITORY")
           
           # Construct the raw file name
-          RAW_JAVADOC_FILE_NAME="javadoc-${REPO_NAME}-${BRANCH_NAME}-${MODULE_VERSION}-${FILE_TIMESTAMP}Z"
+          RAW_JAVADOC_FILE_NAME="javadoc-${REPO_NAME}-v${MODULE_VERSION}-${BRANCH_NAME}-${FILE_TIMESTAMP}Z"
           
           # Sanitize the file name by removing invalid characters
-          SANITIZED_JAVADOC_FILE_NAME=$(echo "$RAW_JAVADOC_FILE_NAME" | sed 's/[^a-zA-Z0-9_-]//g')
+          SANITIZED_JAVADOC_FILE_NAME=$(echo "$RAW_JAVADOC_FILE_NAME" | sed 's/[^a-zA-Z0-9_-]/_/g')
           
           # Export the sanitized file name as an environment variable
           echo "JAVADOC_FILE_NAME=${SANITIZED_JAVADOC_FILE_NAME}" >> $GITHUB_ENV

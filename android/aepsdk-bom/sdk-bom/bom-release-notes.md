@@ -2,10 +2,11 @@ This BOM ([Bill of Materials](https://central.sonatype.com/artifact/com.adobe.ma
 <details>
   <summary>Expand</summary>
 
-| Extension artifact | BOM (3.5.0) | BOM (3.5.1) |
+| Extension artifact | BOM (3.5.1) | BOM (3.6.0) |
 |-----|-----|-----|
-| **com.adobe.marketing.mobile:assurance** | **3.0.3** | **3.0.4**|
+| **com.adobe.marketing.mobile:optimize** | **3.1.0** | **3.2.2**|
 | com.adobe.marketing.mobile:analytics | 3.0.1 | 3.0.1 |
+| com.adobe.marketing.mobile:assurance | 3.0.4 | 3.0.4 |
 | com.adobe.marketing.mobile:audience | 3.0.0 | 3.0.0 |
 | com.adobe.marketing.mobile:campaign | 3.0.1 | 3.0.1 |
 | com.adobe.marketing.mobile:campaignclassic | 3.1.2 | 3.1.2 |
@@ -20,7 +21,6 @@ This BOM ([Bill of Materials](https://central.sonatype.com/artifact/com.adobe.ma
 | com.adobe.marketing.mobile:media | 3.1.0 | 3.1.0 |
 | com.adobe.marketing.mobile:messaging | 3.2.1 | 3.2.1 |
 | com.adobe.marketing.mobile:notificationbuilder | 3.0.2 | 3.0.2 |
-| com.adobe.marketing.mobile:optimize | 3.1.0 | 3.1.0 |
 | com.adobe.marketing.mobile:places | 3.0.1 | 3.0.1 |
 | com.adobe.marketing.mobile:signal | 3.0.0 | 3.0.0 |
 | com.adobe.marketing.mobile:target | 3.0.0 | 3.0.0 |

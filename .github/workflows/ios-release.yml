@@ -111,7 +111,7 @@ jobs:
     runs-on: macos-14
     needs: validate-versions
     steps:
-    - uses: actions/checkout@v4.1.7
+    - uses: actions/checkout@v4.2.2
       with:
         ref: main
     

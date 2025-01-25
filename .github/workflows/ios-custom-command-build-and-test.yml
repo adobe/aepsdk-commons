@@ -58,7 +58,7 @@ on:
 jobs:
   define-matrix:
     name: Setup Configuration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       ios-device-names: ${{ steps.define-matrix.outputs.ios-device-names }}
       ios-versions: ${{ steps.define-matrix.outputs.ios-versions }}
@@ -131,7 +131,7 @@ jobs:
       ${{ needs.define-matrix.outputs.is-default-ios != 'true' && matrix.ios || '' }}
       ${{ needs.define-matrix.outputs.is-default-tvos-device != 'true' && matrix.tvos-device || '' }}
       ${{ needs.define-matrix.outputs.is-default-tvos != 'true' && matrix.tvos || '' }}
-    runs-on: macos-latest
+    runs-on: macos-14
     needs: define-matrix
     strategy:
       max-parallel: 1
@@ -146,7 +146,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup Dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.0.0
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.0.1
 
       - name: Run ${{ inputs.command }}
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"

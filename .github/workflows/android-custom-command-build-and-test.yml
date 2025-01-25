@@ -37,7 +37,7 @@ on:
 jobs:
   define-matrix:
     name: Setup Configuration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       android-api-levels: ${{ steps.define-matrix.outputs.android-api-levels }}
       is-default-android-api-levels: ${{ steps.define-matrix.outputs.is-default-android-api-levels }}
@@ -67,7 +67,7 @@ jobs:
   run-custom-command:
     name: >
       Test using Android API ${{ needs.define-matrix.outputs.is-default-android-api-levels != 'true' && matrix.api-level || '' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: define-matrix
     strategy:
       max-parallel: 1
@@ -77,7 +77,7 @@ jobs:
     steps:
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.1.0
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.1.1
         with:
           android-api-level: ${{ matrix.api-level }}
 
@@ -95,7 +95,7 @@ jobs:
 
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
       - name: Run tests
-        uses: reactivecircus/android-emulator-runner@f0d1ed2dcad93c7479e8b2f2226c83af54494915 # v2.32.0
+        uses: reactivecircus/android-emulator-runner@62dbb605bba737720e10b196cb4220d374026a6d # v2.33.0
         with:
           api-level: ${{ matrix.api-level }}
           arch: x86_64
@@ -115,7 +115,7 @@ jobs:
       - name: Upload Logcat Logs
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v4.6.0
         with:
           name: ${{ env.LOG_FILE_NAME }}
           path: logs/emulator.log

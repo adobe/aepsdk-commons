@@ -23,7 +23,7 @@ runs:
   using: "composite"
   steps:
     - name: Set up Java
-      uses: actions/setup-java@v4.2.2
+      uses: actions/setup-java@v4.6.0
       with:
         distribution: 'zulu'
         java-version: 17
@@ -54,7 +54,7 @@ runs:
 
     - name: AVD cache
       if: ${{ inputs.android-api-level != '' }}
-      uses: actions/cache@v4.1.2
+      uses: actions/cache@v4.2.0
       id: avd-cache
       with:
         path: |
@@ -65,7 +65,7 @@ runs:
     # Note that the AVD configurations must exactly match what's used in the test step, otherwise the cache will not be used.
     - name: create AVD and generate snapshot for caching
       if: ${{ steps.avd-cache.outputs.cache-hit != 'true' && inputs.android-api-level != '' }}
-      uses: reactivecircus/android-emulator-runner@f0d1ed2dcad93c7479e8b2f2226c83af54494915 # v2.32.0
+      uses: reactivecircus/android-emulator-runner@62dbb605bba737720e10b196cb4220d374026a6d # v2.33.0
       with:
         api-level: ${{ inputs.android-api-level }}
         arch: x86_64
@@ -78,7 +78,7 @@ runs:
     
     - name: Save AVD cache
       if: ${{ steps.avd-cache.outputs.cache-hit != 'true' && inputs.android-api-level != '' }}
-      uses: actions/cache/save@v4.1.2
+      uses: actions/cache/save@v4.2.0
       with:
         path: |
           ~/.android/avd/*

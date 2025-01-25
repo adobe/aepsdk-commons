@@ -18,7 +18,7 @@ runs:
   steps:
     - name: Restore Gemfile cache
       id: cache-gems
-      uses: actions/cache@v4.1.2
+      uses: actions/cache@v4.2.0
       with:
         path: vendor/bundle
         key: gems-${{ runner.os }}-${{ hashFiles('**/Gemfile.lock') }}
@@ -31,14 +31,14 @@ runs:
 
     - name: Save Gemfile cache
       if: steps.cache-gems.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4.1.2
+      uses: actions/cache/save@v4.2.0
       with:
         path: vendor/bundle
         key: gems-${{ runner.os }}-${{ hashFiles('**/Gemfile.lock') }}
 
     - name: Restore CocoaPods cache
       id: cache-pods
-      uses: actions/cache@v4.1.2
+      uses: actions/cache@v4.2.0
       with:
         path: |
           Pods
@@ -54,7 +54,7 @@ runs:
 
     - name: Save CocoaPods cache
       if: steps.cache-pods.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4.1.2
+      uses: actions/cache/save@v4.2.0
       with:
         path: |
           Pods

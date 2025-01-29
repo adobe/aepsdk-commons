@@ -73,13 +73,13 @@ on:
 jobs:
   validate-code:
     name: Validate Code
-    uses: adobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@gha-ios-5.1.0
   
   test-ios-unit:
     name: Unit Test (iOS)
     needs: validate-code
     if: inputs.run-test-ios-unit
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.1.0
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
@@ -92,7 +92,7 @@ jobs:
     name: Functional Test (iOS)
     needs: validate-code
     if: inputs.run-test-ios-functional
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.1.0
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
@@ -105,7 +105,7 @@ jobs:
     name: Integration Test (iOS)
     needs: validate-code
     if: inputs.run-test-ios-integration
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.1.0
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
@@ -118,7 +118,7 @@ jobs:
     name: Unit Test (tvOS)
     needs: validate-code
     if: inputs.run-test-tvos-unit
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.1.0
     with:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
@@ -131,7 +131,7 @@ jobs:
     name: Functional Test (tvOS)
     needs: validate-code
     if: inputs.run-test-tvos-functional
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.1.0
     with:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
@@ -144,7 +144,7 @@ jobs:
     name: Integration Test (tvOS)
     needs: validate-code
     if: inputs.run-test-tvos-integration
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.0.1
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.1.0
     with:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
@@ -164,7 +164,7 @@ jobs:
         uses: actions/checkout@v4.2.2
       
       - name: Setup Dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.0.1
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.1.0
 
       - name: Build XCFramework
         run: make archive

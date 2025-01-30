@@ -141,8 +141,13 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-    
+
         branch_name="version-${{ inputs.version }}-update"
+
+        if [[ -n "${{ inputs.name }}" ]]; then
+          branch_name="${{ inputs.name }}-$branch_name"
+        fi
+
         git checkout -b "$branch_name"
         git add .
         git commit -m "Updating version to ${{ inputs.version }}."

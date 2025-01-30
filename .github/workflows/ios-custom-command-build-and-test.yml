@@ -68,6 +68,7 @@ jobs:
       is-default-ios: ${{ steps.define-matrix.outputs.is-default-ios }}
       is-default-tvos-device: ${{ steps.define-matrix.outputs.is-default-tvos-device }}
       is-default-tvos: ${{ steps.define-matrix.outputs.is-default-tvos }}
+      friendly-command-name: ${{ steps.define-matrix.outputs.friendly-command-name }}
     steps:
       - name: Define Matrix
         id: define-matrix
@@ -84,6 +85,7 @@ jobs:
           ios_versions='${{ inputs.ios-versions }}'
           tvos_device_names='${{ inputs.tvos-device-names }}'
           tvos_versions='${{ inputs.tvos-versions }}'
+          command="${{ inputs.command }}"
 
           # Check and set default values
           if [ -z "$ios_device_names" ]; then
@@ -114,6 +116,26 @@ jobs:
             is_default_tvos='false'
           fi
 
+          # Extract first two words from command
+          friendly_command_name=$(echo "$command" | awk '{print $1, $2}')
+          word_count=$(echo "$command" | wc -w)
+
+          # Append ellipsis if more than two words
+          if [ "$word_count" -gt 2 ]; then
+            friendly_command_name="$friendly_command_name..."
+          fi
+
+          # Echo values for visibility
+          echo "ios-device-names: $ios_device_names"
+          echo "ios-versions: $ios_versions"
+          echo "tvos-device-names: $tvos_device_names"
+          echo "tvos-versions: $tvos_versions"
+          echo "is-default-ios-device: $is_default_ios_device"
+          echo "is-default-ios: $is_default_ios"
+          echo "is-default-tvos-device: $is_default_tvos_device"
+          echo "is-default-tvos: $is_default_tvos"
+          echo "friendly-command-name: $friendly_command_name"
+
           # Set outputs
           echo "ios-device-names=$ios_device_names" >> "$GITHUB_OUTPUT"
           echo "ios-versions=$ios_versions" >> "$GITHUB_OUTPUT"
@@ -124,9 +146,10 @@ jobs:
           echo "is-default-ios=$is_default_ios" >> "$GITHUB_OUTPUT"
           echo "is-default-tvos-device=$is_default_tvos_device" >> "$GITHUB_OUTPUT"
           echo "is-default-tvos=$is_default_tvos" >> "$GITHUB_OUTPUT"
+          echo "friendly-command-name=$friendly_command_name" >> "$GITHUB_OUTPUT"
   run-custom-command:
     name: >
-      Test using 
+      Running `${{ needs.define-matrix.outputs.friendly-command-name }}` using 
       ${{ needs.define-matrix.outputs.is-default-ios-device != 'true' && matrix.ios-device || '' }}
       ${{ needs.define-matrix.outputs.is-default-ios != 'true' && matrix.ios || '' }}
       ${{ needs.define-matrix.outputs.is-default-tvos-device != 'true' && matrix.tvos-device || '' }}

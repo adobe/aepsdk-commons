@@ -82,6 +82,11 @@ jobs:
             friendly_command_name="$friendly_command_name..."
           fi
 
+          # Echo values for visibility
+          echo "android-api-levels: $android_api_levels"
+          echo "is-default-android-api-levels: $is_default_android_api-levels"
+          echo "friendly-command-name: $friendly_command_name"
+
           # Set outputs
           echo "android-api-levels=$android_api_levels" >> "$GITHUB_OUTPUT"
           echo "is-default-android-api-levels=$is_default_android_api_levels" >> "$GITHUB_OUTPUT"

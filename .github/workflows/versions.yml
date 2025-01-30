@@ -156,12 +156,12 @@ jobs:
           message="$message $capitalized_name "
         fi
         
-        message="$message version to ${{ inputs.version }}."
+        message="$message version to ${{ inputs.version }}"
 
         git checkout -b "$branch_name"
         git add .
         git commit -m "$message"
         git push origin "$branch_name"
     
-        gh pr create --base "${{ inputs.branch }}" --head "$branch_name" --title "$message" --body "$message"
+        gh pr create --base "${{ inputs.branch }}" --head "$branch_name" --title "$message" --body "$message."
       

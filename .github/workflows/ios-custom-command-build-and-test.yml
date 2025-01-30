@@ -49,7 +49,7 @@ on:
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
-        default: true
+        default: false
       codecov-flag:
         description: 'The flag to pass to the codecov uploader.'
         type: string

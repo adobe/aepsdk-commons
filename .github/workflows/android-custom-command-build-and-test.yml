@@ -40,7 +40,7 @@ on:
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
-        default: true
+        default: false
       codecov-flag:
         description: 'The flag to pass to the codecov uploader.'
         type: string
@@ -53,6 +53,7 @@ jobs:
     outputs:
       android-api-levels: ${{ steps.define-matrix.outputs.android-api-levels }}
       is-default-android-api-levels: ${{ steps.define-matrix.outputs.is-default-android-api-levels }}
+      friendly-command-name: ${{ steps.define-matrix.outputs.friendly-command-name }}
     steps:
       - name: Define Matrix
         id: define-matrix
@@ -72,13 +73,22 @@ jobs:
             is_default_android_api_levels='false'
           fi
 
+          # Extract first two words from command
+          friendly_command_name=$(echo "$command" | awk '{print $1, $2}')
+          word_count=$(echo "$command" | wc -w)
+
+          # Append ellipsis if more than two words
+          if [ "$word_count" -gt 2 ]; then
+            friendly_command_name="$friendly_command_name..."
+          fi
+
           # Set outputs
           echo "android-api-levels=$android_api_levels" >> "$GITHUB_OUTPUT"
-
           echo "is-default-android-api-levels=$is_default_android_api_levels" >> "$GITHUB_OUTPUT"
+          echo "friendly-command-name=$friendly_command_name" >> "$GITHUB_OUTPUT"
   run-custom-command:
     name: >
-      Test using Android API ${{ needs.define-matrix.outputs.is-default-android-api-levels != 'true' && matrix.api-level || '' }}
+      name: Running `${{ needs.define-matrix.outputs.friendly-command-name }}` using Android API ${{ needs.define-matrix.outputs.is-default-android-api-levels != 'true' && matrix.api-level || '' }}
     runs-on: ubuntu-24.04
     needs: define-matrix
     strategy:

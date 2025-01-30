@@ -105,7 +105,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.1.0
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.2.0
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}

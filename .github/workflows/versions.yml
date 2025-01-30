@@ -142,16 +142,25 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-        branch_name="version-${{ inputs.version }}-update"
+        branch_name="update-version-${{ inputs.version }}"
 
         if [[ -n "${{ inputs.name }}" ]]; then
           branch_name="${{ inputs.name }}-$branch_name"
         fi
 
+        message="Updating"
+
+        if [[ -n "${{ inputs.name }}" ]]; then
+          capitalized_name=$(echo "${{ inputs.name }}" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+          message="$message $capitalized_name "
+        fi
+        
+        message="$message version to ${{ inputs.version }}."
+
         git checkout -b "$branch_name"
         git add .
-        git commit -m "Updating version to ${{ inputs.version }}."
+        git commit -m "$message"
         git push origin "$branch_name"
     
-        gh pr create --base "${{ inputs.branch }}" --head "$branch_name" --title "Updating version to ${{ inputs.version }}" --body "Updating version to ${{ inputs.version }}"
+        gh pr create --base "${{ inputs.branch }}" --head "$branch_name" --title "$message" --body "$message"
       

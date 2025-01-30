@@ -92,8 +92,6 @@ jobs:
 
   publish:
     runs-on: ubuntu-24.04
-    env:
-      PREFIXED_TAG: v${{ inputs.tag }}
     needs: validate-versions
     steps:
       - uses: actions/checkout@v4.2.2
@@ -111,24 +109,25 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
+      - name: Compute Final Tag
+        run: |
+          FINAL_TAG="v${{ inputs.tag }}"
+
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            FINAL_TAG="${FINAL_TAG}-${{ inputs.release-variant }}"
+          fi
+
+          echo "FINAL_TAG=$FINAL_TAG" >> $GITHUB_ENV
+
       - name: Create GitHub release
         if: ${{ inputs.create-github-release }}
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Initialize the title with the tag
-          TITLE="${PREFIXED_TAG}"
-
-          # Append suffix if provided (non-empty)
-          if [ -n "${{ inputs.release-variant }}" ]; then
-            TITLE="${TITLE}-${{ inputs.release-variant }}"
-          fi
-
-          # Create the GitHub release with the constructed title
-          gh release create "${PREFIXED_TAG}" \
+          gh release create "$FINAL_TAG" \
             --generate-notes \
-            --title "${TITLE}"
+            --title "$FINAL_TAG"
 
       - name: Import GPG key
         env:
@@ -136,11 +135,11 @@ jobs:
           GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
         run: |
           # Check if the tag exists in the remote repository
-          if [ -z "$(git ls-remote --tags origin refs/tags/${PREFIXED_TAG})" ]; then
-              echo "::error title=Missing tag for publishing Pods::Tag '${PREFIXED_TAG}' does not exist in the remote repository."
+          if [ -z "$(git ls-remote --tags origin refs/tags/$FINAL_TAG)" ]; then
+              echo "::error title=Missing tag for publishing Pods::Tag '$FINAL_TAG' does not exist in the remote repository."
               exit 1
           else
-              echo "Tag '${PREFIXED_TAG}' exists in the remote repository."
+              echo "Tag '$FINAL_TAG' exists in the remote repository."
           fi
 
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes

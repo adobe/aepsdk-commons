@@ -28,4 +28,4 @@ jobs:
         uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.2.0
 
       - name: Lint Source Code
-        run: make ci-lint
+        run: make lint

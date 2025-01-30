@@ -61,9 +61,10 @@ jobs:
         run: |
           # Set default values
           default_android_api_levels='[29]'
-
+          
           # Get inputs
-          android_api_levels='${{ inputs.android-api-levels }}'
+          android_api_levels="${{ inputs.android-api-levels }}"
+          command="${{ inputs.command }}"
 
           # Check and set default values
           if [ -z "$android_api_levels" ]; then

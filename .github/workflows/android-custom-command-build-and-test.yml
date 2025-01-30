@@ -127,11 +127,11 @@ jobs:
         run: |
           FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
           
-          COMMAND_NAME=$(echo "${{ inputs.command }}" | awk '{print $2 ? $2 : $1}' | sed 's/[^a-zA-Z0-9_-]//g')  # Extract the second word of the command and filter out invalid filename chars
+          COMMAND_NAME=$(echo "${{ inputs.command }}" | awk '{print $2 ? $2 : $1}' | sed "s/[\/\\\"':<>|*?]//g")  # Extract the second word of the command and filter out invalid filename chars
           echo "LOG_FILE_NAME=logs-${COMMAND_NAME}_API-${{ matrix.api-level }}_${FILE_TIMESTAMP}Z.log" >> $GITHUB_ENV
 
-          ARTIFACT_NAME=$(echo "${{ inputs.upload-artifacts-name }}" | sed 's/[^a-zA-Z0-9_-]//g')  # Filter out invalid filename chars
-          
+          ARTIFACT_NAME=$(echo "${{ inputs.upload-artifacts-name }}" | sed "s/[\/\\\"':<>|*?]//g")  # Filter out invalid filename chars
+
           # If ARTIFACT_NAME is empty, set it to "artifact"
           if [[ -z "$ARTIFACT_NAME" ]]; then
             ARTIFACT_NAME="artifact"

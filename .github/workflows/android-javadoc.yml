@@ -55,7 +55,7 @@ jobs:
           RAW_JAVADOC_FILE_NAME="javadoc-${REPO_NAME}-v${MODULE_VERSION}-${BRANCH_NAME}-${FILE_TIMESTAMP}Z"
           
           # Sanitize the file name by removing invalid characters
-          SANITIZED_JAVADOC_FILE_NAME=$(echo "$RAW_JAVADOC_FILE_NAME" | sed 's/[^a-zA-Z0-9_-]/_/g')
+          SANITIZED_JAVADOC_FILE_NAME=$(echo "$RAW_JAVADOC_FILE_NAME" | sed "s/[\/\\\"':<>|*?]//g")
           
           # Export the sanitized file name as an environment variable
           echo "JAVADOC_FILE_NAME=${SANITIZED_JAVADOC_FILE_NAME}" >> $GITHUB_ENV

@@ -113,7 +113,7 @@ jobs:
     steps:
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.2.0
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.2.0
         with:
           android-api-level: ${{ matrix.api-level }}
 
@@ -145,7 +145,7 @@ jobs:
           echo "ARTIFACT_FILE_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
 
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
-      - name: Run tests
+      - name: Run command
         uses: reactivecircus/android-emulator-runner@62dbb605bba737720e10b196cb4220d374026a6d # v2.33.0
         with:
           api-level: ${{ matrix.api-level }}

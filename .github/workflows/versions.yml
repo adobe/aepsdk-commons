@@ -91,7 +91,8 @@ on:
           Only required for Actions that need to modify .github/workflow files.
         required: false
 jobs:
-  update-versions:
+  update-or-validate-versions:
+    name: ${{ inputs.update && 'Update' || 'Validate' }} Versions
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4.2.2

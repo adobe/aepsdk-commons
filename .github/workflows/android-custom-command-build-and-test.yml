@@ -30,13 +30,21 @@ on:
         type: string
         default: ''
       upload-artifacts-name:
-        description: '(Optional) Passthrough to upload-artifacts `name`. The name of the artifact(s) to upload, including the file extension if it is a file.'
+        description: '(Optional) Passthrough to `upload-artifacts` name. Specifies the name of the uploaded artifact(s), including the file extension if applicable. If left empty, it defaults to "artifact".'
         type: string
         default: ''
+      upload-artifacts-name-timstamp:
+        description: '(Optional) When set to true, a timestamp (`artifact-<TIMESTAMP>_`) is prepended to the artifact name to improve uniqueness. This is recommended when overwrite is set to false to avoid naming conflicts. Defaults to false.'
+        type: boolean
+        default: false
       upload-artifacts-compression-level:
-        description: '(Optional) Passthrough to upload-artifacts `compression-level`. See: https://github.com/actions/upload-artifact?tab=readme-ov-file#altering-compressions-level-speed-v-size'
+        description: '(Optional) Passthrough to `upload-artifacts` compression-level. Sets the compression level for uploaded artifacts. Higher values increase compression but may slow down uploads. See: https://github.com/actions/upload-artifact?tab=readme-ov-file#altering-compressions-level-speed-v-size. Defaults to 6.'
         type: string
-        default: ''
+        default: '6'
+      upload-artifacts-overwrite:
+        description: '(Optional) Passthrough to `upload-artifacts` overwrite. When set to true, existing artifacts with the same name will be overwritten. If false, uploads will fail if an artifact with the same name already exists. Defaults to false.'
+        type: boolean
+        default: false
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
@@ -123,11 +131,18 @@ jobs:
           echo "LOG_FILE_NAME=logs-${COMMAND_NAME}_API-${{ matrix.api-level }}_${FILE_TIMESTAMP}Z.log" >> $GITHUB_ENV
 
           ARTIFACT_NAME=$(echo "${{ inputs.upload-artifacts-name }}" | sed 's/[^a-zA-Z0-9_-]//g')  # Filter out invalid filename chars
+          
           # If ARTIFACT_NAME is empty, set it to "artifact"
           if [[ -z "$ARTIFACT_NAME" ]]; then
             ARTIFACT_NAME="artifact"
           fi
-          echo "ARTIFACT_FILE_NAME=artifact-${FILE_TIMESTAMP}Z_${ARTIFACT_NAME}" >> $GITHUB_ENV
+          
+          # Conditionally prepend timestamp if upload-artifacts-name-timstamp is true
+          if [[ "${{ inputs.upload-artifacts-name-timstamp }}" == "true" ]]; then
+            ARTIFACT_NAME="artifact-${FILE_TIMESTAMP}Z_${ARTIFACT_NAME}"
+          fi
+
+          echo "ARTIFACT_FILE_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
 
       # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
       - name: Run tests
@@ -164,6 +179,7 @@ jobs:
           name: ${{ env.ARTIFACT_FILE_NAME }}
           path: ${{ inputs.upload-artifacts-path }}
           compression-level: ${{ inputs.upload-artifacts-compression-level }}
+          overwrite: ${{ inputs.upload-artifacts-overwrite }}
 
       - name: Upload Code Coverage
         if: ${{ inputs.enable-codecov }}

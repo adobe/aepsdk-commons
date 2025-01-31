@@ -182,39 +182,6 @@ def get_root_dir():
 def lowercase_first_char(s: str) -> str:
     return s[:1].lower() + s[1:] if s else s
 
-def get_dependency_name_for_gradle_properties(name: str) -> str:
-    """
-    Extracts and returns a Gradle-compatible dependency name by removing the 'AEP' prefix 
-    from the provided dependency name string, if present. 
-
-    Parameters:
-        name (str): 
-            A string representing the full name of the dependency, which may start 
-            with the prefix 'AEP'.
-
-    Returns:
-        str: 
-            The dependency name with the 'AEP' prefix removed if it exists; otherwise, 
-            the original name is returned unchanged.
-
-    Example:
-        Input:
-            name='AEPCore'
-
-        Output:
-            "Core"
-
-        Input:
-            name='SomeDependency'
-
-        Output:
-            "SomeDependency"
-    """
-    if name.startswith('AEP'):
-        return name[3:]
-    else:
-        return name
-
 def get_ios_repo_name(name: str) -> str:
     """
     Generates the GitHub repository URL for the specified iOS dependency based on its name.
@@ -261,14 +228,13 @@ def gradle_properties_template(name: str) -> str:
 
     Example:
         Input:
-            name = 'AEPCore'
+            name = 'Core'
 
         Output:
             "^[\\s\\S]*mavenCoreVersion\\s*=\\s*"
     """
     template = Template(r'^[\s\S]*maven${dependency_name}Version\s*=\s*')
-    gradle_dependency_name = get_dependency_name_for_gradle_properties(name=name)
-    escaped_name = re.escape(gradle_dependency_name)
+    escaped_name = re.escape(name)
     return template.substitute(dependency_name=escaped_name)
 
 def gradle_properties_core_template(name: str) -> str:
@@ -291,8 +257,7 @@ def gradle_properties_core_template(name: str) -> str:
             '^[\s\S]*coreExtensionVersion\s*=\s*'
     """
     template = Template(r'^[\s\S]*${dependency_name}ExtensionVersion\s*=\s*')
-    gradle_dependency_name = get_dependency_name_for_gradle_properties(name=name)
-    gradle_dependency_name = lowercase_first_char(gradle_dependency_name)
+    gradle_dependency_name = lowercase_first_char(name)
     escaped_name = re.escape(gradle_dependency_name)
     return template.substitute(dependency_name=escaped_name)
 
@@ -384,7 +349,7 @@ EXTENSION_REGEX_PATTERNS: dict[str, list[RegexPattern]] = {
     ],
     # Use with gradle.properties in the Core repo
     # Special format for Android Core repo extension versions
-    'core_properties': [
+    'properties_multi_module': [
         RegexTemplate(
             description='<library>ExtensionVersion (ex: coreExtensionVersion)',
             pattern_template=gradle_properties_core_template,
@@ -461,7 +426,7 @@ DEPENDENCY_REGEX_PATTERNS: dict[str, list[RegexTemplate]] = {
     ],
     # Use with gradle.properties in the Core repo
     # Special format for Android Core repo extension versions
-    'core_properties': [
+    'properties_multi_module': [
         RegexTemplate(
             description='<library>ExtensionVersion (ex: coreExtensionVersion)',
             pattern_template=gradle_properties_core_template,

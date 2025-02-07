@@ -289,7 +289,7 @@ int bumpBomVersionType(Map<String, String> latestExVersions, Map<String, String>
 
  task storeLatestExtensionInfo(type: WriteProperties) {
      outputFile './bom.properties'
-     doLast{         
+     doFirst{
          properties(retrieveLatestExtensionInfo())
      }
  }

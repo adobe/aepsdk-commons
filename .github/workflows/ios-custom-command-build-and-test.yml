@@ -46,6 +46,10 @@ on:
       command:
         type: string
         required: true
+      resuslt-bundle-path: 
+        description: 'The path to the xcresult bundle.'
+        type: string
+        default: ''
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
@@ -174,10 +178,21 @@ jobs:
       - name: Run command
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
 
+      - name: Set up xcresultparser tool
+        if: ${{ inputs.result-bundle-path != '' }}
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-xcresultparser@gha-ios-5.2.0
+
+      - name: Parse xcresult files
+        if: ${{ inputs.result-bundle-path != '' }}
+        run: |
+          mkdir -p ./build/coverage
+          xcresultparser --coverage --output-format xml "${{ inputs.result-bundle-path }}" > ./build/coverage/coverage.xml
+
       - name: Upload Code Coverage
         if: ${{ inputs.enable-codecov }}
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
+          directory: ./build/coverage
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: ${{ inputs.codecov-flag }}
           verbose: true

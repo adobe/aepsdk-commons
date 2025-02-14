@@ -173,14 +173,14 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup Dependencies
-        uses: timkim/aepsdk-commons/.github/actions/ios-setup-dependencies-action@update-ios-coverage
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@update-ios-coverage
 
       - name: Run command
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
 
       - name: Set up xcresultparser tool
         if: ${{ inputs.result-bundle-path != '' }}
-        uses: timkim/aepsdk-commons/.github/actions/ios-setup-xcresultparser@update-ios-coverage
+        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-xcresultparser@update-ios-coverage
 
       - name: Parse xcresult files
         if: ${{ inputs.result-bundle-path != '' }}

@@ -44,6 +44,7 @@ runs:
     # Build xcresultparser from source
     - name: Build xcresultparser
       if: steps.cache-xcresultparser.outputs.cache-hit != 'true'
+      shell: bash
       run: |
         cd ./xcresultparser-src
         swift build -c release
@@ -59,6 +60,7 @@ runs:
 
     # Make xcresultparser available globally
     - name: Add xcresultparser to PATH
+      shell: bash
       run: |
         chmod +x ~/.xcresultparser/xcresultparser
         echo "$HOME/.xcresultparser" >> $GITHUB_PATH

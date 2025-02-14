@@ -186,7 +186,7 @@ jobs:
         if: ${{ inputs.result-bundle-path != '' }}
         run: |
           mkdir -p ./build/coverage
-          xcresultparser --coverage --output-format xml "${{ inputs.result-bundle-path }}" > ./build/coverage/coverage.xml
+          xcresultparser --output-format cobertura "${{ inputs.result-bundle-path }}" > ./build/coverage/coverage.xml
 
       - name: Upload Code Coverage
         if: ${{ inputs.enable-codecov }}

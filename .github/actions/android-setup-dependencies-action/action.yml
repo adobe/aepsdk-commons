@@ -60,7 +60,8 @@ runs:
         path: |
           ~/.android/avd/*
           ~/.android/adb*
-        key: avd-${{ inputs.android-api-level }}
+        key: avd-${{ runner.os }}-${{ inputs.android-api-level }}
+
     
     # Note that the AVD configurations must exactly match what's used in the test step, otherwise the cache will not be used.
     - name: create AVD and generate snapshot for caching
@@ -83,4 +84,5 @@ runs:
         path: |
           ~/.android/avd/*
           ~/.android/adb*
-        key: avd-${{ inputs.android-api-level }}
+        key: avd-${{ runner.os }}-${{ inputs.android-api-level }}
+

@@ -46,7 +46,7 @@ on:
       command:
         type: string
         required: true
-      resuslt-bundle-path: 
+      result-bundle-path: 
         description: 'The path to the xcresult bundle.'
         type: string
         default: ''

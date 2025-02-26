@@ -198,7 +198,7 @@ jobs:
             echo "Provided path is a directory. Searching for .xcresult files..."
             
             # Find all .xcresult files in the directory
-            RESULT_FILES=$(find "${{ inputs.result-bundle-path }}" -type f -name "*.xcresult")
+            RESULT_FILES=$(find "${{ inputs.result-bundle-path }}" -name "*.xcresult")
             
             echo "Found .xcresult files: $RESULT_FILES"
 
@@ -220,7 +220,7 @@ jobs:
               done
               
               echo "Final MERGE_CMD: $MERGE_CMD"
-              
+
               # Execute merge
               eval "$MERGE_CMD"
               

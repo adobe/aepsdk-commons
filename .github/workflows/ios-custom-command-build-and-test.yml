@@ -185,11 +185,11 @@ jobs:
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
 
       - name: Set up xcresultparser tool
-        if: ${{ inputs.result-bundle-path != '' }}
+        if: ${{ always() && inputs.result-bundle-path != '' }}
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-xcresultparser@update-ios-coverage
       
       - name: Parse xcresult files
-        if: ${{ inputs.result-bundle-path != '' }}
+        if: ${{ always() && inputs.result-bundle-path != '' }}
         run: |
           mkdir -p ./build/coverage
           
@@ -237,7 +237,7 @@ jobs:
           fi
 
       - name: Upload code coverage
-        if: ${{ inputs.enable-codecov }}
+        if: ${{ always() && inputs.enable-codecov }}
         uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         with:
           directory: ./build/coverage

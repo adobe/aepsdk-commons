@@ -69,6 +69,14 @@ on:
         description: 'Enable Codecov for test coverage.'
         type: boolean
         default: false
+      result-bundle-path:
+        description: 'The path to the xcresult bundle. Required for code coverage.'
+        type: string
+        default: ''
+      xcode-version:
+        description: 'The version of Xcode to use.'
+        type: string
+        default: 'latest-stable'
 
 jobs:
   validate-code:
@@ -86,6 +94,8 @@ jobs:
       command: make unit-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-unit-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-ios-functional:
@@ -99,6 +109,8 @@ jobs:
       command: make functional-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-functional-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-ios-integration:
@@ -112,6 +124,8 @@ jobs:
       command: make integration-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-integration-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-tvos-unit:
@@ -125,6 +139,8 @@ jobs:
       command: make unit-test-tvos
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-unit-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-tvos-functional:
@@ -138,6 +154,8 @@ jobs:
       command: make functional-test-tvos
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-functional-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
   
   test-tvos-integration:
@@ -151,6 +169,8 @@ jobs:
       command: make integration-test-tvos
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-integration-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   build_xcframework_and_app:
@@ -165,6 +185,8 @@ jobs:
       
       - name: Setup Dependencies
         uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@update-ios-coverage
+        with:
+          xcode-version: ${{ inputs.xcode-version }}
 
       - name: Build XCFramework
         run: make archive

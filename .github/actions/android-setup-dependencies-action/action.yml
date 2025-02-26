@@ -61,7 +61,6 @@ runs:
           ~/.android/avd/*
           ~/.android/adb*
         key: avd-${{ runner.os }}-${{ inputs.android-api-level }}
-
     
     # Note that the AVD configurations must exactly match what's used in the test step, otherwise the cache will not be used.
     - name: create AVD and generate snapshot for caching
@@ -76,13 +75,3 @@ runs:
         emulator-options: -no-metrics -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
         disable-animations: true
         script: echo "Generated AVD snapshot for caching."
-    
-    - name: Save AVD cache
-      if: ${{ steps.avd-cache.outputs.cache-hit != 'true' && inputs.android-api-level != '' }}
-      uses: actions/cache/save@v4.2.0
-      with:
-        path: |
-          ~/.android/avd/*
-          ~/.android/adb*
-        key: avd-${{ runner.os }}-${{ inputs.android-api-level }}
-

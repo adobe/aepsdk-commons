@@ -106,7 +106,7 @@ jobs:
       uses: actions/cache@v4.2.0
       with:
         path: .github/aepsdk-commons/scripts
-        key: aepsdk-commons-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>
+        key: aepsdk-commons-versionsScript-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>
       
     - name: Download scripts from aepsdk-commons
       if: steps.cache-scripts.outputs.cache-hit != 'true'
@@ -116,12 +116,6 @@ jobs:
         ref: ${{ env.WORKFLOW_TAG }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory
-
-    - uses: actions/cache/save@v4.2.0
-      if: steps.cache-scripts.outputs.cache-hit != 'true'
-      with:
-        path: .github/aepsdk-commons/scripts
-        key: aepsdk-commons-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>
 
     - name: Update or validate versions
       run: |

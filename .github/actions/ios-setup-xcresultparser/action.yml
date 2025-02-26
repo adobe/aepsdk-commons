@@ -30,7 +30,7 @@ runs:
       uses: actions/cache@v4.2.0
       with:
         path: ~/.xcresultparser
-        key: xcresultparser-${{ runner.os }}-commit-${{ steps.vars.outputs.XCRESULTPARSER_COMMIT_SHA }}
+        key: xcresultparser-${{ runner.os }}-commitSHA-${{ steps.vars.outputs.XCRESULTPARSER_COMMIT_SHA }}
         
     # Checkout the xcresultparser tool source code using the commit SHA
     - name: Checkout xcresultparser
@@ -50,13 +50,6 @@ runs:
         swift build -c release
         mkdir -p ~/.xcresultparser
         cp .build/release/xcresultparser ~/.xcresultparser/xcresultparser
-
-    - name: Save cache
-      if: steps.cache-xcresultparser.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4.2.0
-      with:
-        path: ~/.xcresultparser
-        key: xcresultparser-${{ runner.os }}-commit-${{ steps.vars.outputs.XCRESULTPARSER_COMMIT_SHA }}
 
     # Make xcresultparser available globally
     - name: Add xcresultparser to PATH

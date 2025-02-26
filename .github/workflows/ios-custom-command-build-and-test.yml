@@ -200,6 +200,14 @@ jobs:
             # Find all .xcresult files in the directory
             RESULT_FILES=$(find "${{ inputs.result-bundle-path }}" -type f -name "*.xcresult")
             
+            echo "Found .xcresult files: $RESULT_FILES"
+
+            # Check RESULT_FILES is not empty
+            if [ -z "$RESULT_FILES" ]; then
+              echo "No .xcresult files found in the directory. Exiting."
+              exit 0
+            fi
+
             # If multiple .xcresult files are found, merge them into a single xcresult
             COUNT=$(echo "$RESULT_FILES" | wc -w)
             if [ "$COUNT" -gt 1 ]; then
@@ -210,6 +218,8 @@ jobs:
               for f in $RESULT_FILES; do
                 MERGE_CMD="$MERGE_CMD $f"
               done
+              
+              echo "Final MERGE_CMD: $MERGE_CMD"
               
               # Execute merge
               eval "$MERGE_CMD"

@@ -84,9 +84,9 @@ jobs:
         run: |
           # Set default values
           default_ios_device_names='["iPhone 15"]'
-          default_ios_versions='["18.0"]'
+          default_ios_versions='["18.1"]'
           default_tvos_device_names='["Apple TV"]'
-          default_tvos_versions='["18.0"]'
+          default_tvos_versions='["18.1"]'
 
           # Get inputs
           ios_device_names='${{ inputs.ios-device-names }}'

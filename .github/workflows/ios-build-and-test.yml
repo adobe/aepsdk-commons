@@ -28,7 +28,7 @@ on:
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["18.0"]'
+        default: '["18.1"]'
       tvos-device-names:
         description: |
           The tvOS device names to use for testing. Must be formatted as a valid JSON array string.
@@ -42,7 +42,7 @@ on:
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["18.0"]'
+        default: '["18.1"]'
       # Flags for which tests to run
       run-test-ios-unit:
         type: boolean

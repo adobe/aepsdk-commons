@@ -114,7 +114,7 @@ jobs:
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
-      branch: ${{ github.ref_name }}
+      branch: main
       paths: ${{ inputs.version-validation-paths }}
       dependencies: ${{ inputs.version-validation-dependencies }}
       update: false

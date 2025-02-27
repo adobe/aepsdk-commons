@@ -85,7 +85,7 @@ jobs:
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
-      branch: ${{ github.ref_name }}
+      branch: main
       paths: ${{ inputs.version-validation-paths }}
       dependencies: ${{ inputs.version-validation-dependencies }}
       update: false
@@ -95,6 +95,8 @@ jobs:
     needs: validate-versions
     steps:
       - uses: actions/checkout@v4.2.2
+        with:
+          ref: main
 
       - name: Set up Java
         uses: actions/setup-java@v4.6.0

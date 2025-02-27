@@ -186,7 +186,8 @@ jobs:
 
       - name: Set up xcresultparser tool
         if: ${{ always() && inputs.result-bundle-path != '' }}
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-xcresultparser@gha-ios-5.3.0
+        run: |
+          brew install xcresultparser
       
       - name: Parse xcresult files
         if: ${{ always() && inputs.result-bundle-path != '' }}

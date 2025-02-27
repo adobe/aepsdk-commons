@@ -24,7 +24,7 @@ name: Update or Validate Versions
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 env:
-  WORKFLOW_TAG: update-ios-coverage
+  WORKFLOW_TAG: gha-ios-5.3.0
 
 on:
   workflow_call:
@@ -103,7 +103,7 @@ jobs:
 
     - name: Restore cached scripts from aepsdk-commons
       id: cache-scripts
-      uses: actions/cache@v4.2.0
+      uses: actions/cache@v4.2.1
       with:
         path: .github/aepsdk-commons/scripts
         key: aepsdk-commons-versionsScript-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>
@@ -112,7 +112,7 @@ jobs:
       if: steps.cache-scripts.outputs.cache-hit != 'true'
       uses: actions/checkout@v4.2.2
       with:
-        repository: timkimadobe/aepsdk-commons
+        repository: adobe/aepsdk-commons
         ref: ${{ env.WORKFLOW_TAG }}
         path: .github/aepsdk-commons
         sparse-checkout: 'scripts' # Only checkout the scripts directory

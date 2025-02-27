@@ -166,7 +166,7 @@ jobs:
       - name: Upload Logcat Logs
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4.6.1
         with:
           name: ${{ env.LOG_FILE_NAME }}
           path: logs/emulator.log
@@ -174,7 +174,7 @@ jobs:
       - name: Upload Artifacts
         if: ${{ inputs.upload-artifacts-path != '' }}
         continue-on-error: true
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4.6.1
         with:
           name: ${{ env.ARTIFACT_FILE_NAME }}
           path: ${{ inputs.upload-artifacts-path }}

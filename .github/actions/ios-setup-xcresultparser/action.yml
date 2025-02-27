@@ -27,7 +27,7 @@ runs:
     # Cache xcresultparser binary
     - name: Cache xcresultparser binary
       id: cache-xcresultparser
-      uses: actions/cache@v4.2.0
+      uses: actions/cache@v4.2.1
       with:
         path: ~/.xcresultparser
         key: xcresultparser-${{ runner.os }}-commitSHA-${{ steps.vars.outputs.XCRESULTPARSER_COMMIT_SHA }}

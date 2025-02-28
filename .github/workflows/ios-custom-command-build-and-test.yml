@@ -59,9 +59,9 @@ on:
         type: string
         default: ''
       xcode-version:
-        description: 'The version of Xcode to use.'
+        description: "The version of Xcode to use. If not provided, the runner's default version will be used."
         type: string
-        default: 'latest-stable'
+        default: ''
 
 jobs:
   define-matrix:

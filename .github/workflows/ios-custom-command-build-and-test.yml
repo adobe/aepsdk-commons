@@ -186,11 +186,13 @@ jobs:
 
       - name: Set up xcresultparser tool
         if: ${{ always() && inputs.result-bundle-path != '' }}
+        continue-on-error: true
         run: |
           brew install xcresultparser
       
       - name: Parse xcresult files
         if: ${{ always() && inputs.result-bundle-path != '' }}
+        continue-on-error: true
         run: |
           mkdir -p ./build/coverage
           
@@ -239,6 +241,7 @@ jobs:
 
       - name: Upload code coverage
         if: ${{ always() && inputs.enable-codecov }}
+        continue-on-error: true
         uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         with:
           directory: ./build/coverage

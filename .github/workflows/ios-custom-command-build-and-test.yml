@@ -177,7 +177,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup dependencies
-        uses: timkimadobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@update-ios-coverage
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.0
         with:
           xcode-version: ${{ inputs.xcode-version }}
 

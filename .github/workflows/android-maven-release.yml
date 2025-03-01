@@ -81,7 +81,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: timkimadobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.0
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.1
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}

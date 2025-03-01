@@ -81,11 +81,11 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.0
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.1
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
-      branch: ${{ github.ref_name }}
+      branch: main
       paths: ${{ inputs.version-validation-paths }}
       dependencies: ${{ inputs.version-validation-dependencies }}
       update: false
@@ -95,15 +95,17 @@ jobs:
     needs: validate-versions
     steps:
       - uses: actions/checkout@v4.2.2
+        with:
+          ref: main
 
       - name: Set up Java
-        uses: actions/setup-java@v4.6.0
+        uses: actions/setup-java@v4.7.0
         with:
           distribution: 'zulu'
           java-version: 17
 
       - name: Cache Gradle packages
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@v4.2.1
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}

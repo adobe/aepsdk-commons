@@ -28,7 +28,7 @@ on:
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["18.0"]'
+        default: '["18.1"]'
       tvos-device-names:
         description: |
           The tvOS device names to use for testing. Must be formatted as a valid JSON array string.
@@ -42,7 +42,7 @@ on:
           Example: '["18.0", "18.1"]'
             - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
         type: string
-        default: '["18.0"]'
+        default: '["18.1"]'
       # Flags for which tests to run
       run-test-ios-unit:
         type: boolean
@@ -69,88 +69,108 @@ on:
         description: 'Enable Codecov for test coverage.'
         type: boolean
         default: false
+      result-bundle-path:
+        description: 'The path to the xcresult bundle. Required for code coverage.'
+        type: string
+        default: ''
+      xcode-version:
+        description: "The version of Xcode to use. If not provided, the runner's default version will be used."
+        type: string
+        default: ''
 
 jobs:
   validate-code:
     name: Validate Code
-    uses: adobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@gha-ios-5.3.0
   
   test-ios-unit:
     name: Unit Test (iOS)
     needs: validate-code
     if: inputs.run-test-ios-unit
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.0
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make unit-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-unit-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-ios-functional:
     name: Functional Test (iOS)
     needs: validate-code
     if: inputs.run-test-ios-functional
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.0
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make functional-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-functional-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-ios-integration:
     name: Integration Test (iOS)
     needs: validate-code
     if: inputs.run-test-ios-integration
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.0
     with:
       ios-device-names: ${{ inputs.ios-device-names }}
       ios-versions: ${{ inputs.ios-versions }}
       command: make integration-test-ios
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: ios-integration-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-tvos-unit:
     name: Unit Test (tvOS)
     needs: validate-code
     if: inputs.run-test-tvos-unit
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.0
     with:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make unit-test-tvos
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-unit-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   test-tvos-functional:
     name: Functional Test (tvOS)
     needs: validate-code
     if: inputs.run-test-tvos-functional
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.0
     with:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make functional-test-tvos
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-functional-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
   
   test-tvos-integration:
     name: Integration Test (tvOS)
     needs: validate-code
     if: inputs.run-test-tvos-integration
-    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.2.0
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.0
     with:
       tvos-device-names: ${{ inputs.tvos-device-names }}
       tvos-versions: ${{ inputs.tvos-versions }}
       command: make integration-test-tvos
       enable-codecov: ${{ inputs.enable-codecov }}
       codecov-flag: tvos-integration-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
     secrets: inherit
 
   build_xcframework_and_app:
@@ -164,7 +184,9 @@ jobs:
         uses: actions/checkout@v4.2.2
       
       - name: Setup Dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.2.0
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.0
+        with:
+          xcode-version: ${{ inputs.xcode-version }}
 
       - name: Build XCFramework
         run: make archive

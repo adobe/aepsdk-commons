@@ -113,7 +113,7 @@ jobs:
     steps:
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.3.0
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.3.1
         with:
           android-api-level: ${{ matrix.api-level }}
 
@@ -166,7 +166,7 @@ jobs:
       - name: Upload Logcat Logs
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4.6.1
         with:
           name: ${{ env.LOG_FILE_NAME }}
           path: logs/emulator.log
@@ -174,7 +174,7 @@ jobs:
       - name: Upload Artifacts
         if: ${{ inputs.upload-artifacts-path != '' }}
         continue-on-error: true
-        uses: actions/upload-artifact@v4.6.0
+        uses: actions/upload-artifact@v4.6.1
         with:
           name: ${{ env.ARTIFACT_FILE_NAME }}
           path: ${{ inputs.upload-artifacts-path }}
@@ -182,8 +182,9 @@ jobs:
           overwrite: ${{ inputs.upload-artifacts-overwrite }}
 
       - name: Upload Code Coverage
-        if: ${{ inputs.enable-codecov }}
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+        if: ${{ always() && inputs.enable-codecov }}
+        continue-on-error: true
+        uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: ${{ inputs.codecov-flag }}

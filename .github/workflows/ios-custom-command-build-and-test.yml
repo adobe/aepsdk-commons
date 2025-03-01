@@ -46,12 +46,20 @@ on:
       command:
         type: string
         required: true
+      result-bundle-path:
+        description: 'The path to the xcresult bundle.'
+        type: string
+        default: ''
       enable-codecov:
         description: 'Enable Codecov for test coverage.'
         type: boolean
         default: false
       codecov-flag:
         description: 'The flag to pass to the codecov uploader.'
+        type: string
+        default: ''
+      xcode-version:
+        description: "The version of Xcode to use. If not provided, the runner's default version will be used."
         type: string
         default: ''
 
@@ -76,9 +84,9 @@ jobs:
         run: |
           # Set default values
           default_ios_device_names='["iPhone 15"]'
-          default_ios_versions='["18.0"]'
+          default_ios_versions='["18.1"]'
           default_tvos_device_names='["Apple TV"]'
-          default_tvos_versions='["18.0"]'
+          default_tvos_versions='["18.1"]'
 
           # Get inputs
           ios_device_names='${{ inputs.ios-device-names }}'
@@ -165,19 +173,78 @@ jobs:
         tvos: ${{ fromJson(needs.define-matrix.outputs.tvos-versions) }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4.2.2
 
-      - name: Setup Dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.2.0
+      - name: Setup dependencies
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.0
+        with:
+          xcode-version: ${{ inputs.xcode-version }}
 
       - name: Run command
         run: ${{ inputs.command }} IOS_DEVICE_NAME="${{ matrix.ios-device }}" IOS_VERSION="${{ matrix.ios }}" TVOS_DEVICE_NAME="${{ matrix.tvos-device }}" TVOS_VERSION="${{ matrix.tvos }}"
 
-      - name: Upload Code Coverage
-        if: ${{ inputs.enable-codecov }}
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - name: Set up xcresultparser tool
+        if: ${{ always() && inputs.result-bundle-path != '' }}
+        continue-on-error: true
+        run: |
+          brew install xcresultparser
+      
+      - name: Parse xcresult files
+        if: ${{ always() && inputs.result-bundle-path != '' }}
+        continue-on-error: true
+        run: |
+          mkdir -p ./build/coverage
+          
+          # Check if the result-bundle-path is a directory or file
+          if [ -d "${{ inputs.result-bundle-path }}" ]; then
+            echo "Provided path is a directory. Searching for .xcresult files..."
+            
+            # Find all .xcresult files in the directory
+            RESULT_FILES=$(find "${{ inputs.result-bundle-path }}" -name "*.xcresult")
+            
+            echo "Found .xcresult files: $RESULT_FILES"
+
+            # Check RESULT_FILES is not empty
+            if [ -z "$RESULT_FILES" ]; then
+              echo "No .xcresult files found in the directory. Exiting."
+              exit 0
+            fi
+
+            # If multiple .xcresult files are found, merge them into a single xcresult
+            COUNT=$(echo "$RESULT_FILES" | wc -w)
+            if [ "$COUNT" -gt 1 ]; then
+              echo "Multiple .xcresult files detected. Merging coverage..."
+              
+              # Construct merge command
+              MERGE_CMD="xcrun xccov merge --output ./build/Merged.xcresult"
+              for f in $RESULT_FILES; do
+                MERGE_CMD="$MERGE_CMD $f"
+              done
+              
+              echo "Final MERGE_CMD: $MERGE_CMD"
+
+              # Execute merge
+              eval "$MERGE_CMD"
+              
+              # Parse merged file
+              xcresultparser --output-format cobertura "./build/Merged.xcresult" > ./build/coverage/coverage.xml
+            else
+              # Parse single file
+              echo "Single .xcresult file found. Parsing..."
+              xcresultparser --output-format cobertura "$RESULT_FILES" > ./build/coverage/coverage.xml
+            fi
+          else
+            echo "Provided path is a file. Parsing..."
+            xcresultparser --output-format cobertura "${{ inputs.result-bundle-path }}" > ./build/coverage/coverage.xml
+          fi
+
+      - name: Upload code coverage
+        if: ${{ always() && inputs.enable-codecov }}
+        continue-on-error: true
+        uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         with:
+          directory: ./build/coverage
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: ${{ inputs.codecov-flag }}
           verbose: true

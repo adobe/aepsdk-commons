@@ -48,23 +48,23 @@ jobs:
         id: create_branch
         run: |
           if [ "${{ inputs.create-new-branch }}" = "true" ]; then
-            # Create a new branch from main
-            branch_name="downmerge-main-to-${{ inputs.dev-branch-name }}"
+            # Create the specified dev branch from main and exit
             git checkout main
-            git checkout -b "$branch_name"
-            git push origin "$branch_name"
-            echo "branch=$branch_name" >> $GITHUB_OUTPUT
+            git checkout -b "${{ inputs.dev-branch-name }}"
+            git push origin "${{ inputs.dev-branch-name }}"
+            echo "create_pr=false" >> $GITHUB_OUTPUT
           else
-            # Use main directly
-            echo "branch=main" >> $GITHUB_OUTPUT
+            # Use main as the head branch for PR
+            echo "create_pr=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Create pull request
+        if: steps.create_branch.outputs.create_pr == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           base="${{ inputs.dev-branch-name }}"
-          head="${{ steps.create_branch.outputs.branch }}"
+          head="main"
           title="Downmerge main -> $base"
           body="Opening a pull request to bring main changes into $base."
 

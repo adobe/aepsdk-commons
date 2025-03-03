@@ -57,6 +57,7 @@ jobs:
           else
             # Use main directly
             echo "branch=main" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create pull request
         env:

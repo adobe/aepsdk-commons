@@ -24,7 +24,6 @@ on:
         description: 'Create a new branch from main instead of merging main into the dev branch. Default is false.'
         type: boolean
         default: false
-        required: true
 
 jobs:
   downmerge:

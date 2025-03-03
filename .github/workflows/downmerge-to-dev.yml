@@ -1,0 +1,75 @@
+#
+# Copyright 2025 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Downmerge main -> dev
+
+on:
+  workflow_call:
+    inputs:
+      dev-branch-name:
+        description: 'Branch to receive changes from main. Default is "dev".'
+        type: string
+        default: 'dev'
+
+      create-new-branch:
+        description: 'Create a new branch from main instead of merging main into the dev branch. Default is false.'
+        type: boolean
+        default: false
+        required: true
+
+jobs:
+  downmerge:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.2.2
+        with:
+          # Allows merging/pulling across branches
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create or determine branch
+        id: create_branch
+        run: |
+          if [ "${{ inputs.create-new-branch }}" = "true" ]; then
+            # Create a new branch from main
+            branch_name="downmerge-main-to-${{ inputs.dev-branch-name }}"
+            git checkout main
+            git checkout -b "$branch_name"
+            git push origin "$branch_name"
+            echo "branch=$branch_name" >> $GITHUB_OUTPUT
+          else
+            # Use main directly
+            echo "branch=main" >> $GITHUB_OUTPUT
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          base="${{ inputs.dev-branch-name }}"
+          head="${{ steps.create_branch.outputs.branch }}"
+          title="Downmerge main -> $base"
+          body="Opening a pull request to bring main changes into $base."
+
+          gh pr create \
+            --base "$base" \
+            --head "$head" \
+            --title "$title" \
+            --body "$body"

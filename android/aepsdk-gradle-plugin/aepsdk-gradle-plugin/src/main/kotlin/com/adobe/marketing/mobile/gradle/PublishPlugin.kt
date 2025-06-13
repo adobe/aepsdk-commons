@@ -15,22 +15,19 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.extra
-import org.gradle.plugins.signing.Sign
-import org.gradle.plugins.signing.SigningExtension
-import java.net.URI
+import org.jreleaser.gradle.plugin.JReleaserExtension
+import org.jreleaser.model.Http
 
 class PublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         // Apply necessary plugins
         project.plugins.apply(BuildConstants.Plugins.MAVEN_PUBLISH)
-        project.plugins.apply(BuildConstants.Plugins.SIGNING)
+        project.plugins.apply(BuildConstants.Plugins.J_RELEASER)
 
         project.afterEvaluate {
             configurePublishing(project)
-            configureSigning(project)
+            configureSigningAndRelease(project)
         }
     }
 
@@ -92,11 +89,7 @@ class PublishPlugin : Plugin<Project> {
                     repositories {
                         maven {
                             name = "sonatype"
-                            url = URI(project.publishUrl)
-                            credentials {
-                                username = System.getenv("SONATYPE_USERNAME")
-                                password = System.getenv("SONATYPE_PASSWORD")
-                            }
+                            url = project.layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
                         }
                     }
                 }
@@ -104,26 +97,48 @@ class PublishPlugin : Plugin<Project> {
         }
     }
 
-    private fun configureSigning(project: Project) {
-        // Set signing configuration
-        project.extra.apply {
-            set("signing.gnupg.executable", BuildConstants.Publishing.SIGNING_GNUPG_EXECUTABLE)
-            set("signing.gnupg.keyName", BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
-            set("signing.gnupg.passphrase", BuildConstants.Publishing.SIGNING_GNUPG_PASSPHRASE)
-        }
+    private fun configureSigningAndRelease(project: Project) {
+        project.extensions.configure<JReleaserExtension> {
+            signing {
+                setActive("ALWAYS")
+                armored.set(true)
+                verify.set(true)
 
-        project.extensions.configure<SigningExtension> {
-            useGpgCmd()
+                command {
+                    executable.set(BuildConstants.Publishing.SIGNING_GNUPG_EXECUTABLE)
+                }
 
-            val publishing = project.extensions.getByType(PublishingExtension::class.java)
-            sign(publishing.publications)
-        }
+                // TODO: Source and verify the PGP signature  parameters
+                passphrase.set(BuildConstants.Publishing.SIGNING_GNUPG_PASSPHRASE)
+                publicKey.set(BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
+                secretKey.set(BuildConstants.Publishing.SIGNING_GNUPG_SECRET_KEYS)
+            }
 
-        // https://github.com/gradle/gradle/issues/5064 - Gpg does not support SigningExtension.required flag.
-        // Skip signing if we are not publishing to MavenCentral.
-        project.tasks.withType(Sign::class.java) {
-            onlyIf {
-                project.tasks.withType(PublishToMavenRepository::class.java).find { project.gradle.taskGraph.hasTask(it) } != null
+            deploy {
+                maven {
+                    mavenCentral {
+                        create("sonatype") {
+                            setActive("ALWAYS")
+                            // URL where the MavenCentral service is enabled.
+                            url.set(project.publishUrl)
+                            authorization.set(Http.Authorization.BEARER)
+
+                            // Signing configuration. See more in signing {}
+                            sign.set(true)
+
+                            // Verification of artifacts before publishing.
+                            checksums.set(true)
+                            sourceJar.set(true)
+                            javadocJar.set(true)
+                            verifyPom.set(true)
+                            applyMavenCentralRules.set(true)
+
+                            stagingRepository("staging-deploy")
+
+                            namespace.set(project.publishGroupId)
+                        }
+                    }
+                }
             }
         }
     }

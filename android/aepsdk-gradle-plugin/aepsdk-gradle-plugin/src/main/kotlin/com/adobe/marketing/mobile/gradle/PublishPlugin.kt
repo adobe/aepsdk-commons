@@ -25,6 +25,10 @@ class PublishPlugin : Plugin<Project> {
         project.plugins.apply(BuildConstants.Plugins.MAVEN_PUBLISH)
         project.plugins.apply(BuildConstants.Plugins.J_RELEASER)
 
+        // Make the value visible to every tool (Gradle, JReleaser, etc.)
+        project.group = project.publishGroupId
+        project.version = project.publishVersion
+
         project.afterEvaluate {
             configurePublishing(project)
             configureSigningAndRelease(project)
@@ -106,7 +110,10 @@ class PublishPlugin : Plugin<Project> {
     }
 
     private fun configureSigningAndRelease(project: Project) {
-        project.extensions.configure<JReleaserExtension> {
+        project.extensions.configure<JReleaserExtension> {            
+            // Allow JReleaser to walk up parent directories to locate the VCS root.
+            gitRootSearch.set(true)
+
             signing {
                 setActive("ALWAYS")
                 armored.set(true)

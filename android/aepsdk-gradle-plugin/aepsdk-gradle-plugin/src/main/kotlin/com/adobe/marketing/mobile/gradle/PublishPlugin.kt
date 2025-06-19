@@ -28,6 +28,15 @@ class PublishPlugin : Plugin<Project> {
         project.afterEvaluate {
             configurePublishing(project)
             configureSigningAndRelease(project)
+
+            // Make the publish task depend on the AAR bundle to avoid implicit dependencies.
+            // Gradle names publish tasks differently depending on the repository set under MavenPublication
+            // repositories -> maven -> name
+            // If no name is provided, the default is: `publishReleasePublicationToMavenRepository`.
+            // To cover all cases, depend on every PublishToMavenRepository task in the project.
+            project.tasks
+                .withType(org.gradle.api.publish.maven.tasks.PublishToMavenRepository::class.java)
+                .configureEach { dependsOn(project.tasks.named("bundlePhoneReleaseAar")) }
         }
     }
 
@@ -88,7 +97,6 @@ class PublishPlugin : Plugin<Project> {
 
                     repositories {
                         maven {
-                            name = "sonatype"
                             url = project.layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
                         }
                     }
@@ -108,7 +116,7 @@ class PublishPlugin : Plugin<Project> {
                     executable.set(BuildConstants.Publishing.SIGNING_GNUPG_EXECUTABLE)
                 }
 
-                // TODO: Source and verify the PGP signature  parameters
+                // TODO: Source and verify the PGP signature parameters
                 passphrase.set(BuildConstants.Publishing.SIGNING_GNUPG_PASSPHRASE)
                 publicKey.set(BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
                 secretKey.set(BuildConstants.Publishing.SIGNING_GNUPG_SECRET_KEYS)
@@ -123,7 +131,7 @@ class PublishPlugin : Plugin<Project> {
                             url.set(project.publishUrl)
                             authorization.set(Http.Authorization.BEARER)
 
-                            // Signing configuration. See more in signing {}
+                            // Signing configuration. See more in signing {} (above)
                             sign.set(true)
 
                             // Verification of artifacts before publishing.

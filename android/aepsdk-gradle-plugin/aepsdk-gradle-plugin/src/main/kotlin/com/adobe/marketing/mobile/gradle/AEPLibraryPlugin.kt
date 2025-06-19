@@ -290,7 +290,8 @@ class AEPLibraryPlugin : Plugin<Project> {
         project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(assemblePhone) }
         project.tasks.named(BuildConstants.Tasks.PUBLISH_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
         project.tasks.named(BuildConstants.Tasks.PUBLISH_RELEASE_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
-        project.tasks.named(BuildConstants.Tasks.SIGN_RELEASE).configure { dependsOn(assemblePhone)}
+        // project.tasks.named(BuildConstants.Tasks.SIGN_RELEASE).configure { dependsOn(assemblePhone)}
+        project.tasks.named("jreleaserFullRelease").configure { dependsOn(assemblePhone) }
     }
 
     private fun configureSpotless(project: Project, extension: AEPLibraryExtension) {

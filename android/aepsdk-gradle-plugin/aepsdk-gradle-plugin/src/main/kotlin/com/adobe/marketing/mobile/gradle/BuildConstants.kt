@@ -126,6 +126,7 @@ object BuildConstants {
         const val JAVADOC_JAR = "javadocJar"
         const val SOURCES_JAR = "sourcesJar"
         const val DOKKA_JAVADOC = "dokkaJavadoc"
+        const val CONFIGURE_SDK_VERIFICATION_FILE = "configureSDKVerificationFile"
         const val CREATE_PHONE_RELEASE_JAVADOC = "createPhoneReleaseJavadoc"
         const val PHONE_RELEASE_SOURCES_JAR = "phoneReleaseSourcesJar"
         const val ASSEMBLE_PHONE = "assemblePhone"

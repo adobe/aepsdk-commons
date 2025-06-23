@@ -27,6 +27,8 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.File
+import org.gradle.api.GradleException
 
 class AEPLibraryPlugin : Plugin<Project> {
 
@@ -91,6 +93,10 @@ class AEPLibraryPlugin : Plugin<Project> {
             if (extension.enableCheckStyle.getOrElse(false)) {
                 project.plugins.apply(BuildConstants.Plugins.CHECKSTYLE)
                 configureCheckStyle(project)
+            }
+
+            if (extension.enableSDKVerification.getOrElse(false)) {
+                configureSDKVerificationFile(project)
             }
 
             configureTaskDependencies(project)
@@ -338,6 +344,26 @@ class AEPLibraryPlugin : Plugin<Project> {
             exclude(BuildConstants.Path.R_CLASS)
             exclude(BuildConstants.Path.BUILD_CONFIG_CLASS)
             classpath = project.files()
+        }
+    }
+
+    private fun configureSDKVerificationFile(project: Project) {
+        project.tasks.register(BuildConstants.Tasks.CONFIGURE_SDK_VERIFICATION_FILE) {
+            group = "verification"
+            description = "Generates or configures verification.properties for Play SDK verification"
+
+            doLast {
+                // Try to get token from environment variable first, then from gradle properties
+                val sdkVerificationToken = System.getenv("GOOGLE_TOKEN") 
+                    ?: project.findProperty("sdkVerificationToken") as? String
+                    ?: throw GradleException("SDK verification token is not set. Please set the GOOGLE_TOKEN environment variable or provide it in gradle.properties as sdkVerificationToken.")
+                
+                val outputFile = project.file("src/main/resources/META-INF/com/adobe/marketing/mobile/optimize/verification.properties")
+                outputFile.parentFile.mkdirs()
+
+                outputFile.writeText("token=$sdkVerificationToken\n")
+                project.logger.lifecycle("SDK verification file generated at: ${outputFile.absolutePath}")
+            }
         }
     }
 }

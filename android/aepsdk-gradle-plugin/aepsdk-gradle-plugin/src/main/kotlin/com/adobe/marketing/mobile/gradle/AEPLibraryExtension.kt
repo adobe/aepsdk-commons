@@ -116,6 +116,15 @@ open class AEPLibraryExtension @Inject constructor(objects: ObjectFactory) {
     val enableDokkaDoc: Property<Boolean> = objects.property()
 
     /**
+     * Indicates whether to generate a verification.properties file.
+     * If enabled, it creates verification.propeties file containing the token to verify SDK.
+     * This can be useful for claiming the SDK on play console.
+     *
+     * This property is optional, and its default value is `false`.
+    */
+    val enableSDKVerification: Property<Boolean> = objects.property()
+
+    /**
      * Enables Spotless for linting in your project with specific configurations.
      *
      * For Java files, it uses googleJavaFormat().aosp() for code formatting.

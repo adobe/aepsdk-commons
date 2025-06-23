@@ -358,7 +358,14 @@ class AEPLibraryPlugin : Plugin<Project> {
                     ?: project.findProperty("sdkVerificationToken") as? String
                     ?: throw GradleException("SDK verification token is not set. Please set the GOOGLE_TOKEN environment variable or provide it in gradle.properties as sdkVerificationToken.")
                 
-                val outputFile = project.file("src/main/resources/META-INF/com/adobe/marketing/mobile/optimize/verification.properties")
+                // Get the package name from Android manifest
+                val android = project.extensions.getByType(com.android.build.gradle.LibraryExtension::class.java)
+                val packageName = android.namespace ?: throw GradleException("Android namespace is not set. Please configure the namespace in your build.gradle file.")
+                
+                // Convert package name to directory path
+                val packagePath = packageName.replace(".", "/")
+                
+                val outputFile = project.file("src/main/resources/META-INF/$packagePath/optimize/verification.properties")
                 outputFile.parentFile.mkdirs()
 
                 outputFile.writeText("token=$sdkVerificationToken\n")

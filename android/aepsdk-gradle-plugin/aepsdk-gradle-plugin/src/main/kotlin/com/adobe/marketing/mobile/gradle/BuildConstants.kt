@@ -126,7 +126,7 @@ object BuildConstants {
         const val JAVADOC_JAR = "javadocJar"
         const val SOURCES_JAR = "sourcesJar"
         const val DOKKA_JAVADOC = "dokkaJavadoc"
-        const val CONFIGURE_SDK_VERIFICATION_FILE = "configureSDKVerificationFile"
+        const val CONFIGURE_PLAY_CONSOLE_VERIFICATION = "configurePlayConsoleVerification"
         const val CREATE_PHONE_RELEASE_JAVADOC = "createPhoneReleaseJavadoc"
         const val PHONE_RELEASE_SOURCES_JAR = "phoneReleaseSourcesJar"
         const val ASSEMBLE_PHONE = "assemblePhone"
@@ -244,6 +244,7 @@ governing permissions and limitations under the License.
         const val SIGNING_GNUPG_EXECUTABLE = "gpg"
         val SIGNING_GNUPG_KEY_NAME by lazy { System.getenv("GPG_KEY_ID") }
         val SIGNING_GNUPG_PASSPHRASE by lazy { System.getenv("GPG_PASSPHRASE") }
+        val GOOGLE_TOKEN by lazy { System.getenv("GOOGLE_TOKEN") }
 
         const val MODULE_NAME_PROPERTY = "moduleName"
         const val MODULE_VERSION_PROPERTY = "moduleVersion"
@@ -302,5 +303,8 @@ governing permissions and limitations under the License.
         const val GRADLE_DIR = "**/.gradle/*"
         const val GRADLE_WRAPPER_DIR = "**/gradle/wrapper/*"
         const val BUILD_DIR = "**/build/*"
+        
+        // Play Console verification file path template
+        const val PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR = "src/main/resources/META-INF/%s/verification.properties"
     }
 }

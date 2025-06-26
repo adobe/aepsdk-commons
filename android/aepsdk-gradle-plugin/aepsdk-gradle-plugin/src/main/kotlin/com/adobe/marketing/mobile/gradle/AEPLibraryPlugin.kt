@@ -43,6 +43,10 @@ class AEPLibraryPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.createAepLibraryConfiguration()
 
+        if (extension.enablePlayConsoleVerification.getOrElse(false)) {
+            generatePlayConsoleVerificationFile(project, extension)
+        }
+
         // These settings should be applied prior to the Android Gradle plugin evaluating the project.
         project.afterEvaluate {
             configureAndroidNamespace(project, extension)
@@ -95,8 +99,9 @@ class AEPLibraryPlugin : Plugin<Project> {
                 configureCheckStyle(project)
             }
 
-            if (extension.enableSDKVerification.getOrElse(false)) {
-                configureSDKVerificationFile(project)
+            // Always register the Play Console verification task for manual execution
+            if (extension.enablePlayConsoleVerification.getOrElse(false)) {
+                configurePlayConsoleVerification(project, extension)
             }
 
             configureTaskDependencies(project)
@@ -347,29 +352,27 @@ class AEPLibraryPlugin : Plugin<Project> {
         }
     }
 
-    private fun configureSDKVerificationFile(project: Project) {
-        project.tasks.register(BuildConstants.Tasks.CONFIGURE_SDK_VERIFICATION_FILE) {
+    private fun generatePlayConsoleVerificationFile(project: Project, extension: AEPLibraryExtension) {
+        val sdkVerificationToken = BuildConstants.Publishing.GOOGLE_TOKEN
+            ?: throw GradleException("Play Console verification token is not set. Please set the GOOGLE_TOKEN environment variable or provide it in gradle.properties as PLAY_CONSOLE_VERIFICATION_TOKEN.")
+
+        val packageName = extension.namespace.get() 
+            ?: throw GradleException("Android namespace is not set. Please configure the namespace in your build.gradle file.")
+        
+        val packagePath = packageName.replace(".", "/")
+        val outputFile = project.file(BuildConstants.Path.PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR.format(packagePath))
+        outputFile.parentFile.mkdirs()
+        outputFile.writeText("token=$sdkVerificationToken\n")
+        project.logger.lifecycle("Play Console verification file generated at: ${outputFile.absolutePath}")
+    }
+
+    private fun configurePlayConsoleVerification(project: Project, extension: AEPLibraryExtension) {
+        project.tasks.register(BuildConstants.Tasks.CONFIGURE_PLAY_CONSOLE_VERIFICATION) {
             group = "verification"
-            description = "Generates or configures verification.properties for Play SDK verification"
+            description = "Regenerates verification.properties for Play SDK verification"
 
             doLast {
-                // Try to get token from environment variable first, then from gradle properties
-                val sdkVerificationToken = System.getenv("GOOGLE_TOKEN") 
-                    ?: project.findProperty("sdkVerificationToken") as? String
-                    ?: throw GradleException("SDK verification token is not set. Please set the GOOGLE_TOKEN environment variable or provide it in gradle.properties as sdkVerificationToken.")
-                
-                // Get the package name from Android manifest
-                val android = project.extensions.getByType(com.android.build.gradle.LibraryExtension::class.java)
-                val packageName = android.namespace ?: throw GradleException("Android namespace is not set. Please configure the namespace in your build.gradle file.")
-                
-                // Convert package name to directory path
-                val packagePath = packageName.replace(".", "/")
-                
-                val outputFile = project.file("src/main/resources/META-INF/$packagePath/optimize/verification.properties")
-                outputFile.parentFile.mkdirs()
-
-                outputFile.writeText("token=$sdkVerificationToken\n")
-                project.logger.lifecycle("SDK verification file generated at: ${outputFile.absolutePath}")
+                generatePlayConsoleVerificationFile(project, extension)
             }
         }
     }

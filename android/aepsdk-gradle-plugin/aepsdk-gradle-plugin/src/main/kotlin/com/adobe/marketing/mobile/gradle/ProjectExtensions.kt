@@ -34,6 +34,7 @@ internal fun Project.createAepLibraryConfiguration(): AEPLibraryExtension {
     aepConfig.enableSpotlessPrettierForJava.convention(false)
     aepConfig.enableCheckStyle.convention(false)
     aepConfig.disableCommonDependencies.convention(false)
+    aepConfig.enablePlayConsoleVerification.convention(false)
 
     // Our extensions includes these properties in the gradle.properties file and are relied upon by our build scripts.
     aepConfig.moduleName.convention(providers.gradleProperty(BuildConstants.Publishing.MODULE_NAME_PROPERTY))

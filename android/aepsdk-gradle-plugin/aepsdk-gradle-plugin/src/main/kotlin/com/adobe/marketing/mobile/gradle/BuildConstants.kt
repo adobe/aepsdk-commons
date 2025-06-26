@@ -246,6 +246,9 @@ governing permissions and limitations under the License.
         val SIGNING_GNUPG_PASSPHRASE by lazy { System.getenv("GPG_PASSPHRASE") }
         val SIGNING_GNUPG_SECRET_KEYS by lazy { System.getenv("GPG_SECRET_KEYS") }
 
+        val MAVENCENTRAL_USERNAME by lazy { System.getenv("SONATYPE_USERNAME") }
+        val MAVENCENTRAL_TOKEN by lazy { System.getenv("SONATYPE_PASSWORD") }
+
         const val MODULE_NAME_PROPERTY = "moduleName"
         const val MODULE_VERSION_PROPERTY = "moduleVersion"
         const val MAVEN_REPO_NAME_PROPERTY = "mavenRepoName"

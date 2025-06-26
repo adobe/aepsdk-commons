@@ -25,11 +25,11 @@ class PublishPlugin : Plugin<Project> {
         project.plugins.apply(BuildConstants.Plugins.MAVEN_PUBLISH)
         project.plugins.apply(BuildConstants.Plugins.J_RELEASER)
 
-        // Make the value visible to every tool (Gradle, JReleaser, etc.)
-        project.group = project.publishGroupId
-        project.version = project.publishVersion
-
         project.afterEvaluate {
+            // Make the value visible to every tool (Gradle, JReleaser, etc.)
+            project.group = project.publishGroupId
+            project.version = project.publishVersion
+
             configurePublishing(project)
             configureSigningAndRelease(project)
 
@@ -79,8 +79,14 @@ class PublishPlugin : Plugin<Project> {
                             }
                         }
 
-                        val scmConnectionUrl = String.format(BuildConstants.Publishing.SCM_CONNECTION_URL_TEMPLATE, publishingConfig.gitRepoName.get())
-                        val scmRepoUrl = String.format(BuildConstants.Publishing.SCM_REPO_URL_TEMPLATE, publishingConfig.gitRepoName.get())
+                        val scmConnectionUrl = String.format(
+                            BuildConstants.Publishing.SCM_CONNECTION_URL_TEMPLATE,
+                            publishingConfig.gitRepoName.get()
+                        )
+                        val scmRepoUrl = String.format(
+                            BuildConstants.Publishing.SCM_REPO_URL_TEMPLATE,
+                            publishingConfig.gitRepoName.get()
+                        )
 
                         scm {
                             connection.set(scmConnectionUrl)
@@ -101,7 +107,8 @@ class PublishPlugin : Plugin<Project> {
 
                     repositories {
                         maven {
-                            url = project.layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+                            url = project.layout.buildDirectory.dir("staging-deploy")
+                                .get().asFile.toURI()
                         }
                     }
                 }
@@ -110,7 +117,7 @@ class PublishPlugin : Plugin<Project> {
     }
 
     private fun configureSigningAndRelease(project: Project) {
-        project.extensions.configure<JReleaserExtension> {            
+        project.extensions.configure<JReleaserExtension> {
             // Allow JReleaser to walk up parent directories to locate the VCS root.
             gitRootSearch.set(true)
 
@@ -134,14 +141,15 @@ class PublishPlugin : Plugin<Project> {
                     mavenCentral {
                         create("sonatype") {
                             setActive("ALWAYS")
-                            // URL where the MavenCentral service is enabled.
                             url.set(project.publishUrl)
+
+                            username.set(BuildConstants.Publishing.MAVENCENTRAL_USERNAME)
+                            password.set(BuildConstants.Publishing.MAVENCENTRAL_TOKEN)
                             authorization.set(Http.Authorization.BEARER)
 
-                            // Signing configuration. See more in signing {} (above)
+                            // Signing configuration. See more in `signing` block (above)
                             sign.set(true)
 
-                            // Verification of artifacts before publishing.
                             checksums.set(true)
                             sourceJar.set(true)
                             javadocJar.set(true)
@@ -151,6 +159,26 @@ class PublishPlugin : Plugin<Project> {
                             stagingRepository("staging-deploy")
 
                             namespace.set(project.publishGroupId)
+                        }
+                    }
+
+                    // Snapshot deployer using Nexus2, active only for SNAPSHOT builds
+                    nexus2 {
+                        create("sonatypeSnapshots") {
+                            setActive("SNAPSHOT")
+
+                            snapshotUrl.set(BuildConstants.Publishing.SNAPSHOTS_URL)
+
+                            username.set(BuildConstants.Publishing.MAVENCENTRAL_USERNAME)
+                            password.set(BuildConstants.Publishing.MAVENCENTRAL_TOKEN)
+                            authorization.set(Http.Authorization.BEARER)
+
+                            applyMavenCentralRules.set(true)
+                            snapshotSupported.set(true)
+                            closeRepository.set(true)
+                            releaseRepository.set(true)
+
+                            stagingRepository("staging-deploy")
                         }
                     }
                 }

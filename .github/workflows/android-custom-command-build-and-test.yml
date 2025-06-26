@@ -1,0 +1,191 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Custom Command Build and Test (Android)
+
+on:
+  workflow_call:
+    inputs:
+      android-api-levels:
+        description: |
+          The Android API levels to use for testing. Must be formatted as a valid JSON array string.
+          Example: '[29, 30]'
+            - Notice the use of single quotes to wrap the JSON array string, and number format for values.
+        type: string
+        default: ''
+      command:
+        type: string
+        required: true
+      upload-artifacts-path:
+        description: 'The path to the artifact(s) to upload. If empty, the upload-artifacts step is skipped.'
+        type: string
+        default: ''
+      upload-artifacts-name:
+        description: '(Optional) Passthrough to `upload-artifacts` name. Specifies the name of the uploaded artifact(s), including the file extension if applicable. If left empty, it defaults to "artifact".'
+        type: string
+        default: ''
+      upload-artifacts-name-timstamp:
+        description: '(Optional) When set to true, a timestamp (`artifact-<TIMESTAMP>_`) is prepended to the artifact name to improve uniqueness. This is recommended when overwrite is set to false to avoid naming conflicts. Defaults to false.'
+        type: boolean
+        default: false
+      upload-artifacts-compression-level:
+        description: '(Optional) Passthrough to `upload-artifacts` compression-level. Sets the compression level for uploaded artifacts. Higher values increase compression but may slow down uploads. See: https://github.com/actions/upload-artifact?tab=readme-ov-file#altering-compressions-level-speed-v-size. Defaults to 6.'
+        type: string
+        default: '6'
+      upload-artifacts-overwrite:
+        description: '(Optional) Passthrough to `upload-artifacts` overwrite. When set to true, existing artifacts with the same name will be overwritten. If false, uploads will fail if an artifact with the same name already exists. Defaults to false.'
+        type: boolean
+        default: false
+      enable-codecov:
+        description: 'Enable Codecov for test coverage.'
+        type: boolean
+        default: false
+      codecov-flag:
+        description: 'The flag to pass to the codecov uploader.'
+        type: string
+        default: ''
+
+jobs:
+  define-matrix:
+    name: Setup Configuration
+    runs-on: ubuntu-24.04
+    outputs:
+      android-api-levels: ${{ steps.define-matrix.outputs.android-api-levels }}
+      is-default-android-api-levels: ${{ steps.define-matrix.outputs.is-default-android-api-levels }}
+      friendly-command-name: ${{ steps.define-matrix.outputs.friendly-command-name }}
+    steps:
+      - name: Define Matrix
+        id: define-matrix
+        shell: bash
+        run: |
+          # Set default values
+          default_android_api_levels='[29]'
+          
+          # Get inputs
+          android_api_levels="${{ inputs.android-api-levels }}"
+          command="${{ inputs.command }}"
+
+          # Check and set default values
+          if [ -z "$android_api_levels" ]; then
+            android_api_levels="$default_android_api_levels"
+            is_default_android_api_levels='true'
+          else
+            is_default_android_api_levels='false'
+          fi
+
+          # Extract first two words from command
+          friendly_command_name=$(echo "$command" | awk '{print $1, $2}')
+          word_count=$(echo "$command" | wc -w)
+
+          # Append ellipsis if more than two words
+          if [ "$word_count" -gt 2 ]; then
+            friendly_command_name="$friendly_command_name..."
+          fi
+
+          # Echo values for visibility
+          echo "android-api-levels: $android_api_levels"
+          echo "is-default-android-api-levels: $is_default_android_api-levels"
+          echo "friendly-command-name: $friendly_command_name"
+
+          # Set outputs
+          echo "android-api-levels=$android_api_levels" >> "$GITHUB_OUTPUT"
+          echo "is-default-android-api-levels=$is_default_android_api_levels" >> "$GITHUB_OUTPUT"
+          echo "friendly-command-name=$friendly_command_name" >> "$GITHUB_OUTPUT"
+  run-custom-command:
+    name: >
+      name: Running `${{ needs.define-matrix.outputs.friendly-command-name }}` using Android API ${{ needs.define-matrix.outputs.is-default-android-api-levels != 'true' && matrix.api-level || '' }}
+    runs-on: ubuntu-24.04
+    needs: define-matrix
+    strategy:
+      max-parallel: 1
+      matrix:
+        api-level: ${{ fromJson(needs.define-matrix.outputs.android-api-levels) }}
+
+    steps:
+      - name: Setup Dependencies
+        id: setup-dependencies
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.3.2
+        with:
+          android-api-level: ${{ matrix.api-level }}
+
+      - name: Set JAVA_HOME
+        run: echo "JAVA_HOME=${{ steps.setup-dependencies.outputs.java-home }}" >> $GITHUB_ENV
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set Log File Name
+        run: |
+          FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          
+          COMMAND_NAME=$(echo "${{ inputs.command }}" | awk '{print $2 ? $2 : $1}' | sed "s/[\/\\\"':<>|*?]//g")  # Extract the second word of the command and filter out invalid filename chars
+          echo "LOG_FILE_NAME=logs-${COMMAND_NAME}_API-${{ matrix.api-level }}_${FILE_TIMESTAMP}Z.log" >> $GITHUB_ENV
+
+          ARTIFACT_NAME=$(echo "${{ inputs.upload-artifacts-name }}" | sed "s/[\/\\\"':<>|*?]//g")  # Filter out invalid filename chars
+
+          # If ARTIFACT_NAME is empty, set it to "artifact"
+          if [[ -z "$ARTIFACT_NAME" ]]; then
+            ARTIFACT_NAME="artifact"
+          fi
+          
+          # Conditionally prepend timestamp if upload-artifacts-name-timstamp is true
+          if [[ "${{ inputs.upload-artifacts-name-timstamp }}" == "true" ]]; then
+            ARTIFACT_NAME="artifact-${FILE_TIMESTAMP}Z_${ARTIFACT_NAME}"
+          fi
+
+          echo "ARTIFACT_FILE_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
+
+      # Logcat logging from: https://github.com/ReactiveCircus/android-emulator-runner/issues/9#issuecomment-867909354
+      - name: Run command
+        uses: reactivecircus/android-emulator-runner@62dbb605bba737720e10b196cb4220d374026a6d # v2.33.0
+        with:
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          disk-size: 6000M
+          heap-size: 600M
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-metrics -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            mkdir -p logs                              # Ensure the 'logs' directory exists
+            adb logcat -c                              # Clear logs
+            touch logs/emulator.log                    # Create log file
+            chmod 777 logs/emulator.log                # Allow writing to log file
+            adb logcat >> logs/emulator.log &          # Pipe all logcat messages into log file as a background process
+            ${{ inputs.command }}
+      
+      - name: Upload Logcat Logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4.6.1
+        with:
+          name: ${{ env.LOG_FILE_NAME }}
+          path: logs/emulator.log
+
+      - name: Upload Artifacts
+        if: ${{ inputs.upload-artifacts-path != '' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4.6.1
+        with:
+          name: ${{ env.ARTIFACT_FILE_NAME }}
+          path: ${{ inputs.upload-artifacts-path }}
+          compression-level: ${{ inputs.upload-artifacts-compression-level }}
+          overwrite: ${{ inputs.upload-artifacts-overwrite }}
+
+      - name: Upload Code Coverage
+        if: ${{ always() && inputs.enable-codecov }}
+        continue-on-error: true
+        uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: ${{ inputs.codecov-flag }}
+          verbose: true

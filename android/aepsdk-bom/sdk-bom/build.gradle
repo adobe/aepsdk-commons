@@ -4,8 +4,7 @@ apply plugin: 'maven-publish'
 
 android {
     namespace 'com.adobe.marketing.mobile'
-    compileSdk rootProject.ext.targetSdkVersion
-
+    compileSdk rootProject.ext.targetSdkVersion    
     defaultConfig {
         minSdk rootProject.ext.minSdkVersion
         targetSdk rootProject.ext.targetSdkVersion
@@ -31,7 +30,6 @@ configurations.all {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.adobe.marketing.mobile:core:latest.release'
     implementation 'com.adobe.marketing.mobile:lifecycle:latest.release'
     implementation 'com.adobe.marketing.mobile:identity:latest.release'
@@ -55,8 +53,6 @@ dependencies {
     implementation 'com.adobe.marketing.mobile:notificationbuilder:latest.release'
 }
 
-configurations.implementation.canBeResolved = true
-
 /**
  * Retrieves the latest extension version from the resolved artifacts
  * Return example: [com.adobe.marketing.mobile-lifecycle:2.0.1, com.adobe.marketing.mobile-identity:2.0.2, ....]
@@ -64,12 +60,14 @@ configurations.implementation.canBeResolved = true
  */
 Map<String, String> retrieveLatestExtensionInfo() {
     def map = [:]
-    configurations.implementation.resolvedConfiguration.resolvedArtifacts.each {
-        def group = it.moduleVersion.id.group
-        def name = it.moduleVersion.id.name
-        def version = it.moduleVersion.id.version
-        if (group == "com.adobe.marketing.mobile") {
-            map["${group}-${name}"] = version
+    def variantName = "release"
+    android.libraryVariants.all { variant ->
+        if (variant.name == variantName) {
+            variant.compileConfiguration.resolvedConfiguration.firstLevelModuleDependencies.forEach { dependency ->
+                if (dependency.moduleGroup == "com.adobe.marketing.mobile") {
+                    map["${dependency.moduleGroup}-${dependency.moduleName}"] = dependency.moduleVersion
+                }
+            }
         }
     }
     return map
@@ -82,12 +80,14 @@ Map<String, String> retrieveLatestExtensionInfo() {
  */
 Map<String, String> retrieveLatestExtensionInfoWithoutPrefix() {
     def map = [:]
-    configurations.implementation.resolvedConfiguration.resolvedArtifacts.each {
-        def group = it.moduleVersion.id.group
-        def name = it.moduleVersion.id.name
-        def version = it.moduleVersion.id.version
-        if (group == "com.adobe.marketing.mobile") {
-            map[name] = version
+    def variantName = "release"
+    android.libraryVariants.all { variant ->
+        if (variant.name == variantName) {
+            variant.compileConfiguration.resolvedConfiguration.firstLevelModuleDependencies.forEach { dependency ->
+                if (dependency.moduleGroup == "com.adobe.marketing.mobile") {
+                    map[dependency.moduleName] = dependency.moduleVersion
+                }
+            }
         }
     }
     return map
@@ -197,6 +197,7 @@ task computeSdkSize() {
         println(out)
     }
 }
+
 String nextBomVersion(){
     def extensionVersionsInReleasedBom = retrieveExtensionVersionFromBomProperties()
     def latestExtensionVersions = retrieveLatestExtensionInfoWithoutPrefix()
@@ -286,10 +287,12 @@ int bumpBomVersionType(Map<String, String> latestExVersions, Map<String, String>
     return type
 }
 
-task storeLatestExtensionInfo(type: WriteProperties) {
-    outputFile './bom.properties'
-    properties(retrieveLatestExtensionInfo())
-}
+ task storeLatestExtensionInfo(type: WriteProperties) {
+     outputFile './bom.properties'
+     doFirst{
+         properties(retrieveLatestExtensionInfo())
+     }
+ }
 
 def isReleaseBuild() {
     return hasProperty('release')

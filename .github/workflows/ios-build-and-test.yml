@@ -1,0 +1,195 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Build and Test (iOS)
+
+on:
+  workflow_call:
+    inputs:
+      ios-device-names:
+        description: |
+          The iOS device names to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["iPhone 15", "iPhone 15 Pro"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
+        type: string
+        default: '["iPhone 15"]'
+      ios-versions:
+        description: |
+          The iOS versions to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["18.0", "18.1"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
+        type: string
+        default: '["18.1"]'
+      tvos-device-names:
+        description: |
+          The tvOS device names to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["Apple TV 4K (3rd generation)", "Apple TV"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
+        type: string
+        default: '["Apple TV"]'
+      tvos-versions:
+        description: |
+          The tvOS versions to use for testing. Must be formatted as a valid JSON array string.
+          Example: '["18.0", "18.1"]'
+            - Notice the use of single quotes to wrap the JSON array string, and double quotes for each array element.
+        type: string
+        default: '["18.1"]'
+      # Flags for which tests to run
+      run-test-ios-unit:
+        type: boolean
+        default: false
+      run-test-ios-functional:
+        type: boolean
+        default: false
+      run-test-ios-integration:
+        type: boolean
+        default: false
+      run-test-tvos-unit:
+        type: boolean
+        default: false
+      run-test-tvos-functional:
+        type: boolean
+        default: false
+      run-test-tvos-integration:
+        type: boolean
+        default: false
+      run-build-xcframework-and-app:
+        type: boolean
+        default: false
+      enable-codecov:
+        description: 'Enable Codecov for test coverage.'
+        type: boolean
+        default: false
+      result-bundle-path:
+        description: 'The path to the xcresult bundle. Required for code coverage.'
+        type: string
+        default: ''
+      xcode-version:
+        description: "The version of Xcode to use. If not provided, the runner's default version will be used."
+        type: string
+        default: ''
+
+jobs:
+  validate-code:
+    name: Validate Code
+    uses: adobe/aepsdk-commons/.github/workflows/ios-validate-code.yml@gha-ios-5.3.1
+  
+  test-ios-unit:
+    name: Unit Test (iOS)
+    needs: validate-code
+    if: inputs.run-test-ios-unit
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.1
+    with:
+      ios-device-names: ${{ inputs.ios-device-names }}
+      ios-versions: ${{ inputs.ios-versions }}
+      command: make unit-test-ios
+      enable-codecov: ${{ inputs.enable-codecov }}
+      codecov-flag: ios-unit-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
+    secrets: inherit
+
+  test-ios-functional:
+    name: Functional Test (iOS)
+    needs: validate-code
+    if: inputs.run-test-ios-functional
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.1
+    with:
+      ios-device-names: ${{ inputs.ios-device-names }}
+      ios-versions: ${{ inputs.ios-versions }}
+      command: make functional-test-ios
+      enable-codecov: ${{ inputs.enable-codecov }}
+      codecov-flag: ios-functional-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
+    secrets: inherit
+
+  test-ios-integration:
+    name: Integration Test (iOS)
+    needs: validate-code
+    if: inputs.run-test-ios-integration
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.1
+    with:
+      ios-device-names: ${{ inputs.ios-device-names }}
+      ios-versions: ${{ inputs.ios-versions }}
+      command: make integration-test-ios
+      enable-codecov: ${{ inputs.enable-codecov }}
+      codecov-flag: ios-integration-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
+    secrets: inherit
+
+  test-tvos-unit:
+    name: Unit Test (tvOS)
+    needs: validate-code
+    if: inputs.run-test-tvos-unit
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.1
+    with:
+      tvos-device-names: ${{ inputs.tvos-device-names }}
+      tvos-versions: ${{ inputs.tvos-versions }}
+      command: make unit-test-tvos
+      enable-codecov: ${{ inputs.enable-codecov }}
+      codecov-flag: tvos-unit-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
+    secrets: inherit
+
+  test-tvos-functional:
+    name: Functional Test (tvOS)
+    needs: validate-code
+    if: inputs.run-test-tvos-functional
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.1
+    with:
+      tvos-device-names: ${{ inputs.tvos-device-names }}
+      tvos-versions: ${{ inputs.tvos-versions }}
+      command: make functional-test-tvos
+      enable-codecov: ${{ inputs.enable-codecov }}
+      codecov-flag: tvos-functional-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
+    secrets: inherit
+  
+  test-tvos-integration:
+    name: Integration Test (tvOS)
+    needs: validate-code
+    if: inputs.run-test-tvos-integration
+    uses: adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml@gha-ios-5.3.1
+    with:
+      tvos-device-names: ${{ inputs.tvos-device-names }}
+      tvos-versions: ${{ inputs.tvos-versions }}
+      command: make integration-test-tvos
+      enable-codecov: ${{ inputs.enable-codecov }}
+      codecov-flag: tvos-integration-tests
+      result-bundle-path: ${{ inputs.result-bundle-path }}
+      xcode-version: ${{ inputs.xcode-version }}
+    secrets: inherit
+
+  build_xcframework_and_app:
+    name: Build XCFramework and Test App
+    runs-on: macos-14
+    needs: validate-code
+    if: inputs.run-build-xcframework-and-app
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+      
+      - name: Setup Dependencies
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.1
+        with:
+          xcode-version: ${{ inputs.xcode-version }}
+
+      - name: Build XCFramework
+        run: make archive
+
+      - name: Build Test App
+        run: make build-app

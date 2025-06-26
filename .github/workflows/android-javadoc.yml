@@ -1,0 +1,67 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Javadoc
+
+on:
+  workflow_call:
+    inputs:
+      javadoc-build-path:
+        description: 'The build path where Javadoc files are stored (ex: code/edgeidentity/build/dokka/javadoc).'
+        required: true
+        type: string
+
+jobs:
+  javadoc:
+    name: Javadoc
+    runs-on: ubuntu-24.04
+    # Skip the job if the input is an empty string
+    if: ${{ inputs.javadoc-build-path != '' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Dependencies
+        id: setup-dependencies
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.3.2
+
+      - name: Javadoc
+        run: make javadoc
+
+      - name: Set Javadoc File Name
+        run: |
+          FILE_TIMESTAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          
+          # Extract moduleVersion from gradle.properties
+          MODULE_VERSION=$(grep '^moduleVersion=' ./code/gradle.properties | cut -d'=' -f2)
+          
+          # Get branch name
+          BRANCH_NAME=${GITHUB_HEAD_REF}
+          
+          # Get repository name
+          REPO_NAME=$(basename "$GITHUB_REPOSITORY")
+          
+          # Construct the raw file name
+          RAW_JAVADOC_FILE_NAME="javadoc-${REPO_NAME}-v${MODULE_VERSION}-${BRANCH_NAME}-${FILE_TIMESTAMP}Z"
+          
+          # Sanitize the file name by removing invalid characters
+          SANITIZED_JAVADOC_FILE_NAME=$(echo "$RAW_JAVADOC_FILE_NAME" | sed "s/[\/\\\"':<>|*?]//g")
+          
+          # Export the sanitized file name as an environment variable
+          echo "JAVADOC_FILE_NAME=${SANITIZED_JAVADOC_FILE_NAME}" >> $GITHUB_ENV
+
+      - name: Upload Javadoc
+        uses: actions/upload-artifact@v4.6.1
+        with:
+          name: ${{ env.JAVADOC_FILE_NAME }}
+          path: ${{ inputs.javadoc-build-path }}

@@ -1,0 +1,76 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Update Reusable Workflow Versions
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'The platform to update the reusable workflows for (ex: iOS, Android).'
+        type: choice
+        options:
+        - Android
+        - iOS
+        required: true
+      version:
+        description: |
+          The new version to use for the iOS reusable workflows (ex: 1.2.3). 
+          The workflow will automatically construct the final version (ex: gha-ios-1.2.3).
+        type: string
+        required: true
+      branch:
+        description: 'The target branch where the version update will be applied and the pull request will be merged into.'
+        type: string
+        required: true
+
+jobs:
+  update-versions-ios:
+    if: ${{ github.event.inputs.platform == 'iOS' }}
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/versions.yml
+    with:
+      version: gha-ios-${{ github.event.inputs.version }}
+      branch: ${{ github.event.inputs.branch }}
+      dependencies: >
+        adobe/aepsdk-commons/.github/workflows/versions.yml gha-ios-${{ github.event.inputs.version }}@.github/workflows/ios-release.yml:yml_uses,
+        adobe/aepsdk-commons/.github/workflows/ios-validate-code.yml gha-ios-${{ github.event.inputs.version }},
+        adobe/aepsdk-commons/.github/workflows/ios-custom-command-build-and-test.yml gha-ios-${{ github.event.inputs.version }},
+        adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action gha-ios-${{ github.event.inputs.version }}
+      paths: >
+        .github/workflows:yml_uses
+      update: true
+    secrets: inherit
+  
+  update-versions-android:
+    if: ${{ github.event.inputs.platform == 'Android' }}
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
+    uses: ./.github/workflows/versions.yml
+    with:
+      version: gha-android-${{ github.event.inputs.version }}
+      branch: ${{ github.event.inputs.branch }}
+      dependencies: >
+        adobe/aepsdk-commons/.github/workflows/versions.yml gha-android-${{ github.event.inputs.version }}@.github/workflows/android-maven-release.yml:yml_uses,
+        adobe/aepsdk-commons/.github/workflows/android-validate-code.yml gha-android-${{ github.event.inputs.version }},
+        adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml gha-android-${{ github.event.inputs.version }},
+        adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action gha-android-${{ github.event.inputs.version }},
+        adobe/aepsdk-commons/.github/workflows/android-javadoc.yml gha-android-${{ github.event.inputs.version }}
+      paths: >
+        .github/workflows:yml_uses
+      update: true
+    secrets: inherit

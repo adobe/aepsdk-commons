@@ -1,0 +1,62 @@
+#
+# Copyright 2024 Adobe. All rights reserved.
+# This file is licensed to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License. You may obtain a copy
+# of the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under
+# the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+# OF ANY KIND, either express or implied. See the License for the specific language
+# governing permissions and limitations under the License.
+#
+
+name: Setup Dependencies (iOS)
+description: Checkout and install dependencies
+
+inputs:
+  xcode-version:
+    description: "The version of Xcode to use. If not provided, the runner's default version will be used."
+    type: string
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Xcode version
+      if: ${{ inputs.xcode-version != '' }}
+      uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+      with:
+        xcode-version: ${{ inputs.xcode-version }}
+
+    - name: Restore Gemfile cache
+      id: cache-gems
+      uses: actions/cache@v4.2.1
+      with:
+        path: vendor/bundle
+        key: gems-${{ runner.os }}-${{ hashFiles('**/Gemfile.lock') }}
+
+    - name: Configure bundler path and verify Cocoapods version
+      run: |
+        bundle config set path 'vendor/bundle'
+        bundle check || bundle install
+      shell: bash
+
+    - name: Restore CocoaPods cache
+      id: cache-pods
+      uses: actions/cache@v4.2.1
+      with:
+        path: |
+          Pods
+          ~/.cocoapods
+        key: cocoapods-cache-v6-${{ runner.os }}-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          cocoapods-cache-v6-${{ runner.os }}-
+          cocoapods-cache-v6
+
+    - name: Install CocoaPods
+      run: make ci-pod-install
+      shell: bash
+
+    - name: Install XcodeGen
+      run: brew install xcodegen
+      shell: bash

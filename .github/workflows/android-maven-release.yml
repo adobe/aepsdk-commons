@@ -13,7 +13,7 @@
 name: Publish Release (Android)
 
 # This workflow relies on the following secrets:
-# - GITHUB_TOKEN: Required for creating a release on GitHub
+# - GITHUB_TOKEN: With the permission scope: `contents: write`. Required for creating a release on GitHub.
 # - GPG_SECRET_KEYS
 # - GPG_OWNERTRUST
 # - SONATYPE_USERNAME
@@ -24,138 +24,126 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: >
+        description: |
           The tag (version) to be released (ex: 1.2.3). The workflow will automatically prepend the "v" prefix, resulting in a tag like "v1.2.3".
         type: string
         required: true
 
       create-github-release:
-        description: >
+        description: |
           Boolean flag that determines whether to create a GitHub release. If the specified `tag` does not exist, it will be created.
         type: boolean
         required: true
         default: true
 
       release-variant:
-        description: > 
+        description: | 
           The variant used to control the GitHub release title suffix and Maven publish command (ex: core -> v3.2.1-core & make core-publish-main). 
           If not specified, uses the default values for both.
         type: string
-        required: false
         default: ''
 
-      version-verify-paths:
-        description: >
-          A comma-separated list of absolute or relative file paths to verify. 
+      version-validation-name:
+        description: |
+          '(Optional) The name of the extension. Required if any regex patterns use a template that depends on the extension name. (ex: Lifecycle).'
+        type: string
+        default: ''
+
+      version-validation-paths:
+        description: |
+          A comma-separated list of absolute and/or relative file paths to validate. 
           Each path can optionally specify a pattern type using the syntax:
           
           **Syntax:** `path[:file_type]`
 
           **Example:**
           `"code/edge/src/main/java/com/adobe/marketing/mobile/EdgeConstants.java, code/gradle.properties"`
-
-          This argument is required.
         type: string
-        required: true
-
-      version-verify-dependencies:
-        description: >
-          A comma-separated list of dependencies with their versions. Each dependency can 
-          optionally specify the semicolon-separated list of file paths where it applies using the `@` symbol.
-          
-          **Syntax:** `<name> <version>[@file_path1[;file_path2;...]]`
-
-          - If the `@` syntax is used, the dependency will only apply to the specified files.
-          - If the `@` symbol is omitted, the dependency applies to all relevant files.
-          - When specifying custom files, you must provide either an absolute or relative path to each file.
-
-          **Example:**
-          `"Core 7.8.9, EdgeIdentity 8.9.10@code/gradle.properties"`
-        type: string
-        required: false
         default: ''
 
-      workflow_tag:
-        description: 'The tag or ref of the reusable workflow being invoked (ex: gha-android-1.0.0).'
+      version-validation-dependencies:
+        description: |
+          A comma-separated list of dependencies with their versions. 
+          Each dependency can optionally specify a semicolon-separated list of the file paths where it applies using the `@` symbol.
+          
+          **Syntax:** `<name> <version>[@file_path1[:pattern_type][;file_path2[:pattern_type];...]]`
+
+          - If the `@` syntax is used, the paths provided in the `-p` argument will be overridden, and the dependency will only be applied to the specified files.
+          - When specifying custom file paths, you must provide either an absolute or relative path to each file.
+          - If a dependency is missing a version, it will be skipped.
+          - `<name>` does not have to be regex-escaped, this is handled automatically.
+
+          **Example:**
+          `"Core 7.8.9, EdgeIdentity 8.9.10@code/gradle.properties;code/Constants.kt:test_version"`
         type: string
-        required: true
+        default: ''
 
 jobs:
+  validate-versions:
+    name: Validate Versions
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.2
+    with:
+      name: ${{ inputs.version-validation-name }}
+      version: ${{ github.event.inputs.tag }}
+      branch: main
+      paths: ${{ inputs.version-validation-paths }}
+      dependencies: ${{ inputs.version-validation-dependencies }}
+      update: false
+
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    needs: validate-versions
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: main
 
       - name: Set up Java
-        uses: actions/setup-java@v4.2.2
+        uses: actions/setup-java@v4.7.0
         with:
           distribution: 'zulu'
           java-version: 17
 
       - name: Cache Gradle packages
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4.2.1
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      
-      - name: Restore cached scripts from aepsdk-commons
-        id: cache-scripts
-        uses: actions/cache@v4.1.1
-        with:
-          path: .github/aepsdk-commons/scripts
-          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
 
-      - name: Download scripts from aepsdk-commons
-        if: steps.cache-scripts.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4.1.7
-        with:
-          repository: adobe/aepsdk-commons
-          ref: ${{ inputs.workflow_tag }}
-          path: .github/aepsdk-commons
-          sparse-checkout: 'scripts' # Only checkout the scripts directory
-
-      - uses: actions/cache/save@v4.1.1
-        if: steps.cache-scripts.outputs.cache-hit != 'true'
-        with:
-          path: .github/aepsdk-commons/scripts
-          key: aepsdk-commons-${{ inputs.workflow_tag }} # Cache key format: <REPO_NAME>-<TAG>
-        
-      - name: Verify versions
+      - name: Compute Final Tag
         run: |
-          set -eo pipefail
-          echo Release version: ${{ github.event.inputs.tag }}
-          python3 ./.github/aepsdk-commons/scripts/versions.py \
-            -v "${{ github.event.inputs.tag }}" \
-            -p "${{ inputs.version-verify-paths }}" \
-            -d "${{ inputs.version-verify-dependencies }}"
+          FINAL_TAG="v${{ inputs.tag }}"
 
-      - name: Remove scripts from aepsdk-commons
-        run: rm -rf .github/aepsdk-commons
+          if [ -n "${{ inputs.release-variant }}" ]; then
+            FINAL_TAG="${FINAL_TAG}-${{ inputs.release-variant }}"
+          fi
+
+          echo "FINAL_TAG=$FINAL_TAG" >> $GITHUB_ENV
 
       - name: Create GitHub release
         if: ${{ inputs.create-github-release }}
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Initialize the title with the tag
-          TITLE="v${{ github.event.inputs.tag }}"
-
-          # Append suffix if provided (non-empty)
-          if [ -n "${{ inputs.release-variant }}" ]; then
-            TITLE="${TITLE}-${{ inputs.release-variant }}"
-          fi
-
-          # Create the GitHub release with the constructed title
-          gh release create "v${{ github.event.inputs.tag }}" \
+          gh release create "$FINAL_TAG" \
             --generate-notes \
-            --title "${TITLE}"
+            --title "$FINAL_TAG"
 
       - name: Import GPG key
         env:
           GPG_SECRET_KEYS: ${{ secrets.GPG_SECRET_KEYS }}
           GPG_OWNERTRUST: ${{ secrets.GPG_OWNERTRUST }}
         run: |
+          # Check if the tag exists in the remote repository
+          if [ -z "$(git ls-remote --tags origin refs/tags/$FINAL_TAG)" ]; then
+              echo "::error title=Missing tag for publishing Pods::Tag '$FINAL_TAG' does not exist in the remote repository."
+              exit 1
+          else
+              echo "Tag '$FINAL_TAG' exists in the remote repository."
+          fi
+
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 

@@ -17,7 +17,9 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.configure
 import org.jreleaser.gradle.plugin.JReleaserExtension
+import org.jreleaser.model.Active
 import org.jreleaser.model.Http
+import org.jreleaser.model.api.deploy.maven.MavenCentralMavenDeployer
 
 class PublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -27,8 +29,8 @@ class PublishPlugin : Plugin<Project> {
 
         project.afterEvaluate {
             // Make the value visible to every tool (Gradle, JReleaser, etc.)
-            project.group = project.publishGroupId
-            project.version = project.publishVersion
+            // project.group = project.publishGroupId
+            // project.version = project.publishVersion
 
             configurePublishing(project)
             configureSigningAndRelease(project)
@@ -121,6 +123,15 @@ class PublishPlugin : Plugin<Project> {
             // Allow JReleaser to walk up parent directories to locate the VCS root.
             gitRootSearch.set(true)
 
+            release {
+                // JReleaser jreleaserFullRelease 
+                github {
+                    token.set("NOT_A_REAL_TOKEN")
+                    skipRelease.set(true)
+                }
+                
+            }
+
             signing {
                 setActive("ALWAYS")
                 armored.set(true)
@@ -140,7 +151,9 @@ class PublishPlugin : Plugin<Project> {
                 maven {
                     mavenCentral {
                         create("sonatype") {
-                            setActive("ALWAYS")
+                            active.set(Active.RELEASE)
+                            stage.set(MavenCentralMavenDeployer.Stage.UPLOAD)
+
                             url.set(project.publishUrl)
 
                             username.set(BuildConstants.Publishing.MAVENCENTRAL_USERNAME)
@@ -165,18 +178,20 @@ class PublishPlugin : Plugin<Project> {
                     // Snapshot deployer using Nexus2, active only for SNAPSHOT builds
                     nexus2 {
                         create("sonatypeSnapshots") {
-                            setActive("SNAPSHOT")
-
+                            active.set(Active.SNAPSHOT)
+                            url.set(BuildConstants.Publishing.RELEASES_URL)
                             snapshotUrl.set(BuildConstants.Publishing.SNAPSHOTS_URL)
 
                             username.set(BuildConstants.Publishing.MAVENCENTRAL_USERNAME)
                             password.set(BuildConstants.Publishing.MAVENCENTRAL_TOKEN)
                             authorization.set(Http.Authorization.BEARER)
 
+                            sign.set(true)
+                            checksums.set(true)
                             applyMavenCentralRules.set(true)
                             snapshotSupported.set(true)
-                            closeRepository.set(true)
-                            releaseRepository.set(true)
+                            closeRepository.set(false)
+                            releaseRepository.set(false)
 
                             stagingRepository("staging-deploy")
                         }

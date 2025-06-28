@@ -28,10 +28,6 @@ class PublishPlugin : Plugin<Project> {
         project.plugins.apply(BuildConstants.Plugins.J_RELEASER)
 
         project.afterEvaluate {
-            // Make the value visible to every tool (Gradle, JReleaser, etc.)
-            // project.group = project.publishGroupId
-            // project.version = project.publishVersion
-
             configurePublishing(project)
             configureSigningAndRelease(project)
 
@@ -120,11 +116,13 @@ class PublishPlugin : Plugin<Project> {
 
     private fun configureSigningAndRelease(project: Project) {
         project.extensions.configure<JReleaserExtension> {
-            // Allow JReleaser to walk up parent directories to locate the VCS root.
+            // Allow JReleaser to walk up parent directories to locate the git root.
+            // Used by the changelog step to compile the changelog from the git history.
             gitRootSearch.set(true)
 
             release {
-                // JReleaser jreleaserFullRelease 
+                // JReleaser release step looks for this configuration and a valid string token
+                // We configure it to skip the release
                 github {
                     token.set("NOT_A_REAL_TOKEN")
                     skipRelease.set(true)
@@ -149,6 +147,7 @@ class PublishPlugin : Plugin<Project> {
 
             deploy {
                 maven {
+                    // Release deployer using mavenCentral, active only for RELEASE builds
                     mavenCentral {
                         create("sonatype") {
                             active.set(Active.RELEASE)

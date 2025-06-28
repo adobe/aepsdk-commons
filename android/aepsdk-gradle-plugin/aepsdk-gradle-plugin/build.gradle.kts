@@ -17,7 +17,7 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     signing
-    id("org.jreleaser") version "1.1.0"
+    id("org.jreleaser") version "1.18.0"
 }
 
 repositories {

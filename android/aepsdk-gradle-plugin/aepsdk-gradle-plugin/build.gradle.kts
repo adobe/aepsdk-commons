@@ -1,4 +1,4 @@
-val PLUGIN_VERSION = "4.0.0"
+val PLUGIN_VERSION = "3.4.0"
 
 // Set the project version so gradle plugin publications use it
 version = PLUGIN_VERSION

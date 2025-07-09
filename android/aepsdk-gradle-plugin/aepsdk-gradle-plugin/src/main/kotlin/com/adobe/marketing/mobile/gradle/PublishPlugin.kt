@@ -28,6 +28,10 @@ class PublishPlugin : Plugin<Project> {
         project.plugins.apply(BuildConstants.Plugins.J_RELEASER)
 
         project.afterEvaluate {
+            // Make the value visible to every tool (JReleaser, Gradle, etc.)
+            project.group = project.publishGroupId
+            project.version = project.publishVersion
+
             configurePublishing(project)
             configureSigningAndRelease(project)
 

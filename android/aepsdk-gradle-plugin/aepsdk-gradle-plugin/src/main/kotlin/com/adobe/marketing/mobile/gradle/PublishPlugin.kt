@@ -137,12 +137,11 @@ class PublishPlugin : Plugin<Project> {
 
                 command {
                     executable.set(BuildConstants.Publishing.SIGNING_GNUPG_EXECUTABLE)
+                    keyName.set(BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
                 }
 
-                // TODO: Source and verify the PGP signature parameters
+                // Configure GPG signing parameters using environment variables
                 passphrase.set(BuildConstants.Publishing.SIGNING_GNUPG_PASSPHRASE)
-                publicKey.set(BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
-                secretKey.set(BuildConstants.Publishing.SIGNING_GNUPG_SECRET_KEYS)
             }
 
             deploy {

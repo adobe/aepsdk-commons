@@ -158,8 +158,8 @@ class PublishPlugin : Plugin<Project> {
 
                             url.set(project.publishUrl)
 
-                            username.set(BuildConstants.Publishing.MAVENCENTRAL_USERNAME)
-                            password.set(BuildConstants.Publishing.MAVENCENTRAL_TOKEN)
+                            username.set(BuildConstants.Publishing.CENTRAL_SONATYPE_USERNAME)
+                            password.set(BuildConstants.Publishing.CENTRAL_SONATYPE_TOKEN)
                             authorization.set(Http.Authorization.BEARER)
 
                             // Signing configuration. See more in `signing` block (above)
@@ -184,8 +184,8 @@ class PublishPlugin : Plugin<Project> {
                             url.set(BuildConstants.Publishing.RELEASES_URL)
                             snapshotUrl.set(BuildConstants.Publishing.SNAPSHOTS_URL)
 
-                            username.set(BuildConstants.Publishing.MAVENCENTRAL_USERNAME)
-                            password.set(BuildConstants.Publishing.MAVENCENTRAL_TOKEN)
+                            username.set(BuildConstants.Publishing.CENTRAL_SONATYPE_USERNAME)
+                            password.set(BuildConstants.Publishing.CENTRAL_SONATYPE_TOKEN)
                             authorization.set(Http.Authorization.BEARER)
 
                             sign.set(true)

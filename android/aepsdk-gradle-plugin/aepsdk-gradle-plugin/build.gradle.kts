@@ -1,8 +1,5 @@
 val PLUGIN_VERSION = "3.4.0"
 
-// Set the project version so gradle plugin publications use it
-version = PLUGIN_VERSION
-
 object Plugins {
     const val ANDROID_GRADLE_PLUGIN_VERSION = "8.2.0"
     const val KOTLIN_GRADLE_PLUGIN_VERSION = "1.8.20"

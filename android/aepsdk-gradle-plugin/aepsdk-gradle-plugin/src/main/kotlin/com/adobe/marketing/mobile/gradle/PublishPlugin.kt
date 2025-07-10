@@ -166,12 +166,10 @@ class PublishPlugin : Plugin<Project> {
 
                             // Signing configuration. See more in `signing` block (above)
                             sign.set(true)
-
                             checksums.set(true)
                             sourceJar.set(true)
                             javadocJar.set(true)
-                            verifyPom.set(true)
-                            applyMavenCentralRules.set(true)
+                            verifyPom.set(false)
 
                             stagingRepository(BuildConstants.Publishing.MAVEN_STAGING_REPOSITORY_PATH)
 
@@ -195,6 +193,7 @@ class PublishPlugin : Plugin<Project> {
                             sourceJar.set(true)
                             javadocJar.set(true)
                             verifyPom.set(false)
+                            
                             snapshotSupported.set(true)
                             closeRepository.set(false)
                             releaseRepository.set(false)

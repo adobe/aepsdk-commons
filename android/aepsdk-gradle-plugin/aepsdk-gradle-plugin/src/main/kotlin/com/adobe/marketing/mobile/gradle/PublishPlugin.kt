@@ -166,14 +166,12 @@ class PublishPlugin : Plugin<Project> {
 
                             // Signing configuration. See more in `signing` block (above)
                             sign.set(true)
-
                             checksums.set(true)
                             sourceJar.set(true)
                             javadocJar.set(true)
-                            verifyPom.set(true)
-                            applyMavenCentralRules.set(true)
+                            verifyPom.set(false)
 
-                            stagingRepository("staging-deploy")
+                            stagingRepository(BuildConstants.Publishing.MAVEN_STAGING_REPOSITORY_PATH)
 
                             namespace.set(project.publishGroupId)
                         }
@@ -192,12 +190,15 @@ class PublishPlugin : Plugin<Project> {
 
                             sign.set(true)
                             checksums.set(true)
-                            applyMavenCentralRules.set(true)
+                            sourceJar.set(true)
+                            javadocJar.set(true)
+                            verifyPom.set(false)
+                            
                             snapshotSupported.set(true)
                             closeRepository.set(false)
                             releaseRepository.set(false)
 
-                            stagingRepository("staging-deploy")
+                            stagingRepository(BuildConstants.Publishing.MAVEN_STAGING_REPOSITORY_PATH)
                         }
                     }
                 }

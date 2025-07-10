@@ -55,7 +55,7 @@ jobs:
 
       - name: Read bomVersion from gradle.properties
         id: read_property
-        uses: christian-draeger/read-properties@1.1.1
+        uses: christian-draeger/read-properties@908f99d3334be3802ec7cb528395a69d19914e7b # 1.1.1
         with:
           path: './android/aepsdk-bom/gradle.properties'
           properties: 'bomVersion'

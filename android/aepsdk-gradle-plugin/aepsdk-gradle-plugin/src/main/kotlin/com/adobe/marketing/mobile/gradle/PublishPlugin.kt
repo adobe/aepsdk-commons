@@ -133,7 +133,6 @@ class PublishPlugin : Plugin<Project> {
                     skipRelease.set(true)
                     // Prevent JReleaser from creating and pushing git tags
                     skipTag.set(true)
-                    username.set("NOT_A_USERNAME")
                 }
                 
             }

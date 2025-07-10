@@ -131,6 +131,8 @@ class PublishPlugin : Plugin<Project> {
                 github {
                     token.set("NOT_A_REAL_TOKEN")
                     skipRelease.set(true)
+                    // Prevent JReleaser from creating and pushing git tags
+                    skipTag.set(true)
                 }
                 
             }
@@ -181,7 +183,7 @@ class PublishPlugin : Plugin<Project> {
                     nexus2 {
                         create("sonatypeSnapshots") {
                             active.set(Active.SNAPSHOT)
-                            url.set(BuildConstants.Publishing.RELEASES_URL)
+                            url.set(BuildConstants.Publishing.SNAPSHOTS_URL)
                             snapshotUrl.set(BuildConstants.Publishing.SNAPSHOTS_URL)
 
                             username.set(BuildConstants.Publishing.CENTRAL_SONATYPE_USERNAME)
@@ -193,10 +195,10 @@ class PublishPlugin : Plugin<Project> {
                             sourceJar.set(true)
                             javadocJar.set(true)
                             verifyPom.set(false)
-                            
+
                             snapshotSupported.set(true)
-                            closeRepository.set(false)
-                            releaseRepository.set(false)
+                            closeRepository.set(true)
+                            releaseRepository.set(true)
 
                             stagingRepository(BuildConstants.Publishing.MAVEN_STAGING_REPOSITORY_PATH)
                         }

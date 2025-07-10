@@ -18,6 +18,8 @@ name: Publish Release (Android)
 # - GPG_OWNERTRUST
 # - SONATYPE_USERNAME
 # - SONATYPE_PASSWORD
+# - CENTRAL_SONATYPE_USERNAME
+# - CENTRAL_SONATYPE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 on: 
@@ -81,7 +83,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.2
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.0
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -155,8 +157,12 @@ jobs:
             make ci-publish
           fi
         env:
+          # The new Sonatype Maven Central credentials
+          # If the SONATYPE_USERNAME and SONATYPE_PASSWORD are updated to the new credentials,
+          # these can be removed
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          # The old Sonatype Maven OSSRH credentials
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

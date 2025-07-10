@@ -19,6 +19,7 @@ import org.gradle.kotlin.dsl.configure
 import org.jreleaser.gradle.plugin.JReleaserExtension
 import org.jreleaser.model.Active
 import org.jreleaser.model.Http
+import org.jreleaser.model.Signing
 import org.jreleaser.model.api.deploy.maven.MavenCentralMavenDeployer
 
 class PublishPlugin : Plugin<Project> {
@@ -136,6 +137,7 @@ class PublishPlugin : Plugin<Project> {
 
             signing {
                 setActive("ALWAYS")
+                mode.set(Signing.Mode.COMMAND)
                 armored.set(true)
                 verify.set(true)
 

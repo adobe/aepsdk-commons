@@ -161,20 +161,23 @@ jobs:
             touch logs/emulator.log                    # Create log file
             chmod 777 logs/emulator.log                # Allow writing to log file
             adb logcat >> logs/emulator.log &          # Pipe all logcat messages into log file as a background process
-            ${{ inputs.command }}
+            # Capture the command's output (including stacktraces) into a separate file while still printing to console
+            set -o pipefail
+            ${{ inputs.command }} 2>&1 | tee logs/command.log
       
-      - name: Upload Logcat Logs
+      - name: Upload Logs
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: ${{ env.LOG_FILE_NAME }}
-          path: logs/emulator.log
+          # Upload the logs directory
+          path: logs/
 
       - name: Upload Artifacts
         if: ${{ inputs.upload-artifacts-path != '' }}
         continue-on-error: true
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: ${{ env.ARTIFACT_FILE_NAME }}
           path: ${{ inputs.upload-artifacts-path }}

@@ -30,13 +30,21 @@ on:
         type: string
         default: ''
 
+      ref:
+        description: |
+          The git reference (branch, tag, or SHA) to check out when publishing the snapshot.
+          Defaults to 'main'.
+        required: false
+        type: string
+        default: 'main'
+
 jobs:
   publish:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.2.2
         with:
-          ref: dev-v3.x
+          ref: ${{ inputs.ref }}
       
       - name: Set up Java
         uses: actions/setup-java@v4.7.0
@@ -45,7 +53,7 @@ jobs:
           java-version: 17
       
       - name: Cache Gradle packages
-        uses: actions/cache@v4.2.1
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
@@ -67,8 +75,12 @@ jobs:
             make ci-publish-staging
           fi
         env:
+          # The new Sonatype Maven Central credentials
+          # If the SONATYPE_USERNAME and SONATYPE_PASSWORD are updated to the new credentials,
+          # these can be removed
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          # The old Sonatype Maven OSSRH credentials
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

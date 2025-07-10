@@ -249,6 +249,8 @@ governing permissions and limitations under the License.
         val CENTRAL_SONATYPE_USERNAME by lazy { System.getenv("CENTRAL_SONATYPE_USERNAME") }
         val CENTRAL_SONATYPE_TOKEN by lazy { System.getenv("CENTRAL_SONATYPE_TOKEN") }
 
+        const val MAVEN_STAGING_REPOSITORY_PATH = "build/staging-deploy"
+
         const val MODULE_NAME_PROPERTY = "moduleName"
         const val MODULE_VERSION_PROPERTY = "moduleVersion"
         const val MAVEN_REPO_NAME_PROPERTY = "mavenRepoName"

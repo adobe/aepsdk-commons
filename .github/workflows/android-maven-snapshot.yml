@@ -15,8 +15,8 @@ name: Publish Snapshot (Android)
 # This workflow relies on the following secrets:
 # - GPG_SECRET_KEYS
 # - GPG_OWNERTRUST
-# - SONATYPE_USERNAME
-# - SONATYPE_PASSWORD
+# - CENTRAL_SONATYPE_USERNAME
+# - CENTRAL_SONATYPE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 on:
@@ -74,14 +74,29 @@ jobs:
           else
             make ci-publish-staging
           fi
+
+      # Run JReleaser to upload the staged artifacts created above.
+      - name: JReleaser full release
+        uses: jreleaser/release-action@v2.4.2
+        with:
+          jreleaser-version: '1.18.0'
+          arguments: full-release
+          setup-java: false
         env:
-          # The new Sonatype Maven Central credentials
-          # If the SONATYPE_USERNAME and SONATYPE_PASSWORD are updated to the new credentials,
-          # these can be removed
+          # Sonatype (Maven Central) credentials
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
-          # The old Sonatype Maven OSSRH credentials
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          # The project/version information written by Gradle into $GITHUB_ENV
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUPID: ${{ env.JRELEASER_PROJECT_JAVA_GROUPID }}
+        
+      - name: JReleaser release output
+        if: always()
+        uses: actions/upload-artifact@v4.2.2
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

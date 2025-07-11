@@ -16,8 +16,6 @@ name: Publish Release (Android)
 # - GITHUB_TOKEN: With the permission scope: `contents: write`. Required for creating a release on GitHub.
 # - GPG_SECRET_KEYS
 # - GPG_OWNERTRUST
-# - SONATYPE_USERNAME
-# - SONATYPE_PASSWORD
 # - CENTRAL_SONATYPE_USERNAME
 # - CENTRAL_SONATYPE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
@@ -149,21 +147,34 @@ jobs:
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
-      - name: Publish to Maven Central Repository
+      - name: Publish artifacts (local staging)
         run: |
           if [ -n "${{ inputs.release-variant }}" ]; then
             make "${{ inputs.release-variant }}-publish-main"
           else
             make ci-publish
           fi
+
+      # Run JReleaser to upload staged artifacts and complete the release.
+      - name: JReleaser full release
+        uses: jreleaser/release-action@v2.4.2
+        with:
+          jreleaser-version: '1.18.0'
+          arguments: full-release
+          setup-java: false
         env:
-          # The new Sonatype Maven Central credentials
-          # If the SONATYPE_USERNAME and SONATYPE_PASSWORD are updated to the new credentials,
-          # these can be removed
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
-          # The old Sonatype Maven OSSRH credentials
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUPID: ${{ env.JRELEASER_PROJECT_JAVA_GROUPID }}
+
+      - name: JReleaser release output
+        if: always()
+        uses: actions/upload-artifact@v4.2.2
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

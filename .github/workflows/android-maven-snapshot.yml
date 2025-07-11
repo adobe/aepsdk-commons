@@ -75,6 +75,18 @@ jobs:
             make ci-publish-staging
           fi
 
+      - name: Write JReleaser user-level properties
+        run: |
+          # Ensure ~/.jreleaser exists
+          mkdir -p "$HOME/.jreleaser"
+      
+          # Write the properties file
+          cat <<'EOF' > "$HOME/.jreleaser/config.properties"
+          JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          JRELEASER_NEXUS2_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          EOF
+        shell: bash
+
       # Run JReleaser to upload the staged artifacts created above.
       - name: JReleaser full release
         uses: jreleaser/release-action@2.4.2
@@ -83,8 +95,6 @@ jobs:
           arguments: >
             full-release
             --git-root-search
-            -Pjreleaser.deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-            # -Pjreleaser.deploy.maven.nexus2.sonatypeSnapshots.password=${{ secrets.CENTRAL_SONATYPE_TOKEN }}
           setup-java: false
         env:
           # Sonatype (Maven Central) credentials

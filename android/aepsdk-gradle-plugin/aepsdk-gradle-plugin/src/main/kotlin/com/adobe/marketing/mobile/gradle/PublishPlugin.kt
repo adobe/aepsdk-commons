@@ -21,6 +21,7 @@ import org.jreleaser.model.Active
 import org.jreleaser.model.Http
 import org.jreleaser.model.Signing
 import org.jreleaser.model.api.deploy.maven.MavenCentralMavenDeployer
+import java.io.File
 
 class PublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -30,11 +31,11 @@ class PublishPlugin : Plugin<Project> {
 
         project.afterEvaluate {
             // Make the value visible to every tool (JReleaser, Gradle, etc.)
+            // Specifically JReleaser requires project.version to be set
             project.group = project.publishGroupId
             project.version = project.publishVersion
 
             configurePublishing(project)
-            configureSigningAndRelease(project)
 
             // Make the publish task depend on the AAR bundle to avoid implicit dependencies.
             // Gradle names publish tasks differently depending on the repository set under MavenPublication
@@ -44,6 +45,17 @@ class PublishPlugin : Plugin<Project> {
             project.tasks
                 .withType(org.gradle.api.publish.maven.tasks.PublishToMavenRepository::class.java)
                 .configureEach { dependsOn(project.tasks.named("bundlePhoneReleaseAar")) }
+        }
+
+        project.gradle.taskGraph.whenReady {
+            System.getenv("GITHUB_ENV")?.let { envPath ->
+                File(envPath).appendText(
+                    """
+                    JRELEASER_PROJECT_VERSION=${project.publishVersion}
+                    JRELEASER_PROJECT_JAVA_GROUPID=${project.publishGroupId}
+                    """.trimIndent() + "\n"
+                )
+            }
         }
     }
 
@@ -110,97 +122,10 @@ class PublishPlugin : Plugin<Project> {
 
                     repositories {
                         maven {
+                            // Configures where the generated artifacts are published to.
+                            // In this case, the local machine's `<module>/build/staging-deploy` directory.
                             url = project.layout.buildDirectory.dir("staging-deploy")
                                 .get().asFile.toURI()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun configureSigningAndRelease(project: Project) {
-        project.extensions.configure<JReleaserExtension> {
-            // Allow JReleaser to walk up parent directories to locate the git root.
-            // Used by the changelog step to compile the changelog from the git history.
-            gitRootSearch.set(true)
-
-            release {
-                // JReleaser release step looks for this configuration and a valid string token
-                // We configure it to skip the release
-                github {
-                    token.set("NOT_A_REAL_TOKEN")
-                    skipRelease.set(true)
-                    // Prevent JReleaser from creating and pushing git tags
-                    skipTag.set(true)
-                }
-                
-            }
-
-            signing {
-                setActive("ALWAYS")
-                mode.set(Signing.Mode.COMMAND)
-                armored.set(true)
-                verify.set(true)
-
-                command {
-                    executable.set(BuildConstants.Publishing.SIGNING_GNUPG_EXECUTABLE)
-                    keyName.set(BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
-                }
-
-                // Configure GPG signing parameters using environment variables
-                passphrase.set(BuildConstants.Publishing.SIGNING_GNUPG_PASSPHRASE)
-            }
-
-            deploy {
-                maven {
-                    // Release deployer using mavenCentral, active only for RELEASE builds
-                    mavenCentral {
-                        create("sonatype") {
-                            active.set(Active.RELEASE)
-                            stage.set(MavenCentralMavenDeployer.Stage.UPLOAD)
-
-                            url.set(project.publishUrl)
-
-                            username.set(BuildConstants.Publishing.CENTRAL_SONATYPE_USERNAME)
-                            password.set(BuildConstants.Publishing.CENTRAL_SONATYPE_TOKEN)
-                            authorization.set(Http.Authorization.BEARER)
-
-                            // Signing configuration. See more in `signing` block (above)
-                            sign.set(true)
-                            checksums.set(true)
-                            sourceJar.set(true)
-                            javadocJar.set(true)
-                            verifyPom.set(false)
-
-                            stagingRepository(BuildConstants.Publishing.MAVEN_STAGING_REPOSITORY_PATH)
-
-                            namespace.set(project.publishGroupId)
-                        }
-                    }
-
-                    // Snapshot deployer using Nexus2, active only for SNAPSHOT builds
-                    nexus2 {
-                        create("sonatypeSnapshots") {
-                            active.set(Active.SNAPSHOT)
-                            url.set(BuildConstants.Publishing.SNAPSHOTS_URL)
-                            snapshotUrl.set(BuildConstants.Publishing.SNAPSHOTS_URL)
-
-                            username.set(BuildConstants.Publishing.CENTRAL_SONATYPE_USERNAME)
-                            password.set(BuildConstants.Publishing.CENTRAL_SONATYPE_TOKEN)
-                            authorization.set(Http.Authorization.BEARER)
-
-                            sign.set(true)
-                            checksums.set(true)
-                            sourceJar.set(true)
-                            javadocJar.set(true)
-                            verifyPom.set(false)
-
-                            snapshotSupported.set(true)
-                            closeRepository.set(true)
-                            releaseRepository.set(true)
-
-                            stagingRepository(BuildConstants.Publishing.MAVEN_STAGING_REPOSITORY_PATH)
                         }
                     }
                 }

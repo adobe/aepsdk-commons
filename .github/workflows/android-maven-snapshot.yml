@@ -75,20 +75,20 @@ jobs:
             make ci-publish-staging
           fi
 
-      - name: Write JReleaser user-level properties
-        run: |
-          # Ensure ~/.jreleaser exists
-          mkdir -p "$HOME/.jreleaser"
+      # - name: Write JReleaser user-level properties
+      #   run: |
+      #     # Ensure ~/.jreleaser exists
+      #     mkdir -p "$HOME/.jreleaser"
       
-          # Write the properties file
-          cat <<'EOF' > "$HOME/.jreleaser/config.properties"
-          JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-          JRELEASER_NEXUS2_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-          deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-          jreleaser.deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-          jreleaser.nexus2.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-          EOF
-        shell: bash
+      #     # Write the properties file
+      #     cat <<'EOF' > "$HOME/.jreleaser/config.properties"
+      #     JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+      #     JRELEASER_NEXUS2_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+      #     deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+      #     jreleaser.deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+      #     jreleaser.nexus2.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+      #     EOF
+      #   shell: bash
 
       # Run JReleaser to upload the staged artifacts created above.
       - name: JReleaser full release
@@ -98,11 +98,12 @@ jobs:
           arguments: >
             full-release
             --git-root-search
-            -Pdeploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           setup-java: false
+          java-opts: >
+            -Ddeploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
         env:
           # Sonatype (Maven Central) credentials
-          JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          # JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           JRELEASER_DEPLOY_MAVEN_NEXUS2_SONATYPESNAPSHOTS_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           JRELEASER_GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}

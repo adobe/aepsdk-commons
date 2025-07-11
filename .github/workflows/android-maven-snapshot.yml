@@ -86,7 +86,7 @@ jobs:
           setup-java: false
         env:
           # Sonatype (Maven Central) credentials
-          JRELEASER_DEPLOY_MAVEN_NEXUS2_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           JRELEASER_DEPLOY_MAVEN_NEXUS2_SONATYPESNAPSHOTS_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           JRELEASER_GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}

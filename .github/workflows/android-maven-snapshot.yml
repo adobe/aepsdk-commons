@@ -83,8 +83,8 @@ jobs:
           arguments: >
             full-release
             --git-root-search
-            -Pdeploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-            -Pdeploy.maven.nexus2.sonatypeSnapshots.password=${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+            -Pjreleaser.deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+            -Pjreleaser.deploy.maven.nexus2.sonatypeSnapshots.password=${{ secrets.CENTRAL_SONATYPE_TOKEN }}
           setup-java: false
         env:
           # Sonatype (Maven Central) credentials

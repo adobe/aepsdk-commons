@@ -84,6 +84,8 @@ jobs:
           cat <<'EOF' > "$HOME/.jreleaser/config.properties"
           JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           JRELEASER_NEXUS2_USERNAME=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          jreleaser.deploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           EOF
         shell: bash
 

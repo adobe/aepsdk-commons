@@ -15,26 +15,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.kotlin.dsl.configure
-import org.jreleaser.gradle.plugin.JReleaserExtension
-import org.jreleaser.model.Active
-import org.jreleaser.model.Http
-import org.jreleaser.model.Signing
-import org.jreleaser.model.api.deploy.maven.MavenCentralMavenDeployer
 import java.io.File
 
 class PublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         // Apply necessary plugins
         project.plugins.apply(BuildConstants.Plugins.MAVEN_PUBLISH)
-        project.plugins.apply(BuildConstants.Plugins.J_RELEASER)
 
         project.afterEvaluate {
-            // Make the value visible to every tool (JReleaser, Gradle, etc.)
-            // Specifically JReleaser requires project.version to be set
-            project.group = project.publishGroupId
-            project.version = project.publishVersion
-
             configurePublishing(project)
 
             // Make the publish task depend on the AAR bundle to avoid implicit dependencies.
@@ -47,6 +35,7 @@ class PublishPlugin : Plugin<Project> {
                 .configureEach { dependsOn(project.tasks.named("bundlePhoneReleaseAar")) }
         }
 
+        // Write the project version and group ID to GITHUB_ENV if it exists (in GitHub Actions context)
         project.gradle.taskGraph.whenReady {
             System.getenv("GITHUB_ENV")?.let { envPath ->
                 File(envPath).appendText(

@@ -99,8 +99,7 @@ jobs:
             full-release
             --git-root-search
           setup-java: false
-          java-opts: -Ddeploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}
-            
+          java-opts: "-Ddeploy.maven.nexus2.sonatypeSnapshots.username=${{ secrets.CENTRAL_SONATYPE_USERNAME }}"
         env:
           # Sonatype (Maven Central) credentials
           # JRELEASER_NEXUS2_SONATYPESNAPSHOTS_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}

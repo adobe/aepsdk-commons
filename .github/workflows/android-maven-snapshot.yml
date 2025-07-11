@@ -80,7 +80,9 @@ jobs:
         uses: jreleaser/release-action@2.4.2
         with:
           version: '1.18.0'
-          arguments: full-release
+          arguments: >
+            full-release
+            --git-root-search
           setup-java: false
         env:
           # Sonatype (Maven Central) credentials

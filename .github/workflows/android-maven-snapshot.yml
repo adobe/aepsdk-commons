@@ -77,7 +77,7 @@ jobs:
 
       # Run JReleaser to upload the staged artifacts created above.
       - name: JReleaser full release
-        uses: jreleaser/release-action@v2.4.2
+        uses: jreleaser/release-action@2.4.2
         with:
           jreleaser-version: '1.18.0'
           arguments: full-release
@@ -94,7 +94,7 @@ jobs:
         
       - name: JReleaser release output
         if: always()
-        uses: actions/upload-artifact@v4.2.2
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: jreleaser-release
           path: |

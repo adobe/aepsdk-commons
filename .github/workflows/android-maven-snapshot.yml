@@ -79,7 +79,7 @@ jobs:
       - name: JReleaser full release
         uses: jreleaser/release-action@2.4.2
         with:
-          jreleaser-version: '1.18.0'
+          version: '1.18.0'
           arguments: full-release
           setup-java: false
         env:

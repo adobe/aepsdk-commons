@@ -92,7 +92,7 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           # The project/version information written by Gradle into $GITHUB_ENV
           JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
-          JRELEASER_PROJECT_JAVA_GROUPID: ${{ env.JRELEASER_PROJECT_JAVA_GROUPID }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.JRELEASER_PROJECT_JAVA_GROUPID }}
         
       - name: JReleaser release output
         if: always()

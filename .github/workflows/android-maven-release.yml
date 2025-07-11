@@ -170,7 +170,7 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
-          JRELEASER_PROJECT_JAVA_GROUPID: ${{ env.JRELEASER_PROJECT_JAVA_GROUPID }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.JRELEASER_PROJECT_JAVA_GROUPID }}
 
       - name: JReleaser release output
         if: always()

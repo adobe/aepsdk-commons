@@ -81,7 +81,8 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.0
+    # TODO: VERSION TESTING ONLY, REVERT AFTER
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@maven-central-workflow-updates
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}

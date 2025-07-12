@@ -97,7 +97,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
         with:
-          ref: main
+          # ref: main
+          # TODO: TESTING ONLY, REVERT AFTER
+          ref: update-maven-release-workflow
 
       - name: Set up Java
         uses: actions/setup-java@v4.7.0

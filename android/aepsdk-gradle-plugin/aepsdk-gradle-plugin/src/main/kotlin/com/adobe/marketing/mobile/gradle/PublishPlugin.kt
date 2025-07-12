@@ -41,7 +41,7 @@ class PublishPlugin : Plugin<Project> {
                 File(envPath).appendText(
                     """
                     JRELEASER_PROJECT_VERSION=${project.publishVersion}
-                    JRELEASER_PROJECT_JAVA_GROUPID=${project.publishGroupId}
+                    JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}
                     """.trimIndent() + "\n"
                 )
             }

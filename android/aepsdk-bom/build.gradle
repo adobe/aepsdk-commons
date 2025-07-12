@@ -19,13 +19,6 @@ allprojects {
         google()
     }
     apply plugin: 'maven-publish'
-    if (project.hasProperty("sonatypeUser") && project.hasProperty("sonatypePass")) {
-        ext["ossrhUsername"] = "$sonatypeUser"
-        ext["ossrhPassword"] = "$sonatypePass"
-    } else {
-        ext["ossrhUsername"] = ""
-        ext["ossrhPassword"] = ""
-    }
 }
 
 ext {

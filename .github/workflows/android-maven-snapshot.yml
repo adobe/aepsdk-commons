@@ -89,7 +89,7 @@ jobs:
             make ci-publish-staging
           fi
 
-      - name: Generate JReleaser YAML
+      - name: Generate JReleaser configuration
         # uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
         # TODO: VERSION TESTING ONLY, REVERT AFTER
         uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@maven-central-workflow-updates

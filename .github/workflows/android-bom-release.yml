@@ -47,11 +47,45 @@ jobs:
 
       - name: Publish sdk-bom to maven central
         run: make -C android/aepsdk-bom bom-publish-main
+
+      - name: Generate JReleaser configuration
+        # uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
+        # TODO: VERSION TESTING ONLY, REVERT AFTER
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@maven-central-workflow-updates
+        with:
+          staging-dir: android/aepsdk-bom/sdk-bom/build/staging-deploy
+  
+      # Run JReleaser to upload the staged artifacts created above.
+      - name: JReleaser deploy to Maven Central
+        uses: jreleaser/release-action@2.4.2
+        with:
+          version: '1.19.0'
+          arguments: >
+            full-release
+            --git-root-search
+          setup-java: false
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          # The JReleaser expected username and password env var format follows:
+          # JRELEASER_DEPLOY_MAVEN_<deployerType>_<deployerName>_USERNAME
+          # In this case:
+          # - deployerType is the MavenCentral deployer provided by JReleaser (turns into "MAVENCENTRAL")
+          # - deployerName is the custom name of the deployer (defined in the jreleaser.yml file, gradle, etc.) (turns into "SONATYPE")
+          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}
+          # The project/version information written by Gradle into $GITHUB_ENV
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.JRELEASER_PROJECT_JAVA_GROUP_ID }}
+        
+      - name: Save JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties
 
       - name: Read bomVersion from gradle.properties
         id: read_property

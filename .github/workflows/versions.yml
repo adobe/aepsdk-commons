@@ -24,9 +24,7 @@ name: Update or Validate Versions
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 env:
-  # WORKFLOW_TAG: gha-ios-5.3.1
-  # TODO: TESTING ONLY, REVERT AFTER
-  WORKFLOW_TAG: maven-central-workflow-updates
+  WORKFLOW_TAG: gha-android-3.4.0
 
 on:
   workflow_call:

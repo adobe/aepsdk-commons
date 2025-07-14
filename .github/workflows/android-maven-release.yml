@@ -88,8 +88,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    # TODO: VERSION TESTING ONLY, REVERT AFTER
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@maven-central-workflow-updates
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.0
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -104,9 +103,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
         with:
-          # ref: main
-          # TODO: TESTING ONLY, REVERT AFTER
-          ref: update-maven-release-workflow
+          ref: main
 
       - name: Set up Java
         uses: actions/setup-java@v4.7.0

@@ -85,7 +85,7 @@ on:
         type: string
         default: ''
 
-        staging-dir:
+      staging-dir:
         description: |
           The path (workspace relative or absolute) to the artifact staging directory that JReleaser should upload.
           Ex: "code/assurance/build/staging-deploy"

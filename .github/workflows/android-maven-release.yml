@@ -85,7 +85,7 @@ on:
         type: string
         default: ''
 
-        staging-dir:
+      staging-dir:
         description: |
           The path (workspace relative or absolute) to the artifact staging directory that JReleaser should upload.
           Ex: "code/assurance/build/staging-deploy"
@@ -170,9 +170,9 @@ jobs:
           fi
 
       - name: Generate JReleaser configuration
-          uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
-          with:
-            staging-dir: ${{ inputs.staging-dir }}
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
+        with:
+          staging-dir: ${{ inputs.staging-dir }}
 
       # Use JReleaser to upload staged artifacts and complete the release.
       - name: JReleaser deploy to Maven Central

@@ -12,12 +12,19 @@
 
 name: Publish Snapshot (Android)
 
+# Workflow requirements:
+#  
 # This workflow relies on the following secrets:
 # - GPG_SECRET_KEYS
 # - GPG_OWNERTRUST
-# - SONATYPE_USERNAME
-# - SONATYPE_PASSWORD
+# - CENTRAL_SONATYPE_USERNAME
+# - CENTRAL_SONATYPE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
+#
+# The workflow also requires that the `ci-publish-staging` rule writes the following JReleaser
+# environment variables to $GITHUB_ENV:
+# - JRELEASER_PROJECT_VERSION: the version of the project
+# - JRELEASER_PROJECT_JAVA_GROUP_ID: the group ID of the project
 
 on:
   workflow_call:
@@ -30,13 +37,28 @@ on:
         type: string
         default: ''
 
+      ref:
+        description: |
+          The git reference (branch, tag, or SHA) to check out when publishing the snapshot.
+          Defaults to 'main'.
+        required: false
+        type: string
+        default: 'main'
+
+      staging-dir:
+        description: |
+          The path (workspace relative or absolute) to the artifact staging directory that JReleaser should upload.
+          Ex: "code/assurance/build/staging-deploy"
+        required: true
+        type: string
+
 jobs:
   publish:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4.2.2
         with:
-          ref: main
+          ref: ${{ inputs.ref }}
       
       - name: Set up Java
         uses: actions/setup-java@v4.7.0
@@ -45,7 +67,7 @@ jobs:
           java-version: 17
       
       - name: Cache Gradle packages
-        uses: actions/cache@v4.2.1
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
@@ -59,15 +81,47 @@ jobs:
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
       
-      - name: Publish to Maven Snapshot Repository
+      - name: Generate artifacts (local staging)
         run: |
           if [ -n "${{ inputs.release-variant }}" ]; then
             make "${{ inputs.release-variant }}-publish-snapshot"
           else
             make ci-publish-staging
           fi
+
+      - name: Generate JReleaser configuration
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
+        with:
+          staging-dir: ${{ inputs.staging-dir }}
+
+      # Run JReleaser to upload the staged artifacts created above.
+      - name: JReleaser publish SNAPSHOT to Maven Central
+        uses: jreleaser/release-action@2.4.2
+        with:
+          version: '1.19.0'
+          arguments: >
+            full-release
+            --git-root-search
+          setup-java: false
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          # The JReleaser expected username and password env var format follows:
+          # JRELEASER_DEPLOY_MAVEN_<deployerType>_<deployerName>_USERNAME
+          # In this case:
+          # - deployerType is the Nexus2 deployer provided by JReleaser (turns into "NEXUS2")
+          # - deployerName is the custom name of the deployer (defined in the jreleaser.yml file, gradle, etc.) (turns into "SONATYPESNAPSHOTS")
+          JRELEASER_DEPLOY_MAVEN_NEXUS2_SONATYPESNAPSHOTS_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          JRELEASER_DEPLOY_MAVEN_NEXUS2_SONATYPESNAPSHOTS_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}
+          # The project/version information written by Gradle into $GITHUB_ENV
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.JRELEASER_PROJECT_JAVA_GROUP_ID }}
+        
+      - name: Save JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

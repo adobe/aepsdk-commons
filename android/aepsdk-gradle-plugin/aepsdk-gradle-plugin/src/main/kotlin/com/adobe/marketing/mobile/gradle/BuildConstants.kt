@@ -19,8 +19,8 @@ import org.gradle.api.JavaVersion
 object BuildConstants {
     object Versions {
         const val MIN_SDK_VERSION = 21
-        const val COMPILE_SDK_VERSION = 35
-        const val TARGET_SDK_VERSION = 35
+        const val COMPILE_SDK_VERSION = 34
+        const val TARGET_SDK_VERSION = 34
 
         const val VERSION_CODE = 1
         const val VERSION_NAME = "1"
@@ -33,8 +33,8 @@ object BuildConstants {
         const val KOTLIN_JVM_TARGET = "1.8"
 
 
-        const val AGP = "8.6.0"
-        const val KOTLIN = "1.9.23"
+        const val AGP = "8.2.0"
+        const val KOTLIN = "1.8.20"
         const val KOTLIN_COROUTINES = "1.6.0"
         const val KTLINT = "0.42.1"
         const val GOOGLE_JAVA_FORMAT = "1.15.0"
@@ -42,7 +42,7 @@ object BuildConstants {
         const val PRETTIER_JAVA_PLUGIN = "1.6.2"
         const val CHECKSTYLE_TOOLS = "8.36.1"
 
-        const val COMPOSE_COMPILER = "1.5.13"
+        const val COMPOSE_COMPILER = "1.4.6"
         const val COMPOSE = "1.4.3"
         const val COMPOSE_MATERIAL = "1.4.3"
         const val ANDROIDX_ACTIVITY_COMPOSE = "1.5.0"
@@ -126,6 +126,7 @@ object BuildConstants {
         const val JAVADOC_JAR = "javadocJar"
         const val SOURCES_JAR = "sourcesJar"
         const val DOKKA_JAVADOC = "dokkaJavadoc"
+        const val CONFIGURE_PLAY_CONSOLE_VERIFICATION = "configurePlayConsoleVerification"
         const val CREATE_PHONE_RELEASE_JAVADOC = "createPhoneReleaseJavadoc"
         const val PHONE_RELEASE_SOURCES_JAR = "phoneReleaseSourcesJar"
         const val ASSEMBLE_PHONE = "assemblePhone"
@@ -133,6 +134,7 @@ object BuildConstants {
         const val PUBLISH_MAVEN_LOCAL = "publishToMavenLocal"
         const val PUBLISH_RELEASE_MAVEN_LOCAL = "publishReleasePublicationToMavenLocal"
         const val SIGN_RELEASE = "signReleasePublication"
+        const val JRELEASER_FULL_RELEASE = "jreleaserFullRelease"
 
         const val FUNCTIONAL_TEST_COVERAGE_REPORT = "functionalTestsCoverageReport"
         const val CREATE_PHONE_DEBUG_COVERAGE_REPORT = "createPhoneDebugCoverageReport"
@@ -219,8 +221,8 @@ governing permissions and limitations under the License.
     }
 
     internal object Publishing {
-        const val SNAPSHOTS_URL = "https://oss.sonatype.org/content/repositories/snapshots/"
-        const val RELEASES_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        const val SNAPSHOTS_URL = "https://central.sonatype.com/repository/maven-snapshots/"
+        const val RELEASES_URL = "https://central.sonatype.com/api/v1/publisher"
 
         const val RELEASE_PROPERTY = "release"
         const val JITPACK_PROPERTY = "jitpack"
@@ -240,9 +242,7 @@ governing permissions and limitations under the License.
 
         const val ADOBE_GROUP_ID = "com.adobe.marketing.mobile"
 
-        const val SIGNING_GNUPG_EXECUTABLE = "gpg"
-        val SIGNING_GNUPG_KEY_NAME by lazy { System.getenv("GPG_KEY_ID") }
-        val SIGNING_GNUPG_PASSPHRASE by lazy { System.getenv("GPG_PASSPHRASE") }
+        val GOOGLE_TOKEN by lazy { System.getenv("GOOGLE_TOKEN") }
 
         const val MODULE_NAME_PROPERTY = "moduleName"
         const val MODULE_VERSION_PROPERTY = "moduleVersion"
@@ -301,5 +301,8 @@ governing permissions and limitations under the License.
         const val GRADLE_DIR = "**/.gradle/*"
         const val GRADLE_WRAPPER_DIR = "**/gradle/wrapper/*"
         const val BUILD_DIR = "**/build/*"
+        
+        // Play Console verification file path template
+        const val PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR = "src/main/resources/META-INF/%s/verification.properties"
     }
 }

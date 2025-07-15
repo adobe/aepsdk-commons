@@ -24,7 +24,7 @@ name: Update or Validate Versions
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 env:
-  WORKFLOW_TAG: gha-ios-5.3.1
+  WORKFLOW_TAG: gha-android-3.4.0
 
 on:
   workflow_call:
@@ -103,7 +103,7 @@ jobs:
 
     - name: Restore cached scripts from aepsdk-commons
       id: cache-scripts
-      uses: actions/cache@v4.2.1
+      uses: actions/cache@v4.2.3
       with:
         path: .github/aepsdk-commons/scripts
         key: aepsdk-commons-versionsScript-${{ env.WORKFLOW_TAG }} # Cache key format: <REPO_NAME>-<TAG>

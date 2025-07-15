@@ -12,13 +12,20 @@
 
 name: Publish Release (Android)
 
+# Workflow requirements:
+#  
 # This workflow relies on the following secrets:
 # - GITHUB_TOKEN: With the permission scope: `contents: write`. Required for creating a release on GitHub.
 # - GPG_SECRET_KEYS
 # - GPG_OWNERTRUST
-# - SONATYPE_USERNAME
-# - SONATYPE_PASSWORD
+# - CENTRAL_SONATYPE_USERNAME
+# - CENTRAL_SONATYPE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
+#
+# The workflow also requires that the `ci-publish`/`<variant>-publish-main` rule writes the following JReleaser
+# environment variables to $GITHUB_ENV:
+# - JRELEASER_PROJECT_VERSION: the version of the project
+# - JRELEASER_PROJECT_JAVA_GROUP_ID: the group ID of the project
 
 on: 
   workflow_call:
@@ -78,10 +85,17 @@ on:
         type: string
         default: ''
 
+        staging-dir:
+        description: |
+          The path (workspace relative or absolute) to the artifact staging directory that JReleaser should upload.
+          Ex: "code/assurance/build/staging-deploy"
+        required: true
+        type: string
+
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.3.2
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.0
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -105,7 +119,7 @@ jobs:
           java-version: 17
 
       - name: Cache Gradle packages
-        uses: actions/cache@v4.2.1
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
@@ -147,15 +161,48 @@ jobs:
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
-      - name: Publish to Maven Central Repository
+      - name: Generate artifacts (local staging)
         run: |
           if [ -n "${{ inputs.release-variant }}" ]; then
             make "${{ inputs.release-variant }}-publish-main"
           else
             make ci-publish
           fi
+
+      - name: Generate JReleaser configuration
+          uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
+          with:
+            staging-dir: ${{ inputs.staging-dir }}
+
+      # Use JReleaser to upload staged artifacts and complete the release.
+      - name: JReleaser deploy to Maven Central
+        uses: jreleaser/release-action@2.4.2
+        with:
+          version: '1.19.0'
+          arguments: >
+            full-release
+            --git-root-search
+          setup-java: false
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          # The JReleaser expected username and password env var format follows:
+          # JRELEASER_DEPLOY_MAVEN_<deployerType>_<deployerName>_USERNAME
+          # In this case:
+          # - deployerType is the MavenCentral deployer provided by JReleaser (turns into "MAVENCENTRAL")
+          # - deployerName is the custom name of the deployer (defined in the jreleaser.yml file, gradle, etc.) (turns into "SONATYPE")
+          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}
+          # The project/version information written by Gradle into $GITHUB_ENV
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.JRELEASER_PROJECT_JAVA_GROUP_ID }}
+          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_NAMESPACE: ${{ env.JRELEASER_PROJECT_JAVA_GROUP_ID }}
+
+      - name: Save JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

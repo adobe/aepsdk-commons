@@ -54,7 +54,7 @@ runs:
 
     - name: AVD cache
       if: ${{ inputs.android-api-level != '' }}
-      uses: actions/cache@v4.2.1
+      uses: actions/cache@v4.2.3
       id: avd-cache
       with:
         path: |

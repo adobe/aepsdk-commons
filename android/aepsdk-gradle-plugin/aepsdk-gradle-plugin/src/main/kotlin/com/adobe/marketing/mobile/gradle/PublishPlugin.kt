@@ -15,22 +15,36 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.extra
-import org.gradle.plugins.signing.Sign
-import org.gradle.plugins.signing.SigningExtension
-import java.net.URI
+import java.io.File
 
 class PublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         // Apply necessary plugins
         project.plugins.apply(BuildConstants.Plugins.MAVEN_PUBLISH)
-        project.plugins.apply(BuildConstants.Plugins.SIGNING)
 
         project.afterEvaluate {
             configurePublishing(project)
-            configureSigning(project)
+
+            // Make the publish task depend on the AAR bundle to avoid implicit dependencies.
+            // Gradle names publish tasks differently depending on the repository set under MavenPublication
+            // repositories -> maven -> name
+            // If no name is provided, the default is: `publishReleasePublicationToMavenRepository`.
+            // To cover all cases, depend on every PublishToMavenRepository task in the project.
+            project.tasks
+                .withType(org.gradle.api.publish.maven.tasks.PublishToMavenRepository::class.java)
+                .configureEach { dependsOn(project.tasks.named("bundlePhoneReleaseAar")) }
+        }
+
+        // Write the project version and group ID to GITHUB_ENV if it exists (in GitHub Actions context)
+        project.gradle.taskGraph.whenReady {
+            System.getenv("GITHUB_ENV")?.let { envPath ->
+                File(envPath).appendText(
+                    """
+                    JRELEASER_PROJECT_VERSION=${project.publishVersion}
+                    JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}
+                    """.trimIndent() + "\n"
+                )
+            }
         }
     }
 
@@ -69,8 +83,14 @@ class PublishPlugin : Plugin<Project> {
                             }
                         }
 
-                        val scmConnectionUrl = String.format(BuildConstants.Publishing.SCM_CONNECTION_URL_TEMPLATE, publishingConfig.gitRepoName.get())
-                        val scmRepoUrl = String.format(BuildConstants.Publishing.SCM_REPO_URL_TEMPLATE, publishingConfig.gitRepoName.get())
+                        val scmConnectionUrl = String.format(
+                            BuildConstants.Publishing.SCM_CONNECTION_URL_TEMPLATE,
+                            publishingConfig.gitRepoName.get()
+                        )
+                        val scmRepoUrl = String.format(
+                            BuildConstants.Publishing.SCM_REPO_URL_TEMPLATE,
+                            publishingConfig.gitRepoName.get()
+                        )
 
                         scm {
                             connection.set(scmConnectionUrl)
@@ -91,39 +111,13 @@ class PublishPlugin : Plugin<Project> {
 
                     repositories {
                         maven {
-                            name = "sonatype"
-                            url = URI(project.publishUrl)
-                            credentials {
-                                username = System.getenv("SONATYPE_USERNAME")
-                                password = System.getenv("SONATYPE_PASSWORD")
-                            }
+                            // Configures where the generated artifacts are published to.
+                            // In this case, the local machine's `<module>/build/staging-deploy` directory.
+                            url = project.layout.buildDirectory.dir("staging-deploy")
+                                .get().asFile.toURI()
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private fun configureSigning(project: Project) {
-        // Set signing configuration
-        project.extra.apply {
-            set("signing.gnupg.executable", BuildConstants.Publishing.SIGNING_GNUPG_EXECUTABLE)
-            set("signing.gnupg.keyName", BuildConstants.Publishing.SIGNING_GNUPG_KEY_NAME)
-            set("signing.gnupg.passphrase", BuildConstants.Publishing.SIGNING_GNUPG_PASSPHRASE)
-        }
-
-        project.extensions.configure<SigningExtension> {
-            useGpgCmd()
-
-            val publishing = project.extensions.getByType(PublishingExtension::class.java)
-            sign(publishing.publications)
-        }
-
-        // https://github.com/gradle/gradle/issues/5064 - Gpg does not support SigningExtension.required flag.
-        // Skip signing if we are not publishing to MavenCentral.
-        project.tasks.withType(Sign::class.java) {
-            onlyIf {
-                project.tasks.withType(PublishToMavenRepository::class.java).find { project.gradle.taskGraph.hasTask(it) } != null
             }
         }
     }

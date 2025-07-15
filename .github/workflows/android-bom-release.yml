@@ -103,8 +103,7 @@ jobs:
         run: |
           TAG="bom-${{ steps.read_property.outputs.bomVersion }}"
           gh release create "$TAG" \
-            --title "$TAG" \
-            --generate-notes
+            --title "$TAG"
           
       - name: Update Release page
         run: |

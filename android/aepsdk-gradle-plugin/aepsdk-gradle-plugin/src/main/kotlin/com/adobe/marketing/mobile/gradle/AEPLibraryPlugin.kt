@@ -27,6 +27,8 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.File
+import org.gradle.api.GradleException
 
 class AEPLibraryPlugin : Plugin<Project> {
 
@@ -40,6 +42,10 @@ class AEPLibraryPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         val extension = project.createAepLibraryConfiguration()
+
+        if (extension.enablePlayConsoleVerification.getOrElse(false)) {
+            generatePlayConsoleVerificationFile(project, extension)
+        }
 
         // These settings should be applied prior to the Android Gradle plugin evaluating the project.
         project.afterEvaluate {
@@ -91,6 +97,11 @@ class AEPLibraryPlugin : Plugin<Project> {
             if (extension.enableCheckStyle.getOrElse(false)) {
                 project.plugins.apply(BuildConstants.Plugins.CHECKSTYLE)
                 configureCheckStyle(project)
+            }
+
+            // Always register the Play Console verification task for manual execution
+            if (extension.enablePlayConsoleVerification.getOrElse(false)) {
+                configurePlayConsoleVerification(project, extension)
             }
 
             configureTaskDependencies(project)
@@ -337,6 +348,31 @@ class AEPLibraryPlugin : Plugin<Project> {
             exclude(BuildConstants.Path.R_CLASS)
             exclude(BuildConstants.Path.BUILD_CONFIG_CLASS)
             classpath = project.files()
+        }
+    }
+
+    private fun generatePlayConsoleVerificationFile(project: Project, extension: AEPLibraryExtension) {
+        val sdkVerificationToken = BuildConstants.Publishing.GOOGLE_TOKEN
+            ?: throw GradleException("Play Console verification token is not set. Please set the GOOGLE_TOKEN environment variable or provide it in gradle.properties as PLAY_CONSOLE_VERIFICATION_TOKEN.")
+
+        val packageName = extension.namespace.get() 
+            ?: throw GradleException("Android namespace is not set. Please configure the namespace in your build.gradle file.")
+        
+        val packagePath = packageName.replace(".", "/")
+        val outputFile = project.file(BuildConstants.Path.PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR.format(packagePath))
+        outputFile.parentFile.mkdirs()
+        outputFile.writeText("token=$sdkVerificationToken\n")
+        project.logger.lifecycle("Play Console verification file generated at: ${outputFile.absolutePath}")
+    }
+
+    private fun configurePlayConsoleVerification(project: Project, extension: AEPLibraryExtension) {
+        project.tasks.register(BuildConstants.Tasks.CONFIGURE_PLAY_CONSOLE_VERIFICATION) {
+            group = "verification"
+            description = "Regenerates verification.properties for Play SDK verification"
+
+            doLast {
+                generatePlayConsoleVerificationFile(project, extension)
+            }
         }
     }
 }

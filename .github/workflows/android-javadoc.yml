@@ -33,7 +33,7 @@ jobs:
 
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.3.2
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.0
 
       - name: Javadoc
         run: make javadoc
@@ -61,7 +61,7 @@ jobs:
           echo "JAVADOC_FILE_NAME=${SANITIZED_JAVADOC_FILE_NAME}" >> $GITHUB_ENV
 
       - name: Upload Javadoc
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: ${{ env.JAVADOC_FILE_NAME }}
           path: ${{ inputs.javadoc-build-path }}

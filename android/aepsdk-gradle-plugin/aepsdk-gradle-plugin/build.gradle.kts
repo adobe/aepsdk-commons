@@ -6,7 +6,6 @@ object Plugins {
     const val SPOTLESS_GRADLE_PLUGIN_VERSION = "6.12.0"
     const val DOKKA_GRADLE_PLUGIN_VERSION = "1.9.10"
     const val LICENSE_GRADLE_PLUGIN_VERSION = "0.16.1"
-    const val J_RELEASER_GRADLE_PLUGIN_VERSION = "1.18.0"
 }
 
 plugins {
@@ -14,7 +13,6 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     signing
-    id("org.jreleaser") version "1.18.0"
 }
 
 repositories {
@@ -32,7 +30,6 @@ dependencies {
     implementation("com.android.tools.build:gradle:${Plugins.ANDROID_GRADLE_PLUGIN_VERSION}")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:${Plugins.DOKKA_GRADLE_PLUGIN_VERSION}")
     implementation("gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:${Plugins.LICENSE_GRADLE_PLUGIN_VERSION}")
-    implementation("org.jreleaser:jreleaser-gradle-plugin:${Plugins.J_RELEASER_GRADLE_PLUGIN_VERSION}")
 }
 
 gradlePlugin {

@@ -117,7 +117,6 @@ object BuildConstants {
         const val CHECKSTYLE = "checkstyle"
         const val MAVEN_PUBLISH = "maven-publish"
         const val SIGNING = "signing"
-        const val J_RELEASER = "org.jreleaser"
         const val HIERYNOMUS_LICESNE = "com.github.hierynomus.license"
     }
 
@@ -243,15 +242,7 @@ governing permissions and limitations under the License.
 
         const val ADOBE_GROUP_ID = "com.adobe.marketing.mobile"
 
-        const val SIGNING_GNUPG_EXECUTABLE = "gpg"
-        val SIGNING_GNUPG_KEY_NAME by lazy { System.getenv("GPG_KEY_ID") }
-        val SIGNING_GNUPG_PASSPHRASE by lazy { System.getenv("GPG_PASSPHRASE") }
         val GOOGLE_TOKEN by lazy { System.getenv("GOOGLE_TOKEN") }
-
-        val CENTRAL_SONATYPE_USERNAME by lazy { System.getenv("CENTRAL_SONATYPE_USERNAME") }
-        val CENTRAL_SONATYPE_TOKEN by lazy { System.getenv("CENTRAL_SONATYPE_TOKEN") }
-
-        const val MAVEN_STAGING_REPOSITORY_PATH = "build/staging-deploy"
 
         const val MODULE_NAME_PROPERTY = "moduleName"
         const val MODULE_VERSION_PROPERTY = "moduleVersion"

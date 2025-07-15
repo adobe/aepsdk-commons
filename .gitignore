@@ -2,4 +2,5 @@
 .gradle
 .idea
 .vscode
+**/bin/
 local.properties

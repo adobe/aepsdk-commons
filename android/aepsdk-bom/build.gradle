@@ -5,7 +5,6 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
         mavenCentral()
-
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.1'
@@ -20,13 +19,6 @@ allprojects {
         google()
     }
     apply plugin: 'maven-publish'
-    if (project.hasProperty("sonatypeUser") && project.hasProperty("sonatypePass")) {
-        ext["ossrhUsername"] = "$sonatypeUser"
-        ext["ossrhPassword"] = "$sonatypePass"
-    } else {
-        ext["ossrhUsername"] = ""
-        ext["ossrhPassword"] = ""
-    }
 }
 
 ext {

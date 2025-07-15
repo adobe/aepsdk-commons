@@ -14,16 +14,18 @@ on: workflow_dispatch
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.2.2
+
       - name: Set up Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4.7.0
         with:
+          distribution: 'zulu'
           java-version: 11
 
       - name: Cache Gradle packages
-        uses: actions/cache@v2
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
@@ -37,10 +39,42 @@ jobs:
           echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch --yes
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
-      - name: Publish sdk-bom to maven central snapshot repository
+      - name: Generate BOM artifacts (local staging)
         run: make -C android/aepsdk-bom bom-publish-snapshot
+
+      - name: Generate JReleaser configuration
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.0
+        with:
+          staging-dir: android/aepsdk-bom/sdk-bom/build/staging-deploy
+  
+      # Run JReleaser to upload the staged artifacts created above.
+      - name: JReleaser publish SNAPSHOT to Maven Central
+        uses: jreleaser/release-action@2.4.2
+        with:
+          version: '1.19.0'
+          arguments: >
+            full-release
+            --git-root-search
+          setup-java: false
         env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          # The JReleaser expected username and password env var format follows:
+          # JRELEASER_DEPLOY_MAVEN_<deployerType>_<deployerName>_USERNAME
+          # In this case:
+          # - deployerType is the Nexus2 deployer provided by JReleaser (turns into "NEXUS2")
+          # - deployerName is the custom name of the deployer (defined in the jreleaser.yml file, gradle, etc.) (turns into "SONATYPESNAPSHOTS")
+          JRELEASER_DEPLOY_MAVEN_NEXUS2_SONATYPESNAPSHOTS_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          JRELEASER_DEPLOY_MAVEN_NEXUS2_SONATYPESNAPSHOTS_PASSWORD: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          JRELEASER_GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}
+          # The project/version information written by Gradle into $GITHUB_ENV
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_PROJECT_JAVA_GROUP_ID: ${{ env.JRELEASER_PROJECT_JAVA_GROUP_ID }}
+        
+      - name: Save JReleaser logs
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

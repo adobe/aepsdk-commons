@@ -43,9 +43,9 @@ class AEPLibraryPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.createAepLibraryConfiguration()
 
-        if (extension.enablePlayConsoleVerification.getOrElse(false)) {
-            generatePlayConsoleVerificationFile(project, extension)
-        }
+        // Generation of the Play Console verification file is deferred until after the project
+        // has been fully evaluated so that build scripts have a chance to configure the
+        // `enablePlayConsoleVerification` flag and required properties such as `namespace`.
 
         // These settings should be applied prior to the Android Gradle plugin evaluating the project.
         project.afterEvaluate {
@@ -73,6 +73,11 @@ class AEPLibraryPlugin : Plugin<Project> {
         // Configure additional settings based on the project's configuration. 
         // These settings include Dokka documentation generation, Spotless code formatting, CheckStyle checks, and common dependencies.
         project.afterEvaluate {
+            // Generate Play Console verification file once the DSL has been evaluated
+            if (extension.enablePlayConsoleVerification.getOrElse(false)) {
+                generatePlayConsoleVerificationFile(project, extension)
+            }
+
             if (!extension.disableCommonDependencies.getOrElse(false)) {
                 configureCommonDependencies(project, extension)
             }

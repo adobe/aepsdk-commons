@@ -104,7 +104,7 @@ class AEPLibraryPlugin : Plugin<Project> {
                 configurePlayConsoleVerification(project, extension)
             }
 
-            setJReleaserVariables(project, extension)
+            configureJReleaserVariables(project, extension)
 
             configureTaskDependencies(project)
         }
@@ -300,11 +300,11 @@ class AEPLibraryPlugin : Plugin<Project> {
 
     private fun configureTaskDependencies(project: Project) {
         val assemblePhone = project.tasks.named(BuildConstants.Tasks.ASSEMBLE_PHONE)
-        val setJReleaserVariables = project.tasks.named(BuildConstants.Tasks.SET_JRELEASER_VARIABLES)
+        val configureJReleaserVariables = project.tasks.named(BuildConstants.Tasks.CONFIGURE_JRELEASER_VARIABLES)
         project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(assemblePhone) }
         project.tasks.named(BuildConstants.Tasks.PUBLISH_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
         project.tasks.named(BuildConstants.Tasks.PUBLISH_RELEASE_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
-        project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(setJReleaserVariables)}
+        project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(configureJReleaserVariables)}
     }
 
     private fun configureSpotless(project: Project, extension: AEPLibraryExtension) {
@@ -380,14 +380,14 @@ class AEPLibraryPlugin : Plugin<Project> {
         }
     }
 
-    private fun setJReleaserVariables(project: Project, extension: AEPLibraryExtension) {
-        project.tasks.register(BuildConstants.Tasks.SET_JRELEASER_VARIABLES) {
+    private fun configureJReleaserVariables(project: Project, extension: AEPLibraryExtension) {
+        project.tasks.register(BuildConstants.Tasks.CONFIGURE_JRELEASER_VARIABLES) {
             group = "jreleaser"
-            description = "Sets JReleaser variables required for publishing to Maven Central"
+            description = "Configures JReleaser variables required for publishing to Maven Central"
             doLast {
-                project.logger.lifecycle("setJReleaserVariables (publishVersion): JRELEASER_PROJECT_VERSION=${project.publishVersion}")
-                project.logger.lifecycle("setJReleaserVariables (publishGroupId): JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}")
-                project.logger.lifecycle("setJReleaserVariables (publishArtifactId): ${project.publishArtifactId}")
+                project.logger.lifecycle("configureJReleaserVariables (publishVersion): JRELEASER_PROJECT_VERSION=${project.publishVersion}")
+                project.logger.lifecycle("configureJReleaserVariables (publishGroupId): JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}")
+                project.logger.lifecycle("configureJReleaserVariables (publishArtifactId): ${project.publishArtifactId}")
                 System.getenv("GITHUB_ENV")?.let { envPath ->
                         File(envPath).appendText(
                             """

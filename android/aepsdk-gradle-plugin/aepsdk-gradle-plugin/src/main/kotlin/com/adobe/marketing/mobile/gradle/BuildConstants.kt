@@ -134,8 +134,7 @@ object BuildConstants {
         const val PUBLISH_MAVEN_LOCAL = "publishToMavenLocal"
         const val PUBLISH_RELEASE_MAVEN_LOCAL = "publishReleasePublicationToMavenLocal"
         const val SIGN_RELEASE = "signReleasePublication"
-        const val JRELEASER_FULL_RELEASE = "jreleaserFullRelease"
-
+        const val CONFIGURE_JRELEASER_VARIABLES = "configureJReleaserVariables"
         const val FUNCTIONAL_TEST_COVERAGE_REPORT = "functionalTestsCoverageReport"
         const val CREATE_PHONE_DEBUG_COVERAGE_REPORT = "createPhoneDebugCoverageReport"
         const val UNIT_TEST_COVERAGE_REPORT = "unitTestCoverageReport"

@@ -34,18 +34,6 @@ class PublishPlugin : Plugin<Project> {
                 .withType(org.gradle.api.publish.maven.tasks.PublishToMavenRepository::class.java)
                 .configureEach { dependsOn(project.tasks.named("bundlePhoneReleaseAar")) }
         }
-
-        // Write the project version and group ID to GITHUB_ENV if it exists (in GitHub Actions context)
-        project.gradle.taskGraph.whenReady {
-            System.getenv("GITHUB_ENV")?.let { envPath ->
-                File(envPath).appendText(
-                    """
-                    JRELEASER_PROJECT_VERSION=${project.publishVersion}
-                    JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}
-                    """.trimIndent() + "\n"
-                )
-            }
-        }
     }
 
     private fun configurePublishing(project: Project) {

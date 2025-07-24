@@ -97,8 +97,6 @@ class AEPLibraryPlugin : Plugin<Project> {
 
             if (extension.enablePlayConsoleVerification.getOrElse(false)) {
                 configurePlayConsoleVerification(project, extension)
-            } else {
-                cleanupPlayConsoleVerificationFile(project, extension)
             }
 
             configureJReleaserVariables(project, extension)
@@ -402,17 +400,6 @@ class AEPLibraryPlugin : Plugin<Project> {
                             """.trimIndent() + "\n"
                         )
                     }
-            }
-        }
-    }
-
-    private fun cleanupPlayConsoleVerificationFile(project: Project, extension: AEPLibraryExtension) {
-        val sdkName = extension.moduleName.get()
-        if (sdkName != null) {
-            val verificationFile = project.file(BuildConstants.Path.PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR.format(sdkName))
-            if (verificationFile.exists()) {
-                verificationFile.delete()
-                project.logger.lifecycle("Deleted Play Console verification file: ${verificationFile.absolutePath}")
             }
         }
     }

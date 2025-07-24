@@ -104,6 +104,8 @@ class AEPLibraryPlugin : Plugin<Project> {
                 configurePlayConsoleVerification(project, extension)
             }
 
+            setJReleaserVariables(project, extension)
+
             configureTaskDependencies(project)
         }
     }
@@ -298,9 +300,11 @@ class AEPLibraryPlugin : Plugin<Project> {
 
     private fun configureTaskDependencies(project: Project) {
         val assemblePhone = project.tasks.named(BuildConstants.Tasks.ASSEMBLE_PHONE)
+        val setJReleaserVariables = project.tasks.named(BuildConstants.Tasks.SET_JRELEASER_VARIABLES)
         project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(assemblePhone) }
         project.tasks.named(BuildConstants.Tasks.PUBLISH_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
         project.tasks.named(BuildConstants.Tasks.PUBLISH_RELEASE_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
+        project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(setJReleaserVariables)}
     }
 
     private fun configureSpotless(project: Project, extension: AEPLibraryExtension) {
@@ -372,6 +376,26 @@ class AEPLibraryPlugin : Plugin<Project> {
 
             doLast {
                 generatePlayConsoleVerificationFile(project, extension)
+            }
+        }
+    }
+
+    private fun setJReleaserVariables(project: Project, extension: AEPLibraryExtension) {
+        project.tasks.register(BuildConstants.Tasks.SET_JRELEASER_VARIABLES) {
+            group = "jreleaser"
+            description = "Sets JReleaser variables required for publishing to Maven Central"
+            doLast {
+                project.logger.lifecycle("setJReleaserVariables (publishVersion): JRELEASER_PROJECT_VERSION=${project.publishVersion}")
+                project.logger.lifecycle("setJReleaserVariables (publishGroupId): JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}")
+                project.logger.lifecycle("setJReleaserVariables (publishArtifactId): ${project.publishArtifactId}")
+                System.getenv("GITHUB_ENV")?.let { envPath ->
+                        File(envPath).appendText(
+                            """
+                            JRELEASER_PROJECT_VERSION=${project.publishVersion}
+                            JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}
+                            """.trimIndent() + "\n"
+                        )
+                    }
             }
         }
     }

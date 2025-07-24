@@ -1,4 +1,6 @@
-val PLUGIN_VERSION = "3.4.0"
+val PLUGIN_VERSION = "3.4.1"
+// version and used for Maven local publishing
+version = PLUGIN_VERSION
 
 object Plugins {
     const val ANDROID_GRADLE_PLUGIN_VERSION = "8.2.0"

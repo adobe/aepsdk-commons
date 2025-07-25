@@ -391,12 +391,13 @@ class AEPLibraryPlugin : Plugin<Project> {
             doLast {
                 project.logger.lifecycle("configureJReleaserVariables (publishVersion): JRELEASER_PROJECT_VERSION=${project.publishVersion}")
                 project.logger.lifecycle("configureJReleaserVariables (publishGroupId): JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}")
-                project.logger.lifecycle("configureJReleaserVariables (publishArtifactId): ${project.publishArtifactId}")
+                project.logger.lifecycle("configureJReleaserVariables (publishArtifactId): JRELEASER_PROJECT_NAME=${project.publishArtifactId}")
                 System.getenv("GITHUB_ENV")?.let { envPath ->
                         File(envPath).appendText(
                             """
                             JRELEASER_PROJECT_VERSION=${project.publishVersion}
                             JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}
+                            JRELEASER_PROJECT_NAME=${project.publishArtifactId}
                             """.trimIndent() + "\n"
                         )
                     }

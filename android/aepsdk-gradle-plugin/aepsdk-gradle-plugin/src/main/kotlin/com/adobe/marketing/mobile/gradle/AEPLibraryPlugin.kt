@@ -43,10 +43,6 @@ class AEPLibraryPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.createAepLibraryConfiguration()
 
-        if (extension.enablePlayConsoleVerification.getOrElse(false)) {
-            generatePlayConsoleVerificationFile(project, extension)
-        }
-
         // These settings should be applied prior to the Android Gradle plugin evaluating the project.
         project.afterEvaluate {
             configureAndroidNamespace(project, extension)
@@ -99,14 +95,13 @@ class AEPLibraryPlugin : Plugin<Project> {
                 configureCheckStyle(project)
             }
 
-            // Always register the Play Console verification task for manual execution
             if (extension.enablePlayConsoleVerification.getOrElse(false)) {
                 configurePlayConsoleVerification(project, extension)
             }
 
             configureJReleaserVariables(project, extension)
 
-            configureTaskDependencies(project)
+            configureTaskDependencies(project, extension)
         }
     }
 
@@ -298,9 +293,12 @@ class AEPLibraryPlugin : Plugin<Project> {
         }
     }
 
-    private fun configureTaskDependencies(project: Project) {
+    private fun configureTaskDependencies(project: Project, extension: AEPLibraryExtension) {
         val assemblePhone = project.tasks.named(BuildConstants.Tasks.ASSEMBLE_PHONE)
         val configureJReleaserVariables = project.tasks.named(BuildConstants.Tasks.CONFIGURE_JRELEASER_VARIABLES)
+        if (extension.enablePlayConsoleVerification.getOrElse(false)) {
+            assemblePhone.configure{dependsOn((BuildConstants.Tasks.CONFIGURE_PLAY_CONSOLE_VERIFICATION))}
+        }
         project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(assemblePhone) }
         project.tasks.named(BuildConstants.Tasks.PUBLISH_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
         project.tasks.named(BuildConstants.Tasks.PUBLISH_RELEASE_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
@@ -355,18 +353,24 @@ class AEPLibraryPlugin : Plugin<Project> {
         }
     }
 
-    private fun generatePlayConsoleVerificationFile(project: Project, extension: AEPLibraryExtension) {
-        val sdkVerificationToken = BuildConstants.Publishing.GOOGLE_TOKEN
-            ?: throw GradleException("Play Console verification token is not set. Please set the GOOGLE_TOKEN environment variable or provide it in gradle.properties as PLAY_CONSOLE_VERIFICATION_TOKEN.")
+    private fun generatePlayConsoleVerificationFile(
+        project: Project,
+        extension: AEPLibraryExtension
+    ) {
+        if (!extension.enablePlayConsoleVerification.getOrElse(false)) return
 
-        val packageName = extension.namespace.get() 
-            ?: throw GradleException("Android namespace is not set. Please configure the namespace in your build.gradle file.")
-        
-        val packagePath = packageName.replace(".", "/")
-        val outputFile = project.file(BuildConstants.Path.PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR.format(packagePath))
-        outputFile.parentFile.mkdirs()
-        outputFile.writeText("token=$sdkVerificationToken\n")
-        project.logger.lifecycle("Play Console verification file generated at: ${outputFile.absolutePath}")
+        val sdkVerificationToken = BuildConstants.Publishing.GOOGLE_TOKEN
+            ?: project.findProperty("PLAY_CONSOLE_VERIFICATION_TOKEN") as? String
+            ?: throw GradleException("Play Console verification token is not set. Please set the GOOGLE_TOKEN environment variable.")
+
+        val sdkName = extension.moduleName.get()
+            ?: throw GradleException("Module name is not set. Please configure the moduleName in your build.gradle file.")
+
+        // Generate in main resources
+        val mainOutputFile = project.file(BuildConstants.Path.PLAY_CONSOLE_VERIFICATION_PROPERTIES_DIR.format(sdkName))
+        mainOutputFile.parentFile.mkdirs()
+        mainOutputFile.writeText("token=$sdkVerificationToken\n")
+        project.logger.lifecycle("Play Console verification file generated at: ${mainOutputFile.absolutePath}")
     }
 
     private fun configurePlayConsoleVerification(project: Project, extension: AEPLibraryExtension) {
@@ -387,12 +391,13 @@ class AEPLibraryPlugin : Plugin<Project> {
             doLast {
                 project.logger.lifecycle("configureJReleaserVariables (publishVersion): JRELEASER_PROJECT_VERSION=${project.publishVersion}")
                 project.logger.lifecycle("configureJReleaserVariables (publishGroupId): JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}")
-                project.logger.lifecycle("configureJReleaserVariables (publishArtifactId): ${project.publishArtifactId}")
+                project.logger.lifecycle("configureJReleaserVariables (publishArtifactId): JRELEASER_PROJECT_NAME=${project.publishArtifactId}")
                 System.getenv("GITHUB_ENV")?.let { envPath ->
                         File(envPath).appendText(
                             """
                             JRELEASER_PROJECT_VERSION=${project.publishVersion}
                             JRELEASER_PROJECT_JAVA_GROUP_ID=${project.publishGroupId}
+                            JRELEASER_PROJECT_NAME=${project.publishArtifactId}
                             """.trimIndent() + "\n"
                         )
                     }

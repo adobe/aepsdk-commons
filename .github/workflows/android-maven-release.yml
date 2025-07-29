@@ -20,6 +20,7 @@ name: Publish Release (Android)
 # - GPG_OWNERTRUST
 # - CENTRAL_SONATYPE_USERNAME
 # - CENTRAL_SONATYPE_TOKEN
+# - GOOGLE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 #
 # The workflow also requires that the `ci-publish`/`<variant>-publish-main` rule writes the following JReleaser
@@ -103,7 +104,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.2
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.3
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -170,6 +171,8 @@ jobs:
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
 
       - name: Generate artifacts (local staging)
+        env:
+          GOOGLE_TOKEN: ${{ secrets.GOOGLE_TOKEN }}
         run: |
           if [ -n "${{ inputs.release-variant }}" ]; then
             make "${{ inputs.release-variant }}-publish-main"
@@ -178,7 +181,7 @@ jobs:
           fi
 
       - name: Generate JReleaser configuration
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.2
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.3
         with:
           staging-dir: ${{ inputs.staging-dir }}
 

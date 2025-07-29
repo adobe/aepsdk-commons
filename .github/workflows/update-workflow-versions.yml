@@ -11,11 +11,6 @@
 #
 
 name: Update Reusable Workflow Versions
-
-permissions:
-  actions: write
-  contents: write
-  pull-requests: write
   
 on:
   workflow_dispatch:
@@ -42,7 +37,6 @@ jobs:
   update-versions-ios:
     if: ${{ github.event.inputs.platform == 'iOS' }}
     permissions:
-      actions: write
       contents: write
       pull-requests: write
     uses: ./.github/workflows/versions.yml
@@ -62,7 +56,6 @@ jobs:
   update-versions-android:
     if: ${{ github.event.inputs.platform == 'Android' }}
     permissions:
-      actions: write
       contents: write
       pull-requests: write
     uses: ./.github/workflows/versions.yml

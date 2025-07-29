@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Update Reusable Workflow Versions
+name: (RUNNABLE) Update Reusable Workflow Versions
 
 on:
   workflow_dispatch:

@@ -24,7 +24,7 @@ name: Update or Validate Versions
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 
 env:
-  WORKFLOW_TAG: gha-android-3.4.2
+  WORKFLOW_TAG: gha-android-3.4.3
 
 on:
   workflow_call:

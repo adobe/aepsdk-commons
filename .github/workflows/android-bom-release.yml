@@ -50,7 +50,7 @@ jobs:
         run: make -C android/aepsdk-bom bom-publish-main
 
       - name: Generate JReleaser configuration
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.2
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.3
         with:
           staging-dir: android/aepsdk-bom/sdk-bom/build/staging-deploy
   

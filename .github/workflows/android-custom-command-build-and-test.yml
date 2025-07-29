@@ -113,7 +113,7 @@ jobs:
     steps:
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.2
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.3
         with:
           android-api-level: ${{ matrix.api-level }}
 

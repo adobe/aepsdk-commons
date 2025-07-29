@@ -104,7 +104,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.2
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-android-3.4.3
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -181,7 +181,7 @@ jobs:
           fi
 
       - name: Generate JReleaser configuration
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.2
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.3
         with:
           staging-dir: ${{ inputs.staging-dir }}
 

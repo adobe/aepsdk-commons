@@ -19,6 +19,7 @@ name: Publish Snapshot (Android)
 # - GPG_OWNERTRUST
 # - CENTRAL_SONATYPE_USERNAME
 # - CENTRAL_SONATYPE_TOKEN
+# - GOOGLE_TOKEN
 # These can be passed using the `secrets: inherit` option in the caller workflow file.
 #
 # The workflow also requires that the `ci-publish-staging` rule writes the following JReleaser
@@ -82,6 +83,8 @@ jobs:
           echo $GPG_OWNERTRUST | base64 --decode | gpg --import-ownertrust --no-tty --batch --yes
       
       - name: Generate artifacts (local staging)
+        env:
+          GOOGLE_TOKEN: ${{ secrets.GOOGLE_TOKEN }}
         run: |
           if [ -n "${{ inputs.release-variant }}" ]; then
             make "${{ inputs.release-variant }}-publish-snapshot"

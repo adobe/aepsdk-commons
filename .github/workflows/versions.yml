@@ -84,6 +84,18 @@ on:
         type: boolean
         default: false
 
+      pr-title:
+        description: |
+          (Optional) Custom text for the pull-request title.
+        type: string
+        default: ''
+
+      pr-body:
+        description: |
+          (Optional) Custom text for the pull-request body. If not provided, will be the same as the title.
+        type: string
+        default: ''
+
     secrets:
       WORKFLOW_TOKEN:
         description: | 
@@ -134,28 +146,39 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        set -eo pipefail
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
         branch_name="update-version-${{ inputs.version }}"
+        [[ -n "${{ inputs.name }}" ]] && branch_name="${{ inputs.name }}-$branch_name"
 
-        if [[ -n "${{ inputs.name }}" ]]; then
-          branch_name="${{ inputs.name }}-$branch_name"
+        # Build PR title
+        if [[ -n "${{ inputs.pr-title }}" ]]; then
+          pr_title="${{ inputs.pr-title }}"
+        else
+          pr_title="Updating"
+          if [[ -n "${{ inputs.name }}" ]]; then
+            cap_name=$(echo "${{ inputs.name }}" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+            pr_title="$pr_title $cap_name "
+          fi
+          pr_title="$pr_title version to \`${{ inputs.version }}\`"
         fi
 
-        message="Updating"
-
-        if [[ -n "${{ inputs.name }}" ]]; then
-          capitalized_name=$(echo "${{ inputs.name }}" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
-          message="$message $capitalized_name "
+        # Build PR body
+        if [[ -n "${{ inputs.pr-body }}" ]]; then
+          pr_body="${{ inputs.pr-body }}"
+        else
+          pr_body="$pr_title."
         fi
-        
-        message="$message version to ${{ inputs.version }}"
 
         git checkout -b "$branch_name"
         git add .
-        git commit -m "$message"
+        git commit -m "$pr_title"
         git push origin "$branch_name"
-    
-        gh pr create --base "${{ inputs.branch }}" --head "$branch_name" --title "$message" --body "$message."
-      
+
+        gh pr create \
+          --base "${{ inputs.branch }}" \
+          --head "$branch_name" \
+          --title "$pr_title" \
+          --body "$pr_body"

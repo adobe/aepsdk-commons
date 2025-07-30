@@ -48,8 +48,8 @@ jobs:
       paths: >
         .github/workflows:yml_uses
       update: true
+      pr-title: "Update iOS workflow versions to \`gha-ios-${{ github.event.inputs.version }}\`"
     secrets: inherit
-  
   update-versions-android:
     if: ${{ github.event.inputs.platform == 'Android' }}
     uses: ./.github/workflows/versions.yml
@@ -66,4 +66,5 @@ jobs:
       paths: >
         .github/workflows:yml_uses
       update: true
+      pr-title: "Update Android workflow versions to \`gha-android-${{ github.event.inputs.version }}\`"
     secrets: inherit

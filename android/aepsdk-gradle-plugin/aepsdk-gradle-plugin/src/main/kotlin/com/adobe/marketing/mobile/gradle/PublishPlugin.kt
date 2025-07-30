@@ -32,7 +32,7 @@ class PublishPlugin : Plugin<Project> {
             // To cover all cases, depend on every PublishToMavenRepository task in the project.
             project.tasks
                 .withType(org.gradle.api.publish.maven.tasks.PublishToMavenRepository::class.java)
-                .configureEach { dependsOn(project.tasks.named("bundlePhoneReleaseAar")) }
+                .configureEach { dependsOn(project.tasks.named(BuildConstants.Tasks.BUNDLE_PHONE_RELEASE_AAR)) }
         }
     }
 

@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Custom Command Build and Test (iOS)
+name: (Reusable) Custom Command Build and Test (iOS)
 
 on:
   workflow_call:

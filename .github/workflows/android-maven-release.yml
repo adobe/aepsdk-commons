@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Publish Release (Android)
+name: (Reusable) Publish Release (Android)
 
 # Workflow requirements:
 #  

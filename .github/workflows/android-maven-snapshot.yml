@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Publish Snapshot (Android)
+name: (Reusable) Publish Snapshot (Android)
 
 # Workflow requirements:
 #  

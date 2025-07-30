@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Update or Validate Versions
+name: (Reusable) Update or Validate Versions
 
 # This workflow requires the following GitHub repository settings:
 # 1. Navigate to: Settings -> Code and automation -> Actions -> General.

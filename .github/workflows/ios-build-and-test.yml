@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Build and Test (iOS)
+name: (Reusable) Build and Test (iOS)
 
 on:
   workflow_call:

@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Javadoc
+name: (Reusable) Javadoc
 
 on:
   workflow_call:

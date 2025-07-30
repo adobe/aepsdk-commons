@@ -75,9 +75,14 @@ jobs:
               patch=$((patch+1))
               new_branch="${prefix}${major}.${minor}.${patch}"
               echo "Next branch for prefix '$prefix' will be $new_branch"
-              NEW_TARGETS="$NEW_TARGETS $new_branch"
+              # Prevent duplicates
+              if [[ " $NEW_TARGETS " == *" $new_branch "* ]]; then
+                echo "Duplicate branch $new_branch detected – skipping duplicate entry."
+              else
+                NEW_TARGETS="$NEW_TARGETS $new_branch"
+              fi
             done
-            TARGETS=$(echo "$NEW_TARGETS" | xargs) # trim whitespace
+            TARGETS=$(echo "$NEW_TARGETS" | tr ' ' '\n' | sort -u | xargs) # trim whitespace & dedupe
             if [ -z "$TARGETS" ]; then
               echo "No new branches were generated. Exiting workflow."
               exit 0
@@ -99,6 +104,11 @@ jobs:
               fi
             fi
             # PR workflow (branch exists)
+            # Skip creating PR if branches point to same commit
+            if [ "$(git rev-parse $SOURCE)" = "$(git rev-parse origin/$base)" ]; then
+              echo "No changes between $SOURCE and $base – skipping PR."
+              continue
+            fi
             echo "Creating PR from $SOURCE into $base"
             # skip if open PR already exists
             if gh pr list --base "$base" --head "$SOURCE" --state open --json number -q '.[0]' | grep -q '[0-9]'; then

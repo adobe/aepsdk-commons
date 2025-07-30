@@ -93,7 +93,7 @@ jobs:
           fi
 
       - name: Generate JReleaser configuration
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.3
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration@gha-android-3.4.4
         with:
           staging-dir: ${{ inputs.staging-dir }}
 

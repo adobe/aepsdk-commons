@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: (Reusable) Custom Command Build and Test (Android)
+name: z(Reusable) Custom Command Build and Test (Android)
 
 on:
   workflow_call:

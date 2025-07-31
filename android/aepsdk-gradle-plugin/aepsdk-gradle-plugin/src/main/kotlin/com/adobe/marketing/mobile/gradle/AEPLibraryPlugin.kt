@@ -297,12 +297,12 @@ class AEPLibraryPlugin : Plugin<Project> {
         val assemblePhone = project.tasks.named(BuildConstants.Tasks.ASSEMBLE_PHONE)
         val configureJReleaserVariables = project.tasks.named(BuildConstants.Tasks.CONFIGURE_JRELEASER_VARIABLES)
         if (extension.enablePlayConsoleVerification.getOrElse(false)) {
-            assemblePhone.configure{dependsOn((BuildConstants.Tasks.CONFIGURE_PLAY_CONSOLE_VERIFICATION))}
+            project.tasks.named(BuildConstants.Tasks.BUNDLE_PHONE_RELEASE_AAR).configure { dependsOn(BuildConstants.Tasks.CONFIGURE_PLAY_CONSOLE_VERIFICATION) }
         }
         project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(assemblePhone) }
-        project.tasks.named(BuildConstants.Tasks.PUBLISH_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
-        project.tasks.named(BuildConstants.Tasks.PUBLISH_RELEASE_MAVEN_LOCAL).configure { dependsOn(assemblePhone)}
-        project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(configureJReleaserVariables)}
+        project.tasks.named(BuildConstants.Tasks.PUBLISH_MAVEN_LOCAL).configure { dependsOn(assemblePhone) }
+        project.tasks.named(BuildConstants.Tasks.PUBLISH_RELEASE_MAVEN_LOCAL).configure { dependsOn(assemblePhone) }
+        project.tasks.named(BuildConstants.Tasks.PUBLISH).configure { dependsOn(configureJReleaserVariables) }
     }
 
     private fun configureSpotless(project: Project, extension: AEPLibraryExtension) {

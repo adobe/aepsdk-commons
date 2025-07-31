@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Release (iOS)
+name: z(Reusable) Release (iOS)
 
 # This workflow relies on the following secrets:
 # - GITHUB_TOKEN: With the permission scope: `contents: write`. Required for creating a release on GitHub.
@@ -110,7 +110,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.3.2
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.3.3
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}

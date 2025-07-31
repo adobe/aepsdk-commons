@@ -10,18 +10,23 @@
 # governing permissions and limitations under the License.
 #
 
-name: Downmerge main -> dev
+name: z(Reusable) Downmerge main -> dev
 
 on:
   workflow_call:
     inputs:
-      dev-branch-name:
-        description: 'Branch to receive changes from main. Default is "dev".'
+      source-branch-name:
+        description: 'Branch to merge from. Default is "main".'
+        type: string
+        default: 'main'
+      
+      target-branches:
+        description: 'Space separated list of branches that should receive pull requests. Example: "dev dev-actions"'
         type: string
         default: 'dev'
 
-      create-new-branch:
-        description: 'Create a new branch from main instead of merging main into the dev branch. Default is false.'
+      increment-target-branch:
+        description: 'If true, automatically compute and create the next semver branch, where target-branches is interpreted as a list of prefixes. Example: "dev- dev-v" (dev-1.2.3, dev-v1.2.3 exist) → "dev-1.2.4 dev-v1.2.4"'
         type: boolean
         default: false
 
@@ -31,11 +36,14 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4.2.2
         with:
+          ref: ${{ inputs.source-branch-name }}
           # Allows merging/pulling across branches
           fetch-depth: 0
 
@@ -44,32 +52,72 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create or determine branch
-        id: create_branch
+      - name: Down-merge logic
+        env:
+          SOURCE: ${{ inputs.source-branch-name }}
+          TARGETS: ${{ inputs.target-branches }}
+          INCREMENT: ${{ inputs.increment-target-branch }}
         run: |
-          if [ "${{ inputs.create-new-branch }}" = "true" ]; then
-            # Create the specified dev branch from main and exit
-            git checkout main
-            git checkout -b "${{ inputs.dev-branch-name }}"
-            git push origin "${{ inputs.dev-branch-name }}"
-            echo "create_pr=false" >> $GITHUB_OUTPUT
-          else
-            # Use main as the head branch for PR
-            echo "create_pr=true" >> $GITHUB_OUTPUT
+          set -e
+          # If increment flag is set, treat TARGETS as list of prefixes and compute next semver branch for each
+          if [ "$INCREMENT" = "true" ]; then
+            echo "Increment mode enabled – will create next semver branch for each prefix in '$TARGETS'"
+            NEW_TARGETS=""
+            for prefix in $TARGETS; do
+              echo "Processing prefix: $prefix"
+              # find latest branch with this prefix
+              latest=$(git ls-remote --heads origin "refs/heads/${prefix}*" | awk '{print $2}' | sed -E "s#refs/heads/${prefix}##" | sort -t'.' -k1,1V -k2,2V -k3,3V | tail -n1)
+              if [ -z "$latest" ]; then
+                echo "No existing branches found for prefix '$prefix'; skipping."
+                continue
+              fi
+              IFS='.' read -r major minor patch <<< "$latest"
+              patch=$((patch+1))
+              new_branch="${prefix}${major}.${minor}.${patch}"
+              echo "Next branch for prefix '$prefix' will be $new_branch"
+              # Prevent duplicates
+              if [[ " $NEW_TARGETS " == *" $new_branch "* ]]; then
+                echo "Duplicate branch $new_branch detected – skipping duplicate entry."
+              else
+                NEW_TARGETS="$NEW_TARGETS $new_branch"
+              fi
+            done
+            TARGETS=$(echo "$NEW_TARGETS" | tr ' ' '\n' | sort -u | xargs) # trim whitespace & dedupe
+            if [ -z "$TARGETS" ]; then
+              echo "No new branches were generated. Exiting workflow."
+              exit 0
+            fi
+            echo "Computed TARGETS: $TARGETS"
           fi
 
-      - name: Create pull request
-        if: steps.create_branch.outputs.create_pr == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          base="${{ inputs.dev-branch-name }}"
-          head="main"
-          title="Downmerge main -> $base"
-          body="Opening a pull request to bring main changes into $base."
-
-          gh pr create \
-            --base "$base" \
-            --head "$head" \
-            --title "$title" \
-            --body "$body"
+          for base in $TARGETS; do
+            if ! git ls-remote --heads origin "$base" | grep -q "$base"; then
+              if [ "$INCREMENT" = "true" ]; then
+                echo "Creating new branch '$base' from '$SOURCE' (increment mode)"
+                git checkout "$SOURCE"
+                git checkout -b "$base"
+                git push origin "$base"
+                continue
+              else
+                echo "Target branch '$base' does not exist and increment mode is off – skipping."
+                continue
+              fi
+            fi
+            # PR workflow (branch exists)
+            # Skip creating PR if branches point to same commit
+            if [ "$(git rev-parse $SOURCE)" = "$(git rev-parse origin/$base)" ]; then
+              echo "No changes between $SOURCE and $base – skipping PR."
+              continue
+            fi
+            echo "Creating PR from $SOURCE into $base"
+            # skip if open PR already exists
+            if gh pr list --base "$base" --head "$SOURCE" --state open --json number -q '.[0]' | grep -q '[0-9]'; then
+              echo "PR already exists for $base – skipping."
+              continue
+            fi
+            gh pr create \
+              --base "$base" \
+              --head "$SOURCE" \
+              --title "Downmerge \`$SOURCE\` -> \`$base\`" \
+              --body "Automatically bringing changes from \`$SOURCE\` into \`$base\`." || true
+          done

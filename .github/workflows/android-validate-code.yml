@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Validate Code (Android)
+name: z(Reusable) Validate Code (Android)
 
 on:
   workflow_call:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.3
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.4
 
       - name: Lint Source Code
         run: make lint

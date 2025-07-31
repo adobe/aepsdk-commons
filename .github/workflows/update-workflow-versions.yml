@@ -36,10 +36,6 @@ on:
 jobs:
   update-versions-ios:
     if: ${{ github.event.inputs.platform == 'iOS' }}
-    permissions:
-      actions: write
-      contents: write
-      pull-requests: write
     uses: ./.github/workflows/versions.yml
     with:
       version: gha-ios-${{ github.event.inputs.version }}
@@ -52,14 +48,10 @@ jobs:
       paths: >
         .github/workflows:yml_uses
       update: true
+      pr-title: 'Update iOS workflow versions to \`gha-ios-${{ github.event.inputs.version }}\`'
     secrets: inherit
-  
   update-versions-android:
     if: ${{ github.event.inputs.platform == 'Android' }}
-    permissions:
-      actions: write
-      contents: write
-      pull-requests: write
     uses: ./.github/workflows/versions.yml
     with:
       version: gha-android-${{ github.event.inputs.version }}
@@ -69,8 +61,10 @@ jobs:
         adobe/aepsdk-commons/.github/workflows/android-validate-code.yml gha-android-${{ github.event.inputs.version }},
         adobe/aepsdk-commons/.github/workflows/android-custom-command-build-and-test.yml gha-android-${{ github.event.inputs.version }},
         adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action gha-android-${{ github.event.inputs.version }},
-        adobe/aepsdk-commons/.github/workflows/android-javadoc.yml gha-android-${{ github.event.inputs.version }}
+        adobe/aepsdk-commons/.github/workflows/android-javadoc.yml gha-android-${{ github.event.inputs.version }},
+        adobe/aepsdk-commons/.github/actions/android-setup-jreleaser-configuration gha-android-${{ github.event.inputs.version }}
       paths: >
         .github/workflows:yml_uses
       update: true
+      pr-title: 'Update Android workflow versions to \`gha-android-${{ github.event.inputs.version }}\`'
     secrets: inherit

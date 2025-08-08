@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Custom Command Build and Test (Android)
+name: z(Reusable) Custom Command Build and Test (Android)
 
 on:
   workflow_call:
@@ -113,7 +113,7 @@ jobs:
     steps:
       - name: Setup Dependencies
         id: setup-dependencies
-        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.3
+        uses: adobe/aepsdk-commons/.github/actions/android-setup-dependencies-action@gha-android-3.4.4
         with:
           android-api-level: ${{ matrix.api-level }}
 

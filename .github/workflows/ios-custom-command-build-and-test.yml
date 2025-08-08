@@ -10,7 +10,7 @@
 # governing permissions and limitations under the License.
 #
 
-name: Custom Command Build and Test (iOS)
+name: z(Reusable) Custom Command Build and Test (iOS)
 
 on:
   workflow_call:
@@ -177,7 +177,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.2
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.3
         with:
           xcode-version: ${{ inputs.xcode-version }}
 

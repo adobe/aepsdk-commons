@@ -1,4 +1,4 @@
-val PLUGIN_VERSION = "3.4.2"
+val PLUGIN_VERSION = "3.4.3"
 // version and used for Maven local publishing
 version = PLUGIN_VERSION
 

@@ -29,6 +29,7 @@ Platform grouping
 - iOS vs Android is inferred from filenames/content of reusable workflows.
 - Composite actions are grouped by their directory prefix: `ios-` -> iOS, `android-` -> Android.
 - A generic `versions.yml` reusable workflow is counted for both platforms.
+ - Composite actions without an `ios-` or `android-` prefix are treated as generic and counted for both platforms.
 
 Output
 ------
@@ -239,13 +240,14 @@ def main() -> int:
         for action_dir in LOCAL_ACTIONS_DIR.iterdir():
             if not action_dir.is_dir():
                 continue
-            platform = ""
+            target_platforms: Set[str] = set()
             if action_dir.name.startswith("ios-"):
-                platform = "ios"
+                target_platforms.add("ios")
             elif action_dir.name.startswith("android-"):
-                platform = "android"
-            if not platform:
-                continue
+                target_platforms.add("android")
+            else:
+                # Generic composite action: include in both platforms
+                target_platforms.update({"ios", "android"})
 
             for candidate in [action_dir / "action.yml", action_dir / "action.yaml"]:
                 if not candidate.exists():
@@ -260,7 +262,8 @@ def main() -> int:
                         and not is_reusable_workflow_path(repo_path)
                         and not is_repo_composite_action_path(repo_path)
                     ):
-                        actions_by_platform[platform].add(f"{repo_path}@{ref}")
+                        for p in target_platforms:
+                            actions_by_platform[p].add(f"{repo_path}@{ref}")
 
     # Print results
     def print_list(title: str, items: Set[str]) -> None:

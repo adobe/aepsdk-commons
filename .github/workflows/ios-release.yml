@@ -110,7 +110,7 @@ on:
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.3.3
+    uses: sbenedicadb/aepsdk-commons/.github/workflows/versions.yml@update-ios-release
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -132,8 +132,8 @@ jobs:
       with:
         xcode-version: ${{ inputs.xcode-version }}
 
-    # - name: Download iOS Simulator
-    #   run: xcodebuild -downloadPlatform iOS
+    - name: Download iOS Simulator
+      run: xcodebuild -downloadPlatform iOS
 
     - name: Install Cocoapods
       run: gem install cocoapods

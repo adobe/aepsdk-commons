@@ -18,14 +18,14 @@ on:
 jobs:
   validate-code:
     name: Validate Code
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
       - name: Setup Dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.4
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.5
 
       - name: Lint Source Code
         run: make lint

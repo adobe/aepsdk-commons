@@ -107,10 +107,17 @@ on:
         type: string
         default: '16.0'
 
+      runner-image:
+        description: |
+          Choose which GitHub Actions image on which this workflow should run.
+          Default is 'macos-15'.
+        type: string
+        default: 'macos-15'
+
 jobs:
   validate-versions:
     name: Validate Versions
-    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.3.4
+    uses: adobe/aepsdk-commons/.github/workflows/versions.yml@gha-ios-5.3.5
     with:
       name: ${{ inputs.version-validation-name }}
       version: ${{ github.event.inputs.tag }}
@@ -120,7 +127,7 @@ jobs:
       update: false
 
   release:
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner-image }}
     needs: validate-versions
     steps:
     - uses: actions/checkout@v4.2.2

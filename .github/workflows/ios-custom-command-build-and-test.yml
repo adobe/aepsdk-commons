@@ -15,6 +15,12 @@ name: z(Reusable) Custom Command Build and Test (iOS)
 on:
   workflow_call:
     inputs:
+      runner-image:
+        description: |
+          Choose which GitHub Actions image on which this workflow should run.
+          Default is 'macos-15'.
+        type: string
+        default: 'macos-15'
       ios-device-names:
         description: |
           The iOS device names to use for testing. Must be formatted as a valid JSON array string.
@@ -162,7 +168,7 @@ jobs:
       ${{ needs.define-matrix.outputs.is-default-ios != 'true' && matrix.ios || '' }}
       ${{ needs.define-matrix.outputs.is-default-tvos-device != 'true' && matrix.tvos-device || '' }}
       ${{ needs.define-matrix.outputs.is-default-tvos != 'true' && matrix.tvos || '' }}
-    runs-on: macos-14
+    runs-on: ${{ inputs.runner-image }}
     needs: define-matrix
     strategy:
       max-parallel: 1
@@ -177,7 +183,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup dependencies
-        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.4
+        uses: adobe/aepsdk-commons/.github/actions/ios-setup-dependencies-action@gha-ios-5.3.5
         with:
           xcode-version: ${{ inputs.xcode-version }}
 

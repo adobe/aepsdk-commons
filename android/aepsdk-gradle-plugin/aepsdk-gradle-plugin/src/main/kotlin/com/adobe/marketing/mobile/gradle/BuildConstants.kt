@@ -28,13 +28,13 @@ object BuildConstants {
         val JAVA_SOURCE_COMPATIBILITY: JavaVersion = JavaVersion.VERSION_1_8
         val JAVA_TARGET_COMPATIBILITY: JavaVersion = JavaVersion.VERSION_1_8
 
-        const val KOTLIN_LANGUAGE_VERSION = "1.5"
-        const val KOTLIN_API_VERSION = "1.5"
+        const val KOTLIN_LANGUAGE_VERSION = "1.9"
+        const val KOTLIN_API_VERSION = "1.9"
         const val KOTLIN_JVM_TARGET = "1.8"
 
 
         const val AGP = "8.2.0"
-        const val KOTLIN = "1.8.20"
+        const val KOTLIN = "2.0.0"
         const val KOTLIN_COROUTINES = "1.6.0"
         const val KTLINT = "0.42.1"
         const val GOOGLE_JAVA_FORMAT = "1.15.0"

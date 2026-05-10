@@ -47,7 +47,7 @@ object BuildConstants {
         const val ANDROIDX_ACTIVITY_COMPOSE = "1.5.0"
 
         const val ANDROIDX_APPCOMPAT = "1.0.0"
-        const val ANDROIDX_CORE_KTX = "1.3.2"
+        const val ANDROIDX_CORE_KTX = "1.17.0"
         const val ANDROIDX_LIFECYCLE_KTX = "2.7.0"
         const val DOKKA = "1.9.10"
         const val DEXMAKER_MOKITO_INLINE = "2.28.3"

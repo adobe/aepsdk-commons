@@ -33,7 +33,7 @@ object BuildConstants {
         const val KOTLIN_JVM_TARGET = "1.8"
 
 
-        const val AGP = "8.2.0"
+        const val AGP = "8.9.1"
         const val KOTLIN = "2.0.0"
         const val KOTLIN_COROUTINES = "1.6.0"
         const val KTLINT = "0.42.1"

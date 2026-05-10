@@ -3,7 +3,7 @@ val PLUGIN_VERSION = "3.4.3"
 version = PLUGIN_VERSION
 
 object Plugins {
-    const val ANDROID_GRADLE_PLUGIN_VERSION = "8.2.0"
+    const val ANDROID_GRADLE_PLUGIN_VERSION = "8.9.1"
     const val KOTLIN_GRADLE_PLUGIN_VERSION = "2.0.0"
     const val SPOTLESS_GRADLE_PLUGIN_VERSION = "6.12.0"
     const val DOKKA_GRADLE_PLUGIN_VERSION = "1.9.10"

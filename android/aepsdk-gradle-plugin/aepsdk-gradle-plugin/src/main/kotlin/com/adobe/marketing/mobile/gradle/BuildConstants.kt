@@ -34,8 +34,8 @@ object BuildConstants {
 
 
         const val AGP = "8.9.1"
-        const val KOTLIN = "2.0.0"
-        const val KOTLIN_COROUTINES = "1.6.0"
+        const val KOTLIN = "2.0.21"
+        const val KOTLIN_COROUTINES = "1.8.1"
         const val KTLINT = "0.42.1"
         const val GOOGLE_JAVA_FORMAT = "1.15.0"
         const val PRETTIER = "2.7.1"
@@ -48,7 +48,7 @@ object BuildConstants {
 
         const val ANDROIDX_APPCOMPAT = "1.0.0"
         const val ANDROIDX_CORE_KTX = "1.3.2"
-        const val ANDROIDX_LIFECYCLE_KTX = "2.3.1"
+        const val ANDROIDX_LIFECYCLE_KTX = "2.7.0"
         const val DOKKA = "1.9.10"
         const val DEXMAKER_MOKITO_INLINE = "2.28.3"
         const val SPOTLESS = "6.12.0"

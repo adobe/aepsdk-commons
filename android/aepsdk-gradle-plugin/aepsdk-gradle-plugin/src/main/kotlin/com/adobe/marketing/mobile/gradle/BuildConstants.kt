@@ -42,7 +42,6 @@ object BuildConstants {
         const val PRETTIER_JAVA_PLUGIN = "1.6.2"
         const val CHECKSTYLE_TOOLS = "8.36.1"
 
-        const val COMPOSE_COMPILER = "1.4.6"
         const val COMPOSE = "1.4.3"
         const val COMPOSE_MATERIAL = "1.4.3"
         const val ANDROIDX_ACTIVITY_COMPOSE = "1.5.0"
@@ -112,6 +111,7 @@ object BuildConstants {
         const val ANDROID_LIBRARY = "com.android.library"
         const val ANDROID_APP = "com.android.application"
         const val KOTLIN_ANDROID = "kotlin-android"
+        const val KOTLIN_COMPOSE = "org.jetbrains.kotlin.plugin.compose"
         const val DOKKA = "org.jetbrains.dokka"
         const val SPOTLESS = "com.diffplug.spotless"
         const val CHECKSTYLE = "checkstyle"

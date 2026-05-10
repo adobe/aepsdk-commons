@@ -4,7 +4,7 @@ version = PLUGIN_VERSION
 
 object Plugins {
     const val ANDROID_GRADLE_PLUGIN_VERSION = "8.2.0"
-    const val KOTLIN_GRADLE_PLUGIN_VERSION = "1.8.20"
+    const val KOTLIN_GRADLE_PLUGIN_VERSION = "2.0.0"
     const val SPOTLESS_GRADLE_PLUGIN_VERSION = "6.12.0"
     const val DOKKA_GRADLE_PLUGIN_VERSION = "1.9.10"
     const val LICENSE_GRADLE_PLUGIN_VERSION = "0.16.1"
@@ -28,6 +28,9 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${Plugins.KOTLIN_GRADLE_PLUGIN_VERSION}")
+    // Required for Kotlin 2.0+ Compose Compiler Gradle plugin (id "org.jetbrains.kotlin.plugin.compose").
+    // Replaces the deprecated composeOptions.kotlinCompilerExtensionVersion AGP mechanism.
+    implementation("org.jetbrains.kotlin:compose-compiler-gradle-plugin:${Plugins.KOTLIN_GRADLE_PLUGIN_VERSION}")
     implementation("com.diffplug.spotless:spotless-plugin-gradle:${Plugins.SPOTLESS_GRADLE_PLUGIN_VERSION}")
     implementation("com.android.tools.build:gradle:${Plugins.ANDROID_GRADLE_PLUGIN_VERSION}")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:${Plugins.DOKKA_GRADLE_PLUGIN_VERSION}")

@@ -106,13 +106,14 @@ class AEPLibraryPlugin : Plugin<Project> {
     }
 
     private fun configureCompose(project: Project) {
+        // Kotlin 2.0+ replaced AGP's composeOptions.kotlinCompilerExtensionVersion mechanism
+        // with a dedicated Compose Compiler Gradle plugin. The plugin id is bundled with KGP,
+        // so its version follows whatever Kotlin version is on the plugin's classpath.
+        project.plugins.apply(BuildConstants.Plugins.KOTLIN_COMPOSE)
         val android = project.extensions.getByType(LibraryExtension::class.java)
         android.apply {
             buildFeatures {
                 compose = true
-            }
-            composeOptions {
-                kotlinCompilerExtensionVersion = BuildConstants.Versions.COMPOSE_COMPILER
             }
         }
     }

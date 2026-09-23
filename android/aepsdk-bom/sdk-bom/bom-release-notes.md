@@ -2,16 +2,16 @@ This BOM ([Bill of Materials](https://central.sonatype.com/artifact/com.adobe.ma
 <details>
   <summary>Expand</summary>
 
-| Extension artifact | BOM (3.20.0) | BOM (3.21.0) |
+| Extension artifact | BOM (3.21.0) | BOM (3.22.0) |
 |-----|-----|-----|
-| **com.adobe.marketing.mobile:messaging** | **3.10.0** | **3.12.0**|
+| **com.adobe.marketing.mobile:core** | **3.8.0** | **3.9.0**|
+| **com.adobe.marketing.mobile:edge** | **3.0.2** | **3.1.0**|
+| **com.adobe.marketing.mobile:messaging** | **3.12.0** | **3.12.1**|
 | com.adobe.marketing.mobile:analytics | 3.0.2 | 3.0.2 |
 | com.adobe.marketing.mobile:assurance | 3.0.7 | 3.0.7 |
 | com.adobe.marketing.mobile:audience | 3.0.1 | 3.0.1 |
 | com.adobe.marketing.mobile:campaign | 3.0.3 | 3.0.3 |
 | com.adobe.marketing.mobile:campaignclassic | 3.1.4 | 3.1.4 |
-| com.adobe.marketing.mobile:core | 3.8.0 | 3.8.0 |
-| com.adobe.marketing.mobile:edge | 3.0.2 | 3.0.2 |
 | com.adobe.marketing.mobile:edgebridge | 3.0.1 | 3.0.1 |
 | com.adobe.marketing.mobile:edgeconsent | 3.0.3 | 3.0.3 |
 | com.adobe.marketing.mobile:edgeidentity | 3.1.0 | 3.1.0 |

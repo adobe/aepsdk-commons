@@ -51,6 +51,7 @@ dependencies {
     implementation 'com.adobe.marketing.mobile:campaignclassic:latest.release'
     implementation 'com.adobe.marketing.mobile:audience:latest.release'
     implementation 'com.adobe.marketing.mobile:notificationbuilder:latest.release'
+    implementation 'com.adobe.marketing.mobile:liveupdates:latest.release'
 }
 
 /**
@@ -119,6 +120,7 @@ task bom_release_notes() {
         markdownTable <<= "|-----|-----|-----|\n"
         def changedExtension = []
         def unchangedExtension = []
+        def addedExtensionCount = 0
         newMap.each { entity ->
             def extensionName = "com.adobe.marketing.mobile:${entity.key}"
             if (oldMap.containsKey(entity.key)) {
@@ -130,9 +132,11 @@ task bom_release_notes() {
                 }
             }else{
                 markdownTable <<= "| **${extensionName}** |  | **${entity.value}** |\n"
+                addedExtensionCount++
             }
         }
-        if(changedExtension.size() >0) {
+        // Newly added or removed extensions also require updated release notes.
+        if(changedExtension.size() > 0 || addedExtensionCount > 0 || !oldMap.isEmpty()) {
             markdownTable <<= changedExtension.sort().join()
             markdownTable <<= unchangedExtension.sort().join()
             oldMap.each{markdownTable <<= "| **com.adobe.marketing.mobile:${it.key}** | **${it.value}** |  |\n"}

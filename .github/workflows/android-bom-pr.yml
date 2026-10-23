@@ -132,6 +132,5 @@ jobs:
             --head "$BRANCH" \
             --base main \
             --label "bom" \
-            --label "automated pr" \
-            --assignee "yangyansong-adbe" \
-            --assignee "praveek" || true
+            --label "automated pr" \            
+            --assignee "sagar-sharma-adobe" || true
